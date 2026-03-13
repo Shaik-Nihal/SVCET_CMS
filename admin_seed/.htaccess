@@ -1,0 +1,5 @@
+# Allow access only from localhost (for seed.php)
+<RequireAny>
+    Require ip 127.0.0.1
+    Require ip ::1
+</RequireAny>

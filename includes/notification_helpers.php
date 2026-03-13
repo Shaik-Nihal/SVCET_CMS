@@ -1,0 +1,228 @@
+<?php
+// ============================================================
+// Notification Helpers
+// ============================================================
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/constants.php';
+require_once __DIR__ . '/../config/mailer.php';
+require_once __DIR__ . '/../config/sms.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+/**
+ * Core notification dispatcher.
+ * Always saves to DB. Email and SMS failures are logged but never abort operations.
+ *
+ * @param array $params {
+ *   recipient_id   int
+ *   recipient_type 'user'|'staff'
+ *   message        string   (in-app message)
+ *   ticket_id      int|null
+ *   email          string   (recipient email)
+ *   name           string   (recipient name)
+ *   phone          string   (recipient phone, 10-digit)
+ *   subject        string   (email subject)
+ *   email_body     string   (HTML email body)
+ * }
+ */
+function dispatchNotification(array $params): void {
+    $pdo = getDB();
+
+    // 1. Save in-app notification
+    try {
+        $pdo->prepare("
+            INSERT INTO notifications (recipient_id, recipient_type, message, ticket_id)
+            VALUES (?, ?, ?, ?)
+        ")->execute([
+            $params['recipient_id'],
+            $params['recipient_type'],
+            $params['message'],
+            $params['ticket_id'] ?? null,
+        ]);
+    } catch (Throwable $e) {
+        error_log('Notification DB insert error: ' . $e->getMessage());
+    }
+
+    // 2. Send email (non-blocking)
+    if (!empty($params['email']) && !empty($params['subject'])) {
+        $body = $params['email_body'] ?? emailTemplate($params['subject'], '<p>' . nl2br(h($params['message'])) . '</p>');
+        sendEmail($params['email'], $params['name'] ?? '', $params['subject'], $body);
+    }
+
+    // 3. Send SMS (non-blocking)
+    if (!empty($params['phone'])) {
+        sendSMS($params['phone'], APP_NAME . ': ' . strip_tags($params['message']));
+    }
+}
+
+/**
+ * Notify all ICT Heads about a new ticket.
+ */
+function notifyICTHeads(int $ticketId, string $ticketNumber, string $userName, string $category): void {
+    $pdo  = getDB();
+    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role = 'ict_head' AND is_active = 1");
+    $stmt->execute();
+    $heads = $stmt->fetchAll();
+
+    foreach ($heads as $head) {
+        $msg  = "New ticket {$ticketNumber} raised by {$userName}. Problem: {$category}. Please review and assign.";
+        $body = emailTemplate("New IT Support Ticket — {$ticketNumber}", "
+            <p>Dear {$head['name']},</p>
+            <p>A new support ticket has been raised by <strong>{$userName}</strong>.</p>
+            <table style='width:100%;border-collapse:collapse;'>
+              <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+              <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
+            </table>
+            <p style='margin-top:20px;'><a href='" . APP_URL . "/staff/ticket_detail.php?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>View Ticket</a></p>
+        ");
+
+        dispatchNotification([
+            'recipient_id'   => $head['id'],
+            'recipient_type' => 'staff',
+            'message'        => $msg,
+            'ticket_id'      => $ticketId,
+            'email'          => $head['email'],
+            'name'           => $head['name'],
+            'phone'          => $head['contact'] ?? '',
+            'subject'        => "New Ticket: {$ticketNumber} — {$category}",
+            'email_body'     => $body,
+        ]);
+    }
+}
+
+/**
+ * Notify user about their ticket being received.
+ */
+function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumber, string $staffName): void {
+    $pdo  = getDB();
+    $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
+    if (!$user) return;
+
+    $msg  = "Your ticket {$ticketNumber} has been raised successfully and assigned to {$staffName}. We will get back to you shortly.";
+    $body = emailTemplate("Ticket {$ticketNumber} Received", "
+        <p>Dear {$user['name']},</p>
+        <p>Your support ticket has been received and assigned to our IT team.</p>
+        <table style='width:100%;border-collapse:collapse;'>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Assigned To</td><td style='padding:8px;'>{$staffName}</td></tr>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Status</td><td style='padding:8px;'><span style='background:#17a2b8;color:#fff;padding:2px 8px;border-radius:3px;'>Notified</span></td></tr>
+        </table>
+        <p style='margin-top:20px;'><a href='" . APP_URL . "/user/ticket_detail.php?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Track Ticket</a></p>
+    ");
+
+    dispatchNotification([
+        'recipient_id'   => $userId,
+        'recipient_type' => 'user',
+        'message'        => $msg,
+        'ticket_id'      => $ticketId,
+        'email'          => $user['email'],
+        'name'           => $user['name'],
+        'phone'          => $user['phone'] ?? '',
+        'subject'        => "Ticket {$ticketNumber} Received",
+        'email_body'     => $body,
+    ]);
+}
+
+/**
+ * Notify assigned staff of new assignment.
+ */
+function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, string $assignedByName, string $category, string $notes = ''): void {
+    $pdo  = getDB();
+    $stmt = $pdo->prepare("SELECT name, email, contact FROM it_staff WHERE id = ?");
+    $stmt->execute([$staffId]);
+    $staff = $stmt->fetch();
+    if (!$staff) return;
+
+    $msg  = "Ticket {$ticketNumber} ({$category}) has been assigned to you by {$assignedByName}. " . ($notes ? "Note: {$notes}" : "");
+    $body = emailTemplate("Ticket Assigned: {$ticketNumber}", "
+        <p>Dear {$staff['name']},</p>
+        <p>A support ticket has been assigned to you by <strong>{$assignedByName}</strong>.</p>
+        <table style='width:100%;border-collapse:collapse;'>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Note</td><td style='padding:8px;'>" . h($notes ?: 'No additional notes') . "</td></tr>
+        </table>
+        <p style='margin-top:20px;'><a href='" . APP_URL . "/staff/ticket_detail.php?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>View & Update Ticket</a></p>
+    ");
+
+    dispatchNotification([
+        'recipient_id'   => $staffId,
+        'recipient_type' => 'staff',
+        'message'        => $msg,
+        'ticket_id'      => $ticketId,
+        'email'          => $staff['email'],
+        'name'           => $staff['name'],
+        'phone'          => $staff['contact'] ?? '',
+        'subject'        => "Ticket Assigned: {$ticketNumber}",
+        'email_body'     => $body,
+    ]);
+}
+
+/**
+ * Notify user about status change.
+ */
+function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber, string $newStatus): void {
+    $pdo  = getDB();
+    $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $user = $stmt->fetch();
+    if (!$user) return;
+
+    $statusText = statusLabel($newStatus);
+    $msg  = "Your ticket {$ticketNumber} status has been updated to: {$statusText}.";
+    if ($newStatus === STATUS_SOLVED) {
+        $msg .= " Please submit your feedback.";
+    }
+
+    $feedbackLink = ($newStatus === STATUS_SOLVED)
+        ? "<p style='margin-top:15px;'><a href='" . APP_URL . "/user/feedback.php?ticket_id={$ticketId}' style='background:#28a745;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Submit Feedback</a></p>"
+        : "<p style='margin-top:15px;'><a href='" . APP_URL . "/user/ticket_detail.php?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Track Ticket</a></p>";
+
+    $body = emailTemplate("Ticket {$ticketNumber} — Status Updated", "
+        <p>Dear {$user['name']},</p>
+        <p>The status of your support ticket has been updated.</p>
+        <table style='width:100%;border-collapse:collapse;'>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>New Status</td><td style='padding:8px;'>{$statusText}</td></tr>
+        </table>
+        {$feedbackLink}
+    ");
+
+    dispatchNotification([
+        'recipient_id'   => $userId,
+        'recipient_type' => 'user',
+        'message'        => $msg,
+        'ticket_id'      => $ticketId,
+        'email'          => $user['email'],
+        'name'           => $user['name'],
+        'phone'          => $user['phone'] ?? '',
+        'subject'        => "Ticket {$ticketNumber} — Status: {$statusText}",
+        'email_body'     => $body,
+    ]);
+}
+
+/**
+ * Notify ICT Heads + Asst Managers of a status update (for awareness).
+ */
+function notifyManagementStatusChange(int $ticketId, string $ticketNumber, string $newStatus, int $updatedByStaffId): void {
+    $pdo  = getDB();
+    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager') AND is_active = 1 AND id != ?");
+    $stmt->execute([$updatedByStaffId]);
+    $managers = $stmt->fetchAll();
+
+    $statusText = statusLabel($newStatus);
+    foreach ($managers as $mgr) {
+        dispatchNotification([
+            'recipient_id'   => $mgr['id'],
+            'recipient_type' => 'staff',
+            'message'        => "Ticket {$ticketNumber} status updated to {$statusText}.",
+            'ticket_id'      => $ticketId,
+            'email'          => $mgr['email'],
+            'name'           => $mgr['name'],
+            'phone'          => '',  // No SMS to management for status updates
+            'subject'        => '',  // No email for minor status updates
+        ]);
+    }
+}

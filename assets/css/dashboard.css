@@ -1,0 +1,133 @@
+/* ============================================================
+   Dashboard Specific Styles
+   ============================================================ */
+
+/* Welcome banner */
+.welcome-banner {
+    background: linear-gradient(135deg, #1a3a5c 0%, #1a7a8a 60%, #1a3a5c 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.welcome-banner h5 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.welcome-banner p {
+    margin: .3rem 0 0;
+    font-size: .85rem;
+    opacity: .8;
+}
+
+.welcome-banner .btn-outline-light {
+    font-size: .82rem;
+    padding: .4rem .9rem;
+}
+
+/* Quick action buttons */
+.quick-actions {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+
+.btn-quick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    color: #1a3a5c;
+    font-size: .78rem;
+    font-weight: 600;
+    min-width: 90px;
+    transition: all .15s;
+    text-decoration: none;
+}
+
+.btn-quick i {
+    font-size: 1.4rem;
+    margin-bottom: .3rem;
+}
+
+.btn-quick:hover {
+    background: #1a3a5c;
+    color: #fff;
+    border-color: #1a3a5c;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
+/* Recent tickets mini-list */
+.ticket-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .65rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.ticket-row:last-child {
+    border-bottom: none;
+}
+
+.ticket-row .t-num {
+    font-size: .8rem;
+    font-family: 'Consolas', monospace;
+    color: #2563a8;
+    font-weight: 600;
+}
+
+.ticket-row .t-cat {
+    font-size: .82rem;
+    color: #374151;
+}
+
+.ticket-row .t-date {
+    font-size: .75rem;
+    color: #94a3b8;
+}
+
+/* Report cards */
+.report-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all .15s;
+    background: #fff;
+}
+
+.report-card:hover,
+.report-card.selected {
+    border-color: #1a3a5c;
+    background: #e8f0fa;
+}
+
+.report-card i {
+    font-size: 2rem;
+    margin-bottom: .5rem;
+    color: #1a3a5c;
+    display: block;
+}
+
+.report-card .report-title {
+    font-weight: 700;
+    font-size: .9rem;
+}
+
+.report-card .report-desc {
+    font-size: .78rem;
+    color: #64748b;
+    margin-top: .2rem;
+}
