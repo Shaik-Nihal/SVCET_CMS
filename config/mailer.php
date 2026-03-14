@@ -102,6 +102,20 @@ function sendEmailViaGraph(string $toEmail, string $toName, string $subject, str
     ]];
   }
 
+  $logoPath = BASE_PATH . '/assets/images/apollo_logo.png';
+  if (strpos($htmlBody, 'cid:apollo_logo') !== false && file_exists($logoPath)) {
+      $payload['message']['attachments'] = [
+          [
+             '@odata.type' => '#microsoft.graph.fileAttachment',
+             'name' => 'apollo_logo.png',
+             'contentType' => 'image/png',
+             'contentBytes' => base64_encode(file_get_contents($logoPath)),
+             'isInline' => true,
+             'contentId' => 'apollo_logo'
+          ]
+      ];
+  }
+
   $url = 'https://graph.microsoft.com/v1.0/users/' . rawurlencode(GRAPH_SENDER) . '/sendMail';
   $ch = curl_init($url);
   curl_setopt_array($ch, [
@@ -161,6 +175,12 @@ function sendEmail(string $toEmail, string $toName, string $subject, string $htm
         $mail->Subject = $subject;
         $mail->Body    = $htmlBody;
         $mail->AltBody = $plainBody ?: strip_tags($htmlBody);
+
+        $logoPath = BASE_PATH . '/assets/images/apollo_logo.png';
+        if (strpos($htmlBody, 'cid:apollo_logo') !== false && file_exists($logoPath)) {
+            $mail->addEmbeddedImage($logoPath, 'apollo_logo', 'apollo_logo.png');
+        }
+
         $mail->send();
         return true;
     } catch (Exception $e) {
@@ -174,7 +194,7 @@ function sendEmail(string $toEmail, string $toName, string $subject, string $htm
  */
 function emailTemplate(string $title, string $content): string {
     $appName = APP_NAME;
-    $logoUrl = APP_URL . '/assets/images/apollo_logo.png';
+    $logoUrl = 'cid:apollo_logo';
     return <<<HTML
 <!DOCTYPE html>
 <html>
