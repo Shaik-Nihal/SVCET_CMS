@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user_id'], $_P
 }
 
 // Fetch users
-$users = $pdo->query("SELECT id, name, email, phone, email_verified, created_at FROM users ORDER BY created_at DESC")->fetchAll();
+$users = $pdo->query("SELECT id, name, email, phone, designation, email_verified, created_at FROM users ORDER BY created_at DESC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,6 +90,7 @@ $users = $pdo->query("SELECT id, name, email, phone, email_verified, created_at 
             <th>Name</th>
             <th>Email</th>
             <th>Phone</th>
+            <th>Designation</th>
             <th>Registered On</th>
             <th>Verification</th>
             <th class="text-end">Actions</th>
@@ -103,6 +104,7 @@ $users = $pdo->query("SELECT id, name, email, phone, email_verified, created_at 
             </td>
             <td><?= h($u['email']) ?></td>
             <td><?= h($u['phone'] ?? 'N/A') ?></td>
+            <td><span class="badge bg-light text-dark border"><?= h($u['designation'] ?? 'N/A') ?></span></td>
             <td><span class="text-muted small"><?= formatDate($u['created_at']) ?></span></td>
             <td>
               <?php if ($u['email_verified']): ?>

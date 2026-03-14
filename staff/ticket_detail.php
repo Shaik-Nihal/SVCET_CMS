@@ -22,7 +22,7 @@ $ticket = null;
 $baseQuery = "
     SELECT t.*,
            u.name AS user_name, u.email AS user_email, u.phone AS user_phone,
-           u.department AS user_dept, u.roll_no,
+           u.department AS user_dept, u.designation AS user_designation, u.roll_no,
            COALESCE(pc.name,'Custom') AS category_name, pc.icon AS category_icon,
            s.name AS assigned_name, s.role AS assigned_role,
            s.designation AS assigned_designation, s.contact AS assigned_contact,
@@ -372,6 +372,7 @@ if (!empty($ticket['user_email'])) {
             <span class="badge <?= $domainBadgeClass ?>"><?= h($domainBadgeLabel) ?></span>
           </div>
           <div class="fw-semibold"><?= h($ticket['user_name']) ?></div>
+          <?php if ($ticket['user_designation']): ?><div class="small fw-semibold text-primary"><?= h($ticket['user_designation']) ?></div><?php endif; ?>
           <div class="text-muted"><?= h($ticket['user_dept'] ?? '') ?></div>
           <?php if ($ticket['user_email']): ?><div><i class="bi bi-envelope me-1"></i><a href="mailto:<?= h($ticket['user_email']) ?>"><?= h($ticket['user_email']) ?></a></div><?php endif; ?>
           <?php if ($ticket['user_phone']): ?><div><i class="bi bi-telephone me-1"></i><?= h($ticket['user_phone']) ?></div><?php endif; ?>

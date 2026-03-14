@@ -58,11 +58,19 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
     $stmt->execute();
     $leaders = $stmt->fetchAll();
 
+    // Fetch user designation
+    $reqStmt = $pdo->prepare("SELECT u.name, u.designation FROM tickets t JOIN users u ON t.user_id = u.id WHERE t.id = ?");
+    $reqStmt->execute([$ticketId]);
+    $requestor = $reqStmt->fetch();
+    $reqName = $requestor['name'] ?? $userName;
+    $reqDesigStr = !empty($requestor['designation']) ? " ({$requestor['designation']})" : "";
+    $raisedByDisplay = h($reqName) . h($reqDesigStr);
+
     foreach ($leaders as $leader) {
         $msg  = "New ticket {$ticketNumber} raised by {$userName}. Problem: {$category}. Please review and assign.";
         $body = emailTemplate("New IT Support Ticket — {$ticketNumber}", "
             <p>Dear {$leader['name']},</p>
-            <p>A new support ticket has been raised by <strong>{$userName}</strong>.</p>
+            <p>A new support ticket has been raised by <strong>{$raisedByDisplay}</strong>.</p>
             <table style='width:100%;border-collapse:collapse;'>
               <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
               <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
@@ -127,12 +135,21 @@ function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, 
     $staff = $stmt->fetch();
     if (!$staff) return;
 
+    // Fetch user designation
+    $reqStmt = $pdo->prepare("SELECT u.name, u.designation FROM tickets t JOIN users u ON t.user_id = u.id WHERE t.id = ?");
+    $reqStmt->execute([$ticketId]);
+    $requestor = $reqStmt->fetch();
+    $reqName = $requestor['name'] ?? 'User';
+    $reqDesigStr = !empty($requestor['designation']) ? " ({$requestor['designation']})" : "";
+    $raisedByDisplay = h($reqName) . h($reqDesigStr);
+
     $msg  = "Ticket {$ticketNumber} ({$category}) has been assigned to you by {$assignedByName}. " . ($notes ? "Note: {$notes}" : "");
     $body = emailTemplate("Ticket Assigned: {$ticketNumber}", "
         <p>Dear {$staff['name']},</p>
         <p>A support ticket has been assigned to you by <strong>{$assignedByName}</strong>.</p>
         <table style='width:100%;border-collapse:collapse;'>
           <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Raised By</td><td style='padding:8px;'>{$raisedByDisplay}</td></tr>
           <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
           <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Note</td><td style='padding:8px;'>" . h($notes ?: 'No additional notes') . "</td></tr>
         </table>

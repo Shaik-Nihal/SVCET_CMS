@@ -24,6 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     } else {
         $name       = trim($_POST['name'] ?? '');
         $phone      = trim($_POST['phone'] ?? '');
+        $designation= trim($_POST['designation'] ?? '');
         $department = trim($_POST['department'] ?? '');
         $rollNo     = trim($_POST['roll_no'] ?? '');
 
@@ -31,11 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
         if ($phone && !isValidPhone($phone)) $profileErrors[] = 'Phone must be a 10-digit mobile number.';
 
         if (empty($profileErrors)) {
-            $pdo->prepare("UPDATE users SET name=?, phone=?, department=?, roll_no=? WHERE id=?")
-                ->execute([$name, $phone ?: null, $department ?: null, $rollNo ?: null, $userId]);
+            $pdo->prepare("UPDATE users SET name=?, phone=?, designation=?, department=?, roll_no=? WHERE id=?")
+                ->execute([$name, $phone ?: null, $designation ?: null, $department ?: null, $rollNo ?: null, $userId]);
             $_SESSION['user_name'] = $name;
             $user['name']       = $name;
             $user['phone']      = $phone;
+            $user['designation']= $designation;
             $user['department'] = $department;
             $user['roll_no']    = $rollNo;
             setFlash('success', 'Profile updated successfully.');
@@ -165,6 +167,15 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
               <input type="tel" name="phone" class="form-control" value="<?= h($user['phone'] ?? '') ?>" placeholder="10-digit mobile">
             </div>
             <div class="mb-3">
+              <label class="form-label fw-semibold">Designation <span class="text-danger">*</span></label>
+              <select name="designation" class="form-select" required>
+                <option value="">— Select —</option>
+                <option value="Student" <?= ($user['designation'] ?? '') === 'Student' ? 'selected' : '' ?>>Student</option>
+                <option value="Faculty" <?= ($user['designation'] ?? '') === 'Faculty' ? 'selected' : '' ?>>Faculty</option>
+                <option value="Staff" <?= ($user['designation'] ?? '') === 'Staff' ? 'selected' : '' ?>>Staff</option>
+              </select>
+            </div>
+            <div class="mb-3">
               <label class="form-label fw-semibold">Department</label>
               <select name="department" class="form-select">
                 <option value="">— Select —</option>
@@ -226,7 +237,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
             <div class="col-5 text-muted">Email</div>
             <div class="col-7"><?= h($user['email']) ?></div>
             <div class="col-5 text-muted">Account Type</div>
-            <div class="col-7"><span class="badge bg-primary">Student / Faculty</span></div>
+            <div class="col-7"><span class="badge bg-primary"><?= h($user['designation'] ?? 'User') ?></span></div>
           </div>
         </div>
       </div>

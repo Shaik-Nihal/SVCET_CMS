@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $input['name']       = trim($_POST['name'] ?? '');
         $input['email']      = strtolower(trim($_POST['email'] ?? ''));
         $input['phone']      = trim($_POST['phone'] ?? '');
+        $input['designation']= trim($_POST['designation'] ?? '');
         $input['department'] = trim($_POST['department'] ?? '');
         $input['roll_no']    = trim($_POST['roll_no'] ?? '');
         $password            = $_POST['password'] ?? '';
@@ -59,11 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->beginTransaction();
                 try {
                     $stmt = $pdo->prepare("
-                        INSERT INTO users (name, email, password_hash, phone, department, roll_no)
-                        VALUES (?, ?, ?, ?, ?, ?)
+                        INSERT INTO users (name, email, password_hash, phone, designation, department, roll_no)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
                     ");
                     $stmt->execute([$input['name'], $input['email'], $hash,
-                                   $input['phone'] ?: null, $input['department'] ?: null, $input['roll_no'] ?: null]);
+                                   $input['phone'] ?: null, $input['designation'] ?: null, $input['department'] ?: null, $input['roll_no'] ?: null]);
                     $userId = (int) $pdo->lastInsertId();
 
                     // Save initial password to history
@@ -144,7 +145,16 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
                     <input type="text" name="roll_no" class="form-control"
                            value="<?= h($input['roll_no'] ?? '') ?>" placeholder="e.g. 22CS001">
                 </div>
-                <div class="col-12">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Designation <span class="text-danger">*</span></label>
+                    <select name="designation" class="form-select" required>
+                        <option value="">— Select —</option>
+                        <option value="Student" <?= ($input['designation'] ?? '') === 'Student' ? 'selected' : '' ?>>Student</option>
+                        <option value="Faculty" <?= ($input['designation'] ?? '') === 'Faculty' ? 'selected' : '' ?>>Faculty</option>
+                        <option value="Staff" <?= ($input['designation'] ?? '') === 'Staff' ? 'selected' : '' ?>>Staff</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
                     <label class="form-label fw-semibold">Department</label>
                     <select name="department" class="form-select">
                         <option value="">— Select —</option>

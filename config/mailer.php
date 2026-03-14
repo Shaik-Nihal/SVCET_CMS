@@ -174,6 +174,7 @@ function sendEmail(string $toEmail, string $toName, string $subject, string $htm
  */
 function emailTemplate(string $title, string $content): string {
     $appName = APP_NAME;
+    $logoUrl = APP_URL . '/assets/images/apollo_logo.png';
     return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -183,8 +184,17 @@ function emailTemplate(string $title, string $content): string {
   <tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);">
       <tr><td style="background:#1a3a5c;padding:20px 30px;">
-        <h1 style="margin:0;color:#fff;font-size:20px;">{$appName}</h1>
-        <p style="margin:4px 0 0;color:#adc8e8;font-size:13px;">IT Support Ticket System</p>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="60" valign="middle">
+              <img src="{$logoUrl}" alt="Logo" width="45" height="45" style="display:block;border-radius:4px;">
+            </td>
+            <td valign="middle">
+              <h1 style="margin:0;color:#fff;font-size:20px;">{$appName}</h1>
+              <p style="margin:4px 0 0;color:#adc8e8;font-size:13px;">IT Support Ticket System</p>
+            </td>
+          </tr>
+        </table>
       </td></tr>
       <tr><td style="padding:30px;">
         {$content}
