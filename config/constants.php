@@ -35,7 +35,7 @@ define('LOGIN_MAX_FAILURES', 5);
 define('LOGIN_LOCKOUT_SECS', 300); // 5 minutes
 
 // Ticket
-define('TICKET_PREFIX', 'APL');
+define('TICKET_PREFIX', 'AKC');
 
 // Roles
 define('ROLE_ADMIN', 'admin');

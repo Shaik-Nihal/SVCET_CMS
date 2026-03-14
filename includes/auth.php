@@ -35,7 +35,10 @@ function renderFlash(): void {
     $flash = getFlash();
     if (!$flash) return;
     $type  = htmlspecialchars($flash['type'], ENT_QUOTES, 'UTF-8');
-    $msg   = htmlspecialchars($flash['message'], ENT_QUOTES, 'UTF-8');
+    
+    // Allow basic formatting tags while stripping potentially harmful ones (like <script>)
+    $msg   = strip_tags($flash['message'], '<strong><b><i><em><u><br><p><span><a>');
+    
     $map   = ['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'info' => 'info'];
     $cls   = $map[$flash['type']] ?? 'secondary';
     echo "<div class=\"alert alert-{$cls} alert-dismissible fade show\" role=\"alert\">"
