@@ -42,7 +42,7 @@
 | **Email Notifications** | SMTP (PHPMailer) or Microsoft Graph API |
 | **PDF/CSV Reports** | ICT Head can generate date-ranged reports (FPDF or browser print) |
 | **Real-Time Notifications** | AJAX polling (every 30s) for in-app notifications |
-| **Multi-Domain Support** | `@apollouniversity.edu.in` and `@aimsr.in` email domains |
+| **Multi-Domain Support** | `@apollouniversity.edu.in` and `@aimsrchittoor.edu.in` email domains |
 | **Security** | CSRF protection, bcrypt passwords, DB-backed brute-force lockout, HTTP security headers, CSP, session timeouts, password history |
 
 ---
@@ -350,7 +350,7 @@ Key settings you may want to customize:
 | `APP_URL` | `http://localhost/TMS` | Base URL (no trailing slash) |
 | `APP_NAME` | `Apollo University IT Support` | Displayed in navbar & emails |
 | `APP_TIMEZONE` | `Asia/Kolkata` | PHP timezone for all date/time ops |
-| `EMAIL_DOMAINS` | `['apollouniversity.edu.in', 'aimsr.in']` | Allowed registration email domains |
+| `EMAIL_DOMAINS` | `['apollouniversity.edu.in', 'aimsrchittoor.edu.in']` | Allowed registration email domains |
 | `SESSION_IDLE_TIMEOUT` | `1800` (30 min) | Session idle timeout in seconds |
 | `SESSION_ABS_TIMEOUT` | `28800` (8 hrs) | Absolute session lifetime |
 | `OTP_EXPIRY_MINUTES` | `15` | OTP expiry for password reset |
@@ -493,7 +493,7 @@ System Admin (admin role in it_staff table)
 ### Domain-Based Assignment Rules
 
 - **`@apollouniversity.edu.in` tickets:** ICT Head, Asst Manager, Asst ICT, or Sr IT Executive can assign.
-- **`@aimsr.in` tickets:** **Only** the Assistant Manager can assign.
+- **`@aimsrchittoor.edu.in` tickets:** **Only** the Assistant Manager can assign.
 
 ### Ticket Status Transitions (Forward Only)
 

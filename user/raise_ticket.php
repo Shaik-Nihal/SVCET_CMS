@@ -48,8 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           if ($staffRow) {
             if ($isAimsrUser) {
               // AIMSR users can raise only to Assistant Manager (Mr Ashok Kumar)
-              if (!($staffRow['role'] === ROLE_ASST_MANAGER && strtolower($staffRow['email']) === 'ashok.kumar@apollouniversity.edu.in')) {
-                $errors[] = 'For @aimsr.in accounts, tickets can only be raised to Mr Ashok Kumar (Assistant Manager).';
+              if (!($staffRow['role'] === ROLE_ASST_MANAGER && strtolower($staffRow['email']) === 'assistantmanager_it@aimsrchittoor.edu.in')) {
+                // For @aimsrchittoor.edu.in accounts, MUST be to Asst Manager
+                $errors[] = 'For @aimsrchittoor.edu.in accounts, tickets can only be raised to M Ashok Kumar (Assistant Manager).';
               }
             } else {
               // Apollo users can raise to leadership triad
@@ -92,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $categories = $pdo->query("SELECT * FROM problem_categories WHERE is_active = 1 ORDER BY id")->fetchAll();
 if ($isAimsrUser) {
   $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role = ? AND email = ? ORDER BY name");
-  $stmt->execute([ROLE_ASST_MANAGER, 'ashok.kumar@apollouniversity.edu.in']);
+  $stmt->execute([ROLE_ASST_MANAGER, 'assistantmanager_it@aimsrchittoor.edu.in']);
   $staffList = $stmt->fetchAll();
 } else {
   $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role IN (?, ?, ?) ORDER BY role, name");
@@ -205,9 +206,9 @@ $unreadCount = (int)$stmt->fetchColumn();
       </div>
       <div class="card-body">
         <?php if ($isAimsrUser): ?>
-        <div class="alert alert-info py-2" style="font-size:.85rem;">
+        <div class="alert alert-info mt-4" style="font-size:0.85rem;">
           <i class="bi bi-info-circle me-1"></i>
-          For <strong>@aimsr.in</strong> accounts, tickets can be raised only to <strong>Mr Ashok Kumar (Assistant Manager)</strong>.
+          For <strong>@aimsrchittoor.edu.in</strong> accounts, tickets can be raised only to <strong>M Ashok Kumar (Assistant Manager)</strong>.
         </div>
         <?php endif; ?>
         <div class="row g-2" id="staff-list">

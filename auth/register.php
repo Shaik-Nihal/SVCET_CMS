@@ -133,7 +133,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
                                placeholder="yourname@apollouniversity.edu.in" required id="emailField" data-domains="<?= h(json_encode(EMAIL_DOMAINS)) ?>">
                         <span class="input-group-text" id="emailCheck"></span>
                     </div>
-                    <small class="text-muted">Must be an @apollouniversity.edu.in or @aimsr.in email</small>
+                    <small class="text-muted">Must be an @apollouniversity.edu.in or @aimsrchittoor.edu.in email</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Phone Number</label>

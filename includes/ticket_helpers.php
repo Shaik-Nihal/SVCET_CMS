@@ -49,8 +49,8 @@ function canAssignTo(string $actorRole, string $targetRole): bool {
 
 /**
  * Domain-aware assignment check.
- * For @aimsr.in tickets, ONLY the Assistant Manager can assign.
- * ICT Head and Assistant ICT can view but NOT assign @aimsr.in tickets.
+ * For @aimsrchittoor.edu.in tickets, ONLY the Assistant Manager can assign.
+ * ICT Head and Assistant ICT can view but NOT assign @aimsrchittoor.edu.in tickets.
  */
 function canAssignForTicket(string $actorRole, string $targetRole, string $userEmail): bool {
     // Check if user is from AIMSR domain

@@ -18,9 +18,9 @@ define('APP_TIMEZONE', 'Asia/Kolkata');
 // Keep all PHP date/time operations in one timezone for consistent "x min ago" values.
 date_default_timezone_set(APP_TIMEZONE);
 
-define('EMAIL_DOMAINS', ['apollouniversity.edu.in', 'aimsr.in']); // Allowed registration domains
+define('EMAIL_DOMAINS', ['apollouniversity.edu.in', 'aimsrchittoor.edu.in']); // Allowed registration domains
 define('EMAIL_DOMAIN', 'apollouniversity.edu.in'); // Primary domain (kept for backward compat)
-define('AIMSR_DOMAIN', 'aimsr.in'); // AIMSR domain - only Assistant Manager can assign
+define('AIMSR_DOMAIN', 'aimsrchittoor.edu.in'); // AIMSR domain - only Assistant Manager can assign
 
 // Session
 define('SESSION_IDLE_TIMEOUT', 1800); // 30 minutes idle

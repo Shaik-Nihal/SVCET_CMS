@@ -21,7 +21,7 @@ $userEmail = (string)($stmt->fetchColumn() ?: '');
 
 if (str_ends_with(strtolower($userEmail), '@' . AIMSR_DOMAIN)) {
     $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role = ? AND email = ? ORDER BY name");
-    $stmt->execute([ROLE_ASST_MANAGER, 'ashok.kumar@apollouniversity.edu.in']);
+    $stmt->execute([ROLE_ASST_MANAGER, 'assistantmanager_it@aimsrchittoor.edu.in']);
     $staff = $stmt->fetchAll();
 } else {
     $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role IN (?, ?, ?) ORDER BY role, name");

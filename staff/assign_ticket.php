@@ -49,7 +49,7 @@ if ($ticket['status'] === 'solved') {
     exit;
 }
 
-// Domain-based access check: @aimsr.in tickets can only be assigned by Assistant Manager
+// Domain-based access check: @aimsrchittoor.edu.in tickets can only be assigned by Assistant Manager
 if (!canAssignForDomain($role, $ticket['user_email'] ?? '')) {
     setFlash('error', 'You do not have permission to assign tickets from this domain.');
     header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
