@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $pdo->commit();
                     setFlash('success', 'Account created successfully! Please log in.');
-                    header('Location: ' . APP_URL . '/auth/login.php');
+                    header('Location: ' . APP_URL . '/auth/login');
                     exit;
                 } catch (Throwable $e) {
                     $pdo->rollBack();
@@ -114,7 +114,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
         </div>
         <?php endif; ?>
 
-        <form method="POST" action="register.php">
+        <form method="POST" action="register">
             <?= csrfField() ?>
 
             <div class="row g-3">
@@ -183,7 +183,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
 
         <div class="text-center mt-3">
             <small class="text-muted">Already have an account?
-                <a href="login.php" class="text-primary fw-semibold">Sign in</a>
+                <a href="login" class="text-primary fw-semibold">Sign in</a>
             </small>
         </div>
     </div>

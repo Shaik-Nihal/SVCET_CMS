@@ -10,13 +10,13 @@ require_once __DIR__ . '/../includes/notification_helpers.php';
 requireRole([ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC]);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
 if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
     setFlash('error', 'Invalid request.');
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
@@ -40,19 +40,19 @@ $ticket = $stmt->fetch();
 
 if (!$ticket) {
     setFlash('error', 'Ticket not found or not assigned to you.');
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 if ($ticket['status'] === 'solved') {
     setFlash('error', 'Cannot reassign a solved ticket.');
-    header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
+    header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
     exit;
 }
 
 // Domain-based access check: @aimsr.in tickets can only be assigned by Assistant Manager
 if (!canAssignForDomain($role, $ticket['user_email'] ?? '')) {
     setFlash('error', 'You do not have permission to assign tickets from this domain.');
-    header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
+    header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
     exit;
 }
 
@@ -63,14 +63,14 @@ $assignee = $stmt->fetch();
 
 if (!$assignee) {
     setFlash('error', 'Invalid staff selection.');
-    header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
+    header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
     exit;
 }
 
 // Permission check (role hierarchy + domain)
 if (!canAssignForTicket($role, $assignee['role'], $ticket['user_email'] ?? '')) {
     setFlash('error', 'You do not have permission to assign to this role.');
-    header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
+    header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
     exit;
 }
 
@@ -106,7 +106,7 @@ try {
 
     // If Sr IT Executive assigned to Assistant IT, ticket may no longer be visible on detail page.
     if ($role === ROLE_SR_IT_EXEC && $assignedTo !== $staffId) {
-        header('Location: ' . APP_URL . '/staff/tickets.php');
+        header('Location: ' . APP_URL . '/staff/tickets');
         exit;
     }
 } catch (Throwable $e) {
@@ -114,5 +114,5 @@ try {
     setFlash('error', 'Assignment failed. Please try again.');
 }
 
-header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
+header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
 exit;

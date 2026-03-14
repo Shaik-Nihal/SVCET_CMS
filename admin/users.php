@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user_id'], $_P
   } else {
     setFlash('error', 'Invalid request.');
   }
-  header('Location: ' . APP_URL . '/admin/users.php');
+  header('Location: ' . APP_URL . '/admin/users');
   exit;
 }
 
@@ -59,7 +59,7 @@ $users = $pdo->query("SELECT id, name, email, phone, email_verified, created_at 
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i>System Admin</span>
-      <a href="<?= APP_URL ?>/auth/logout.php" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+      <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
     </div>
   </div>
 </nav>
@@ -68,9 +68,9 @@ $users = $pdo->query("SELECT id, name, email, phone, email_verified, created_at 
 <div class="admin-sidebar" id="adminSidebar">
   <div class="p-3 text-uppercase text-secondary small fw-bold mt-2">Core System</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/admin/dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/admin/staff.php"><i class="bi bi-person-badge"></i> IT Staff Management</a>
-    <a class="nav-link active" href="<?= APP_URL ?>/admin/users.php"><i class="bi bi-people"></i> User Management</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/staff"><i class="bi bi-person-badge"></i> IT Staff Management</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/admin/users"><i class="bi bi-people"></i> User Management</a>
   </nav>
 </div>
 
@@ -112,10 +112,10 @@ $users = $pdo->query("SELECT id, name, email, phone, email_verified, created_at 
               <?php endif; ?>
             </td>
             <td class="text-end">
-              <a href="<?= APP_URL ?>/admin/user_detail.php?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-secondary" title="View Profile & Tickets">
+              <a href="<?= APP_URL ?>/admin/user_detail?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-secondary" title="View Profile & Tickets">
                 <i class="bi bi-person-lines-fill"></i> View
               </a>
-              <a href="<?= APP_URL ?>/admin/reset_password.php?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-primary" title="Force Password Reset">
+              <a href="<?= APP_URL ?>/admin/reset_password?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-primary" title="Force Password Reset">
                 <i class="bi bi-key"></i> Reset Password
               </a>
               <form method="post" class="d-inline" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this user AND ALL THEIR TICKETS?');">

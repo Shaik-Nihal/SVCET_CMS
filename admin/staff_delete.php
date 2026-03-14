@@ -7,13 +7,13 @@ require_once __DIR__ . '/../includes/functions.php';
 requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . APP_URL . '/admin/staff.php');
+    header('Location: ' . APP_URL . '/admin/staff');
     exit;
 }
 
 if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
     setFlash('error', 'Invalid request token.');
-    header('Location: ' . APP_URL . '/admin/staff.php');
+    header('Location: ' . APP_URL . '/admin/staff');
     exit;
 }
 
@@ -38,5 +38,5 @@ try {
     setFlash('error', 'Failed to delete staff member: ' . $e->getMessage());
 }
 
-header('Location: ' . APP_URL . '/admin/staff.php');
+header('Location: ' . APP_URL . '/admin/staff');
 exit;

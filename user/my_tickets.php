@@ -71,19 +71,19 @@ $unreadCount = (int)$stmt->fetchColumn();
 
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard.php"><i class="bi bi-house me-1"></i>Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket.php"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
-        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/my_tickets.php"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard"><i class="bi bi-house me-1"></i>Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
+        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/my_tickets"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-2">
-          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications.php">
+          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications">
             <i class="bi bi-bell-fill" style="font-size:1.1rem;color:#fff;"></i>
             <span class="notif-badge badge rounded-pill bg-danger <?= $unreadCount ? '' : 'd-none' ?>" id="notif-badge"><?= $unreadCount ?: '' ?></span>
           </a>
@@ -91,9 +91,9 @@ $unreadCount = (int)$stmt->fetchColumn();
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['user_name']) ?></a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile.php"><i class="bi bi-person me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile"><i class="bi bi-person me-2"></i>My Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
           </ul>
         </li>
       </ul>
@@ -105,7 +105,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <div class="container-fluid px-4 py-3">
   <div class="page-title-bar">
     <h4><i class="bi bi-ticket-perforated me-2"></i>My Tickets <span class="badge bg-secondary ms-2"><?= $total ?></span></h4>
-    <a href="<?= APP_URL ?>/user/raise_ticket.php" class="btn btn-sm btn-apollo"><i class="bi bi-plus me-1"></i>New Ticket</a>
+    <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-sm btn-apollo"><i class="bi bi-plus me-1"></i>New Ticket</a>
   </div>
 
   <?php renderFlash(); ?>
@@ -113,7 +113,7 @@ $unreadCount = (int)$stmt->fetchColumn();
   <!-- Filter Bar -->
   <div class="card mb-3">
     <div class="card-body py-2">
-      <form method="GET" action="my_tickets.php" class="row g-2 align-items-center">
+      <form method="GET" action="my_tickets" class="row g-2 align-items-center">
         <div class="col-auto">
           <label class="col-form-label small fw-semibold">Status:</label>
         </div>
@@ -144,9 +144,9 @@ $unreadCount = (int)$stmt->fetchColumn();
         <i class="bi bi-inbox"></i>
         <p><?= $filterStatus || $filterSearch ? 'No tickets match your filter.' : 'You have not raised any tickets yet.' ?></p>
         <?php if (!$filterStatus && !$filterSearch): ?>
-        <a href="<?= APP_URL ?>/user/raise_ticket.php" class="btn btn-apollo">Raise Your First Ticket</a>
+        <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-apollo">Raise Your First Ticket</a>
         <?php else: ?>
-        <a href="my_tickets.php" class="btn btn-outline-secondary btn-sm">Clear Filter</a>
+        <a href="my_tickets" class="btn btn-outline-secondary btn-sm">Clear Filter</a>
         <?php endif; ?>
       </div>
       <?php else: ?>
@@ -186,7 +186,7 @@ $unreadCount = (int)$stmt->fetchColumn();
               <td>
                 <span class="badge <?= statusBadge($t['status']) ?>"><i class="bi <?= statusIcon($t['status']) ?> me-1"></i><?= statusLabel($t['status']) ?></span>
                 <?php if ($t['status'] === 'solved' && !$t['has_feedback']): ?>
-                <br><a href="<?= APP_URL ?>/user/feedback.php?ticket_id=<?= $t['id'] ?>" class="badge bg-warning text-dark mt-1 text-decoration-none">
+                <br><a href="<?= APP_URL ?>/user/feedback?ticket_id=<?= $t['id'] ?>" class="badge bg-warning text-dark mt-1 text-decoration-none">
                   <i class="bi bi-star me-1"></i>Rate
                 </a>
                 <?php endif; ?>
@@ -194,7 +194,7 @@ $unreadCount = (int)$stmt->fetchColumn();
               <td class="text-muted small"><?= formatDate($t['created_at'], 'd M Y') ?><br><span style="font-size:.7rem;"><?= timeAgo($t['created_at']) ?></span></td>
               <td class="small"><?= resolutionTime($t['created_at'], $t['solved_at']) ?></td>
               <td>
-                <a href="<?= APP_URL ?>/user/ticket_detail.php?id=<?= $t['id'] ?>"
+                <a href="<?= APP_URL ?>/user/ticket_detail?id=<?= $t['id'] ?>"
                    class="btn btn-sm btn-outline-secondary">
                   <i class="bi bi-eye me-1"></i>View
                 </a>

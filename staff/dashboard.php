@@ -114,11 +114,11 @@ if ($role === ROLE_ICT_HEAD) {
 <nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
-    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard.php">
+    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard">
       <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?>
     </a>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications.php">
+      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications">
         <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
         <span class="badge rounded-pill bg-danger position-absolute <?= $unreadCount ? '' : 'd-none' ?>"
               id="notif-badge" style="top:-6px;right:-8px;font-size:.6rem;"><?= $unreadCount ?: '' ?></span>
@@ -130,9 +130,9 @@ if ($role === ROLE_ICT_HEAD) {
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><h6 class="dropdown-header"><?= roleBadge($role) ?></h6></li>
-          <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
       </div>
     </div>
@@ -149,22 +149,22 @@ if ($role === ROLE_ICT_HEAD) {
   </div>
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/dashboard.php"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets.php"><i class="bi bi-ticket-perforated"></i>Tickets
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets
       <?php if (!empty($stats['open_count']) && $stats['open_count'] > 0): ?>
       <span class="badge bg-warning text-dark ms-auto"><?= (int)$stats['open_count'] ?></span>
       <?php endif; ?>
     </a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications.php"><i class="bi bi-bell"></i>Notifications
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications
       <?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?>
     </a>
     <?php if ($role === ROLE_ICT_HEAD): ?>
     <div class="sidebar-section">Management</div>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/reports.php"><i class="bi bi-bar-chart-line"></i>Reports</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/profile.php"><i class="bi bi-person-gear"></i>My Profile</a>
-    <a class="nav-link text-danger-emphasis" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right"></i>Logout</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>My Profile</a>
+    <a class="nav-link text-danger-emphasis" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
   </nav>
 </div>
 
@@ -225,7 +225,7 @@ if ($role === ROLE_ICT_HEAD) {
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <span><i class="bi bi-clock-history me-2"></i>Recent Tickets</span>
-      <a href="<?= APP_URL ?>/staff/tickets.php" class="btn btn-sm btn-apollo">View All</a>
+      <a href="<?= APP_URL ?>/staff/tickets" class="btn btn-sm btn-apollo">View All</a>
     </div>
     <div class="card-body p-0">
       <?php if (empty($recentTickets)): ?>
@@ -246,7 +246,7 @@ if ($role === ROLE_ICT_HEAD) {
               <td><span class="badge <?= priorityBadge($t['priority']) ?>"><?= ucfirst(h($t['priority'])) ?></span></td>
               <td><span class="badge <?= statusBadge($t['status']) ?>"><?= statusLabel($t['status']) ?></span></td>
               <td class="text-muted small"><?= formatDate($t['created_at'], 'd M Y') ?></td>
-              <td><a href="<?= APP_URL ?>/staff/ticket_detail.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-outline-secondary">View</a></td>
+              <td><a href="<?= APP_URL ?>/staff/ticket_detail?id=<?= $t['id'] ?>" class="btn btn-sm btn-outline-secondary">View</a></td>
             </tr>
             <?php endforeach; ?>
           </tbody>

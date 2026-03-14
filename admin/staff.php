@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_staff_id'], $_
     } else {
         setFlash('error', 'Invalid request.');
     }
-    header('Location: ' . APP_URL . '/admin/staff.php');
+    header('Location: ' . APP_URL . '/admin/staff');
     exit;
 }
 
@@ -47,7 +47,7 @@ $staff = $pdo->query("SELECT * FROM it_staff ORDER BY role, name")->fetchAll();
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i>System Admin</span>
-      <a href="<?= APP_URL ?>/auth/logout.php" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+      <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
     </div>
   </div>
 </nav>
@@ -56,9 +56,9 @@ $staff = $pdo->query("SELECT * FROM it_staff ORDER BY role, name")->fetchAll();
 <div class="admin-sidebar" id="adminSidebar">
   <div class="p-3 text-uppercase text-secondary small fw-bold mt-2">Core System</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/admin/dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a class="nav-link active" href="<?= APP_URL ?>/admin/staff.php"><i class="bi bi-person-badge"></i> IT Staff Management</a>
-    <a class="nav-link" href="<?= APP_URL ?>/admin/users.php"><i class="bi bi-people"></i> User Management</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/admin/staff"><i class="bi bi-person-badge"></i> IT Staff Management</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/users"><i class="bi bi-people"></i> User Management</a>
   </nav>
 </div>
 
@@ -66,7 +66,7 @@ $staff = $pdo->query("SELECT * FROM it_staff ORDER BY role, name")->fetchAll();
 <div class="admin-main">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h4 class="mb-0 fw-bold">IT Staff Directory</h4>
-    <a href="<?= APP_URL ?>/admin/staff_form.php" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-1"></i> Add New Staff</a>
+    <a href="<?= APP_URL ?>/admin/staff_form" class="btn btn-primary shadow-sm"><i class="bi bi-plus-lg me-1"></i> Add New Staff</a>
   </div>
 
   <?php renderFlash(); ?>
@@ -103,10 +103,10 @@ $staff = $pdo->query("SELECT * FROM it_staff ORDER BY role, name")->fetchAll();
               <?php endif; ?>
             </td>
             <td class="text-end">
-              <a href="<?= APP_URL ?>/admin/staff_detail.php?staff_id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Performance & Tickets">
+              <a href="<?= APP_URL ?>/admin/staff_detail?staff_id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Performance & Tickets">
                 <i class="bi bi-graph-up"></i>
               </a>
-              <a href="<?= APP_URL ?>/admin/staff_form.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary" title="Edit">
+              <a href="<?= APP_URL ?>/admin/staff_form?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary" title="Edit">
                 <i class="bi bi-pencil-square"></i>
               </a>
 
@@ -120,7 +120,7 @@ $staff = $pdo->query("SELECT * FROM it_staff ORDER BY role, name")->fetchAll();
                 <?php endif; ?>
               </form>
 
-              <form method="post" action="staff_delete.php" class="d-inline" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this staff member? This will reassign their tickets to unassigned / system admin.');">
+              <form method="post" action="staff_delete" class="d-inline" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this staff member? This will reassign their tickets to unassigned / system admin.');">
                 <input type="hidden" name="csrf_token" value="<?= h(generateCSRFToken()) ?>">
                 <input type="hidden" name="staff_id" value="<?= $s['id'] ?>">
                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>

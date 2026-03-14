@@ -127,4 +127,4 @@ echo "⚠ DELETE THIS FILE (admin_seed/seed.php) IMMEDIATELY!\n";
 echo "</pre>";
 
 echo '<hr><p style="color:red;font-weight:bold;font-size:16px;">⚠ SECURITY: Delete admin_seed/seed.php after use!</p>';
-echo '<p><a href="' . APP_URL . '/auth/login.php">→ Go to Login Page</a></p>';
+echo '<p><a href="' . APP_URL . '/auth/login">→ Go to Login Page</a></p>';

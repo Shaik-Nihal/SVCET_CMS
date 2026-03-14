@@ -86,12 +86,12 @@ $unreadCount = (int)$stmt->fetchColumn();
 <nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
-    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <div class="ms-auto">
       <div class="dropdown">
         <a class="text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i></a>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
       </div>
     </div>
@@ -102,13 +102,13 @@ $unreadCount = (int)$stmt->fetchColumn();
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard.php"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets.php"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications.php"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if ($role === ROLE_ICT_HEAD): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports.php"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <?php if ($role === ROLE_ICT_HEAD): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
     <div class="sidebar-section">Account</div>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/profile.php"><i class="bi bi-person-gear"></i>Profile</a>
-    <a class="nav-link" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right"></i>Logout</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
+    <a class="nav-link" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
   </nav>
 </div>
 

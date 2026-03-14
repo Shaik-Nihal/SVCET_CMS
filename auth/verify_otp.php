@@ -12,7 +12,7 @@ redirectIfLoggedIn();
 
 // Guard: must have gone through forgot_password.php
 if (empty($_SESSION['pwd_reset_user_id'])) {
-    header('Location: ' . APP_URL . '/auth/forgot_password.php');
+    header('Location: ' . APP_URL . '/auth/forgot_password');
     exit;
 }
 
@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             unset($_SESSION['pwd_reset_user_id'], $_SESSION['pwd_reset_user_type'],
                   $_SESSION['pwd_reset_email'], $_SESSION['otp_attempts']);
             setFlash('error', 'Too many incorrect OTP attempts. Please start again.');
-            header('Location: ' . APP_URL . '/auth/forgot_password.php');
+            header('Location: ' . APP_URL . '/auth/forgot_password');
             exit;
         }
 
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare("UPDATE password_reset_tokens SET used_at = NOW() WHERE id = ?")->execute([$row['id']]);
             $_SESSION['otp_verified'] = true;
             unset($_SESSION['otp_attempts']);
-            header('Location: ' . APP_URL . '/auth/reset_password.php');
+            header('Location: ' . APP_URL . '/auth/reset_password');
             exit;
         } else {
             $_SESSION['otp_attempts'] = ($_SESSION['otp_attempts'] ?? 0) + 1;
@@ -88,7 +88,7 @@ if (!empty($_SESSION['pwd_reset_email'])) {
         <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i><?= h($error) ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="verify_otp.php">
+        <form method="POST" action="verify_otp">
             <?= csrfField() ?>
             <div class="mb-3 text-center">
                 <label class="form-label fw-semibold d-block">Enter OTP</label>
@@ -104,7 +104,7 @@ if (!empty($_SESSION['pwd_reset_email'])) {
             </button>
         </form>
         <div class="text-center mt-3">
-            <small><a href="forgot_password.php" class="text-primary">Resend OTP / Use different email</a></small>
+            <small><a href="forgot_password" class="text-primary">Resend OTP / Use different email</a></small>
         </div>
     </div>
 </div>

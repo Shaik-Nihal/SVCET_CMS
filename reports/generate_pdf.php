@@ -196,7 +196,7 @@ if ($useFPDF) {
 <body>
 <div class="no-print" style="margin-bottom:15px;">
     <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
-    <a href="<?= APP_URL ?>/staff/reports.php" style="margin-left:10px;font-size:13px;">Back to Reports</a>
+    <a href="<?= APP_URL ?>/staff/reports" style="margin-left:10px;font-size:13px;">Back to Reports</a>
 </div>
 
 <h1>Apollo University — IT Support Ticket Report</h1>

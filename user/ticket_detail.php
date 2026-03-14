@@ -30,7 +30,7 @@ if ($ticketId) {
 }
 if (!$ticket) {
     setFlash('error', 'Ticket not found.');
-    header('Location: ' . APP_URL . '/user/my_tickets.php');
+    header('Location: ' . APP_URL . '/user/my_tickets');
     exit;
 }
 
@@ -92,19 +92,19 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
 
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard.php"><i class="bi bi-house me-1"></i>Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket.php"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
-        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/my_tickets.php"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard"><i class="bi bi-house me-1"></i>Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
+        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/my_tickets"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-2">
-          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications.php">
+          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications">
             <i class="bi bi-bell-fill" style="font-size:1.1rem;color:#fff;"></i>
             <span class="notif-badge badge rounded-pill bg-danger <?= $unreadCount ? '' : 'd-none' ?>" id="notif-badge"><?= $unreadCount ?: '' ?></span>
           </a>
@@ -112,9 +112,9 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['user_name']) ?></a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile.php"><i class="bi bi-person me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile"><i class="bi bi-person me-2"></i>My Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
           </ul>
         </li>
       </ul>
@@ -126,7 +126,7 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
 <div class="container-fluid px-4 py-3">
   <div class="page-title-bar">
     <h4>
-      <a href="<?= APP_URL ?>/user/my_tickets.php" class="text-decoration-none text-muted me-2"><i class="bi bi-arrow-left"></i></a>
+      <a href="<?= APP_URL ?>/user/my_tickets" class="text-decoration-none text-muted me-2"><i class="bi bi-arrow-left"></i></a>
       Ticket: <span class="ticket-number"><?= h($ticket['ticket_number']) ?></span>
     </h4>
     <span class="badge <?= statusBadge($ticket['status']) ?> fs-6"><?= statusLabel($ticket['status']) ?></span>
@@ -140,7 +140,7 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
     <i class="bi bi-star-fill fs-4"></i>
     <div>
       <strong>Your issue has been resolved!</strong> Please share your feedback to help us improve.
-      <a href="<?= APP_URL ?>/user/feedback.php?ticket_id=<?= $ticketId ?>" class="btn btn-sm btn-warning ms-3">
+      <a href="<?= APP_URL ?>/user/feedback?ticket_id=<?= $ticketId ?>" class="btn btn-sm btn-warning ms-3">
         <i class="bi bi-star me-1"></i>Submit Feedback
       </a>
     </div>

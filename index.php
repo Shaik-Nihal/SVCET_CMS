@@ -7,14 +7,14 @@ startSecureSession();
 if (!empty($_SESSION['user_type'])) {
     if ($_SESSION['user_type'] === 'staff') {
         if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
-            header('Location: ' . APP_URL . '/admin/dashboard.php');
+            header('Location: ' . APP_URL . '/admin/dashboard');
         } else {
-            header('Location: ' . APP_URL . '/staff/dashboard.php');
+            header('Location: ' . APP_URL . '/staff/dashboard');
         }
     } else {
-        header('Location: ' . APP_URL . '/user/dashboard.php');
+        header('Location: ' . APP_URL . '/user/dashboard');
     }
 } else {
-    header('Location: ' . APP_URL . '/auth/login.php');
+    header('Location: ' . APP_URL . '/auth/login');
 }
 exit;

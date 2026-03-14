@@ -10,13 +10,13 @@ require_once __DIR__ . '/../includes/notification_helpers.php';
 requireRole([ROLE_SR_IT_EXEC, ROLE_ASST_IT]);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
 if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
     setFlash('error', 'Invalid request.');
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
@@ -29,7 +29,7 @@ $notes     = trim($_POST['notes'] ?? '');
 $validStatuses = [STATUS_PROCESSING, STATUS_SOLVING, STATUS_SOLVED];
 if (!$ticketId || !in_array($newStatus, $validStatuses)) {
     setFlash('error', 'Invalid request.');
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
@@ -40,7 +40,7 @@ $ticket = $stmt->fetch();
 
 if (!$ticket) {
     setFlash('error', 'Ticket not found or not assigned to you.');
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
@@ -59,5 +59,5 @@ if ($updated) {
     setFlash('error', 'Status update failed. Invalid transition or ticket not found.');
 }
 
-header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
+header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
 exit;

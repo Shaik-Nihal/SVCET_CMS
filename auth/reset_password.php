@@ -12,7 +12,7 @@ redirectIfLoggedIn();
 
 // Guard
 if (empty($_SESSION['otp_verified']) || empty($_SESSION['pwd_reset_user_id'])) {
-    header('Location: ' . APP_URL . '/auth/forgot_password.php');
+    header('Location: ' . APP_URL . '/auth/forgot_password');
     exit;
 }
 
@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                           $_SESSION['pwd_reset_user_type'], $_SESSION['pwd_reset_email']);
 
                     setFlash('success', 'Password changed successfully! Please log in with your new password.');
-                    header('Location: ' . APP_URL . '/auth/login.php');
+                    header('Location: ' . APP_URL . '/auth/login');
                     exit;
                 } catch (Throwable $e) {
                     $pdo->rollBack();
@@ -115,7 +115,7 @@ $csrf = generateCSRFToken();
             Cannot match your last <?= PASSWORD_HISTORY_DEPTH ?> passwords.
         </div>
 
-        <form method="POST" action="reset_password.php">
+        <form method="POST" action="reset_password">
             <?= csrfField() ?>
             <div class="mb-3">
                 <label class="form-label fw-semibold">New Password</label>

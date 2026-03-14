@@ -49,9 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Admin role goes to admin dashboard, all others to staff dashboard
                 if ($row['role'] === ROLE_ADMIN) {
-                    header('Location: ' . APP_URL . '/admin/dashboard.php');
+                    header('Location: ' . APP_URL . '/admin/dashboard');
                 } else {
-                    header('Location: ' . APP_URL . '/staff/dashboard.php');
+                    header('Location: ' . APP_URL . '/staff/dashboard');
                 }
                 exit;
             } else {
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['user_type']      = 'user';
                 $_SESSION['last_activity']  = time();
                 $_SESSION['session_created']= time();
-                header('Location: ' . APP_URL . '/user/dashboard.php');
+                header('Location: ' . APP_URL . '/user/dashboard');
                 exit;
             } else {
                 recordLoginFailureDB($email);
@@ -133,7 +133,7 @@ $activeTab = $_POST['login_as'] ?? 'user';
             </li>
         </ul>
 
-        <form method="POST" action="login.php" id="loginForm">
+        <form method="POST" action="login" id="loginForm">
             <?= csrfField() ?>
             <input type="hidden" name="login_as" id="login_as_field" value="<?= $activeTab === 'staff' ? 'staff' : 'user' ?>">
 
@@ -165,7 +165,7 @@ $activeTab = $_POST['login_as'] ?? 'user';
                     <input class="form-check-input" type="checkbox" id="rememberMe">
                     <label class="form-check-label small" for="rememberMe">Remember me</label>
                 </div>
-                <a href="forgot_password.php" class="small text-primary">Forgot Password?</a>
+                <a href="forgot_password" class="small text-primary">Forgot Password?</a>
             </div>
 
             <button type="submit" class="btn-login">
@@ -175,7 +175,7 @@ $activeTab = $_POST['login_as'] ?? 'user';
 
         <div id="user-register-link" class="text-center mt-3 <?= $activeTab === 'staff' ? 'd-none' : '' ?>">
             <small class="text-muted">Don't have an account?
-                <a href="register.php" class="text-primary fw-semibold">Register here</a>
+                <a href="register" class="text-primary fw-semibold">Register here</a>
             </small>
         </div>
     </div>

@@ -78,13 +78,13 @@ function checkSessionExpiry(): void {
     // Idle timeout
     if (isset($_SESSION['last_activity']) && ($now - $_SESSION['last_activity']) > SESSION_IDLE_TIMEOUT) {
         destroySession();
-        header('Location: ' . APP_URL . '/auth/login.php?timeout=1');
+        header('Location: ' . APP_URL . '/auth/login?timeout=1');
         exit;
     }
     // Absolute timeout
     if (isset($_SESSION['session_created']) && ($now - $_SESSION['session_created']) > SESSION_ABS_TIMEOUT) {
         destroySession();
-        header('Location: ' . APP_URL . '/auth/login.php?timeout=1');
+        header('Location: ' . APP_URL . '/auth/login?timeout=1');
         exit;
     }
     $_SESSION['last_activity'] = $now;
@@ -109,7 +109,7 @@ function requireLogin(): void {
     checkSessionExpiry();
     if (empty($_SESSION['user_type'])) {
         setFlash('warning', 'Please log in to continue.');
-        header('Location: ' . APP_URL . '/auth/login.php');
+        header('Location: ' . APP_URL . '/auth/login');
         exit;
     }
 }
@@ -121,9 +121,9 @@ function requireUser(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'user') {
         if ($_SESSION['user_type'] === 'staff' && ($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
-            header('Location: ' . APP_URL . '/admin/dashboard.php');
+            header('Location: ' . APP_URL . '/admin/dashboard');
         } elseif ($_SESSION['user_type'] === 'staff') {
-            header('Location: ' . APP_URL . '/staff/dashboard.php');
+            header('Location: ' . APP_URL . '/staff/dashboard');
         }
         exit;
     }
@@ -135,12 +135,12 @@ function requireUser(): void {
 function requireStaff(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'staff') {
-        header('Location: ' . APP_URL . '/user/dashboard.php');
+        header('Location: ' . APP_URL . '/user/dashboard');
         exit;
     }
     // Admin is a staff member but shouldn't access regular staff pages — redirect to admin
     if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
-        header('Location: ' . APP_URL . '/admin/dashboard.php');
+        header('Location: ' . APP_URL . '/admin/dashboard');
         exit;
     }
 }
@@ -154,7 +154,7 @@ function requireRole($roles): void {
     $roles = (array) $roles;
     if (!in_array($_SESSION['staff_role'], $roles, true)) {
         setFlash('error', 'You do not have permission to access that page.');
-        header('Location: ' . APP_URL . '/staff/dashboard.php');
+        header('Location: ' . APP_URL . '/staff/dashboard');
         exit;
     }
 }
@@ -166,7 +166,7 @@ function requireAdmin(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'staff' || ($_SESSION['staff_role'] ?? '') !== ROLE_ADMIN) {
         setFlash('error', 'Admin access required.');
-        header('Location: ' . APP_URL . '/auth/login.php');
+        header('Location: ' . APP_URL . '/auth/login');
         exit;
     }
 }
@@ -177,12 +177,12 @@ function redirectIfLoggedIn(): void {
     if (!empty($_SESSION['user_type'])) {
         if ($_SESSION['user_type'] === 'staff') {
             if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
-                header('Location: ' . APP_URL . '/admin/dashboard.php');
+                header('Location: ' . APP_URL . '/admin/dashboard');
             } else {
-                header('Location: ' . APP_URL . '/staff/dashboard.php');
+                header('Location: ' . APP_URL . '/staff/dashboard');
             }
         } else {
-            header('Location: ' . APP_URL . '/user/dashboard.php');
+            header('Location: ' . APP_URL . '/user/dashboard');
         }
         exit;
     }

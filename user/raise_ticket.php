@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 notifyAllLeadership($ticketId, $ticketNumber, $_SESSION['user_name'], $cat['name']);
 
                 setFlash('success', "Ticket <strong>{$ticketNumber}</strong> raised successfully! You will be notified of updates.");
-                header('Location: ' . APP_URL . '/user/ticket_detail.php?id=' . $ticketId);
+                header('Location: ' . APP_URL . '/user/ticket_detail?id=' . $ticketId);
                 exit;
             } catch (Throwable $e) {
                 $errors[] = 'Failed to raise ticket. Please try again.';
@@ -122,19 +122,19 @@ $unreadCount = (int)$stmt->fetchColumn();
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard.php"><i class="bi bi-house me-1"></i>Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/raise_ticket.php"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/my_tickets.php"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard"><i class="bi bi-house me-1"></i>Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/raise_ticket"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/my_tickets"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-2">
-          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications.php">
+          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications">
             <i class="bi bi-bell-fill" style="font-size:1.1rem;color:#fff;"></i>
             <span class="notif-badge badge rounded-pill bg-danger <?= $unreadCount ? '' : 'd-none' ?>" id="notif-badge"><?= $unreadCount ?: '' ?></span>
           </a>
@@ -142,9 +142,9 @@ $unreadCount = (int)$stmt->fetchColumn();
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['user_name']) ?></a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile.php"><i class="bi bi-person me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile"><i class="bi bi-person me-2"></i>My Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
           </ul>
         </li>
       </ul>
@@ -156,7 +156,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <div class="container-fluid px-4 py-3">
   <div class="page-title-bar">
     <h4><i class="bi bi-plus-circle me-2"></i>Raise a New Support Ticket</h4>
-    <a href="<?= APP_URL ?>/user/my_tickets.php" class="btn btn-sm btn-outline-secondary"><i class="bi bi-list me-1"></i>My Tickets</a>
+    <a href="<?= APP_URL ?>/user/my_tickets" class="btn btn-sm btn-outline-secondary"><i class="bi bi-list me-1"></i>My Tickets</a>
   </div>
 
   <?php if ($errors): ?>
@@ -166,7 +166,7 @@ $unreadCount = (int)$stmt->fetchColumn();
   </div>
   <?php endif; ?>
 
-  <form method="POST" id="raise-ticket-form" action="raise_ticket.php">
+  <form method="POST" id="raise-ticket-form" action="raise_ticket">
     <?= csrfField() ?>
     <input type="hidden" id="category_id" name="category_id" value="<?= h($_POST['category_id'] ?? '') ?>">
     <input type="hidden" id="assigned_to" name="assigned_to" value="<?= h($_POST['assigned_to'] ?? '') ?>">
@@ -257,7 +257,7 @@ $unreadCount = (int)$stmt->fetchColumn();
     </div>
 
     <div class="text-end">
-      <a href="<?= APP_URL ?>/user/dashboard.php" class="btn btn-outline-secondary me-2">Cancel</a>
+      <a href="<?= APP_URL ?>/user/dashboard" class="btn btn-outline-secondary me-2">Cancel</a>
       <button type="submit" class="btn btn-apollo px-4">
         <i class="bi bi-send me-2"></i>Submit Ticket
       </button>

@@ -57,7 +57,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard.php">
+    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard">
       <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -65,13 +65,13 @@ $unreadCount = (int)$stmt->fetchColumn();
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/dashboard.php"><i class="bi bi-house me-1"></i>Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket.php"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/my_tickets.php"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
+        <li class="nav-item"><a class="nav-link active" href="<?= APP_URL ?>/user/dashboard"><i class="bi bi-house me-1"></i>Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/my_tickets"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-2">
-          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications.php">
+          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications">
             <i class="bi bi-bell-fill" style="font-size:1.1rem;color:#fff;"></i>
             <span class="notif-badge badge rounded-pill bg-danger <?= $unreadCount ? '' : 'd-none' ?>" id="notif-badge"><?= $unreadCount ?: '' ?></span>
           </a>
@@ -81,9 +81,9 @@ $unreadCount = (int)$stmt->fetchColumn();
             <i class="bi bi-person-circle me-1"></i><?= h($name) ?>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile.php"><i class="bi bi-person me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile"><i class="bi bi-person me-2"></i>My Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
           </ul>
         </li>
       </ul>
@@ -101,7 +101,7 @@ $unreadCount = (int)$stmt->fetchColumn();
       <h5>Welcome back, <?= h(explode(' ', $name)[0]) ?>! 👋</h5>
       <p>Today is <?= date('l, d F Y') ?> · Apollo University IT Support Portal</p>
     </div>
-    <a href="<?= APP_URL ?>/user/raise_ticket.php" class="btn btn-outline-light btn-sm">
+    <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-outline-light btn-sm">
       <i class="bi bi-plus-circle me-1"></i>Raise a Ticket
     </a>
   </div>
@@ -152,14 +152,14 @@ $unreadCount = (int)$stmt->fetchColumn();
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <span><i class="bi bi-clock-history me-2"></i>Recent Tickets</span>
-          <a href="<?= APP_URL ?>/user/my_tickets.php" class="btn btn-sm btn-apollo">View All</a>
+          <a href="<?= APP_URL ?>/user/my_tickets" class="btn btn-sm btn-apollo">View All</a>
         </div>
         <div class="card-body p-0">
           <?php if (empty($recentTickets)): ?>
           <div class="empty-state py-4">
             <i class="bi bi-inbox d-block"></i>
             <p class="mb-2">No tickets raised yet.</p>
-            <a href="<?= APP_URL ?>/user/raise_ticket.php" class="btn btn-sm btn-apollo">Raise First Ticket</a>
+            <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-sm btn-apollo">Raise First Ticket</a>
           </div>
           <?php else: ?>
           <div class="table-responsive">
@@ -182,7 +182,7 @@ $unreadCount = (int)$stmt->fetchColumn();
                   <td><span class="badge <?= priorityBadge($t['priority']) ?>"><?= ucfirst(h($t['priority'])) ?></span></td>
                   <td><span class="badge <?= statusBadge($t['status']) ?>"><?= statusLabel($t['status']) ?></span></td>
                   <td class="text-muted small"><?= formatDate($t['created_at'], 'd M Y') ?></td>
-                  <td><a href="<?= APP_URL ?>/user/ticket_detail.php?id=<?= $t['id'] ?>" class="btn btn-sm btn-outline-secondary">View</a></td>
+                  <td><a href="<?= APP_URL ?>/user/ticket_detail?id=<?= $t['id'] ?>" class="btn btn-sm btn-outline-secondary">View</a></td>
                 </tr>
                 <?php endforeach; ?>
               </tbody>
@@ -199,13 +199,13 @@ $unreadCount = (int)$stmt->fetchColumn();
         <div class="card-header"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</div>
         <div class="card-body">
           <div class="d-grid gap-2">
-            <a href="<?= APP_URL ?>/user/raise_ticket.php" class="btn btn-apollo">
+            <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-apollo">
               <i class="bi bi-plus-circle me-2"></i>Raise New Ticket
             </a>
-            <a href="<?= APP_URL ?>/user/my_tickets.php" class="btn btn-outline-secondary">
+            <a href="<?= APP_URL ?>/user/my_tickets" class="btn btn-outline-secondary">
               <i class="bi bi-list-ul me-2"></i>Track My Tickets
             </a>
-            <a href="<?= APP_URL ?>/user/notifications.php" class="btn btn-outline-secondary">
+            <a href="<?= APP_URL ?>/user/notifications" class="btn btn-outline-secondary">
               <i class="bi bi-bell me-2"></i>View Notifications
               <?php if ($unreadCount): ?><span class="badge bg-danger ms-1"><?= $unreadCount ?></span><?php endif; ?>
             </a>

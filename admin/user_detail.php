@@ -15,7 +15,7 @@ $user = $stmt->fetch();
 
 if (!$user) {
     setFlash('error', 'User not found.');
-    header('Location: ' . APP_URL . '/admin/users.php');
+    header('Location: ' . APP_URL . '/admin/users');
     exit;
 }
 
@@ -81,7 +81,7 @@ $tickets = $ticketsStmt->fetchAll();
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i>System Admin</span>
-      <a href="<?= APP_URL ?>/auth/logout.php" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+      <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
     </div>
   </div>
 </nav>
@@ -90,9 +90,9 @@ $tickets = $ticketsStmt->fetchAll();
 <div class="admin-sidebar" id="adminSidebar">
   <div class="p-3 text-uppercase text-secondary small fw-bold mt-2">Core System</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/admin/dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/admin/staff.php"><i class="bi bi-person-badge"></i> IT Staff Management</a>
-    <a class="nav-link active" href="<?= APP_URL ?>/admin/users.php"><i class="bi bi-people"></i> User Management</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/staff"><i class="bi bi-person-badge"></i> IT Staff Management</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/admin/users"><i class="bi bi-people"></i> User Management</a>
   </nav>
 </div>
 
@@ -100,14 +100,14 @@ $tickets = $ticketsStmt->fetchAll();
 <div class="admin-main">
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div class="d-flex align-items-center">
-      <a href="<?= APP_URL ?>/admin/users.php" class="btn btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i> Back</a>
+      <a href="<?= APP_URL ?>/admin/users" class="btn btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i> Back</a>
       <div>
         <h4 class="mb-0 fw-bold">User Profile</h4>
         <div class="text-muted">Registered <?= formatDate($user['created_at']) ?></div>
       </div>
     </div>
     <div>
-      <a href="<?= APP_URL ?>/admin/reset_password.php?user_id=<?= $user['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-key"></i> Reset Password</a>
+      <a href="<?= APP_URL ?>/admin/reset_password?user_id=<?= $user['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="bi bi-key"></i> Reset Password</a>
     </div>
   </div>
 

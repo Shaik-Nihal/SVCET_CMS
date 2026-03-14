@@ -102,19 +102,19 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
 
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
     </button>
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard.php"><i class="bi bi-house me-1"></i>Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket.php"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/my_tickets.php"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/dashboard"><i class="bi bi-house me-1"></i>Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/raise_ticket"><i class="bi bi-plus-circle me-1"></i>Raise Ticket</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= APP_URL ?>/user/my_tickets"><i class="bi bi-ticket-perforated me-1"></i>My Tickets</a></li>
       </ul>
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-2">
-          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications.php">
+          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications">
             <i class="bi bi-bell-fill" style="font-size:1.1rem;color:#fff;"></i>
             <span class="notif-badge badge rounded-pill bg-danger <?= $unreadCount ? '' : 'd-none' ?>" id="notif-badge"><?= $unreadCount ?: '' ?></span>
           </a>
@@ -122,9 +122,9 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle active" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['user_name']) ?></a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile.php"><i class="bi bi-person me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="<?= APP_URL ?>/user/profile"><i class="bi bi-person me-2"></i>My Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
           </ul>
         </li>
       </ul>
@@ -149,7 +149,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
           <?php if ($profileErrors): ?>
           <div class="alert alert-danger"><?php foreach ($profileErrors as $e): ?><div><?= h($e) ?></div><?php endforeach; ?></div>
           <?php endif; ?>
-          <form method="POST" action="profile.php">
+          <form method="POST" action="profile">
             <?= csrfField() ?>
             <input type="hidden" name="update_profile" value="1">
             <div class="mb-3">
@@ -191,7 +191,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
           <?php if ($pwdErrors): ?>
           <div class="alert alert-danger"><?php foreach ($pwdErrors as $e): ?><div><?= h($e) ?></div><?php endforeach; ?></div>
           <?php endif; ?>
-          <form method="POST" action="profile.php">
+          <form method="POST" action="profile">
             <?= csrfField() ?>
             <input type="hidden" name="change_password" value="1">
             <div class="mb-3">

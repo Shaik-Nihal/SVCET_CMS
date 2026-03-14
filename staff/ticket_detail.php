@@ -13,7 +13,7 @@ $role     = currentRole();
 $ticketId = (int)($_GET['id'] ?? 0);
 
 if (!$ticketId) {
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
@@ -56,7 +56,7 @@ $ticket = $stmt->fetch();
 
 if (!$ticket) {
     setFlash('error', 'Ticket not found or you do not have access.');
-    header('Location: ' . APP_URL . '/staff/tickets.php');
+    header('Location: ' . APP_URL . '/staff/tickets');
     exit;
 }
 
@@ -161,9 +161,9 @@ if (!empty($ticket['user_email'])) {
 <nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
-    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications.php">
+      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications">
         <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
         <span class="badge rounded-pill bg-danger position-absolute <?= $unreadCount ? '' : 'd-none' ?>"
               id="notif-badge" style="top:-6px;right:-8px;font-size:.6rem;"><?= $unreadCount ?: '' ?></span>
@@ -171,9 +171,9 @@ if (!empty($ticket['user_email'])) {
       <div class="dropdown">
         <a class="text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i></a>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
       </div>
     </div>
@@ -184,20 +184,20 @@ if (!empty($ticket['user_email'])) {
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard.php"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets.php"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications.php"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if ($role === ROLE_ICT_HEAD): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports.php"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <?php if ($role === ROLE_ICT_HEAD): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
     <div class="sidebar-section">Account</div>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/profile.php"><i class="bi bi-person-gear"></i>Profile</a>
-    <a class="nav-link" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right"></i>Logout</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
+    <a class="nav-link" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
   </nav>
 </div>
 
 <div class="main-content">
   <div class="page-title-bar">
     <h4>
-      <a href="<?= APP_URL ?>/staff/tickets.php" class="text-decoration-none text-muted me-2"><i class="bi bi-arrow-left"></i></a>
+      <a href="<?= APP_URL ?>/staff/tickets" class="text-decoration-none text-muted me-2"><i class="bi bi-arrow-left"></i></a>
       Ticket: <span class="ticket-number"><?= h($ticket['ticket_number']) ?></span>
     </h4>
     <span class="badge <?= statusBadge($ticket['status']) ?> fs-6"><?= statusLabel($ticket['status']) ?></span>
@@ -259,7 +259,7 @@ if (!empty($ticket['user_email'])) {
             Move ticket from <span class="badge <?= statusBadge($ticket['status']) ?>"><?= statusLabel($ticket['status']) ?></span>
             to <span class="badge <?= statusBadge($nextStatus) ?>"><?= statusLabel($nextStatus) ?></span>
           </p>
-          <form method="POST" action="<?= APP_URL ?>/staff/update_status.php">
+          <form method="POST" action="<?= APP_URL ?>/staff/update_status">
             <?= csrfField() ?>
             <input type="hidden" name="ticket_id" value="<?= $ticketId ?>">
             <input type="hidden" name="new_status" value="<?= h($nextStatus) ?>">
@@ -289,7 +289,7 @@ if (!empty($ticket['user_email'])) {
       <div class="card mb-3 border-warning">
         <div class="card-header bg-warning text-dark"><i class="bi bi-person-fill-gear me-2"></i>Assign / Re-assign Ticket</div>
         <div class="card-body">
-          <form method="POST" action="<?= APP_URL ?>/staff/assign_ticket.php">
+          <form method="POST" action="<?= APP_URL ?>/staff/assign_ticket">
             <?= csrfField() ?>
             <input type="hidden" name="ticket_id" value="<?= $ticketId ?>">
             <div class="mb-3">

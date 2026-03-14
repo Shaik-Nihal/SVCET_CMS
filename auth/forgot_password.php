@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['otp_attempts']        = 0;
 
                 $success = "An OTP has been sent to <strong>" . h($email) . "</strong>. Please check your inbox.";
-                header('Refresh: 2; url=' . APP_URL . '/auth/verify_otp.php');
+                header('Refresh: 2; url=' . APP_URL . '/auth/verify_otp');
             } else {
                 // Don't reveal if email exists — generic message
                 $success = "If this email is registered, an OTP has been sent.";
@@ -108,7 +108,7 @@ $csrf = generateCSRFToken();
         <div class="alert alert-success"><i class="bi bi-check-circle me-2"></i><?= $success ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="forgot_password.php">
+        <form method="POST" action="forgot_password">
             <?= csrfField() ?>
             <div class="mb-3">
                 <label class="form-label fw-semibold">Registered Email Address</label>
@@ -124,7 +124,7 @@ $csrf = generateCSRFToken();
             </button>
         </form>
         <div class="text-center mt-3">
-            <a href="login.php" class="small text-primary"><i class="bi bi-arrow-left me-1"></i>Back to Login</a>
+            <a href="login" class="small text-primary"><i class="bi bi-arrow-left me-1"></i>Back to Login</a>
         </div>
     </div>
 </div>

@@ -108,18 +108,18 @@ $periodLabel = ($reportType === 'monthly')
 <nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
-    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications.php">
+      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications">
         <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
         <span class="badge rounded-pill bg-danger position-absolute <?= $unreadCount ? '' : 'd-none' ?>" id="notif-badge" style="top:-6px;right:-8px;font-size:.6rem;"><?= $unreadCount ?: '' ?></span>
       </a>
       <div class="dropdown">
         <a class="text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i></a>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
         </ul>
       </div>
     </div>
@@ -130,13 +130,13 @@ $periodLabel = ($reportType === 'monthly')
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard.php"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets.php"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications.php"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/reports.php"><i class="bi bi-bar-chart-line-fill"></i>Reports</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line-fill"></i>Reports</a>
     <div class="sidebar-section">Account</div>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/profile.php"><i class="bi bi-person-gear"></i>Profile</a>
-    <a class="nav-link" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right"></i>Logout</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
+    <a class="nav-link" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
   </nav>
 </div>
 
@@ -144,10 +144,10 @@ $periodLabel = ($reportType === 'monthly')
   <div class="page-title-bar">
     <h4><i class="bi bi-bar-chart-line me-2"></i>Reports & Analytics</h4>
     <div>
-      <a href="<?= APP_URL ?>/reports/generate_csv.php?from=<?= h($dateFrom) ?>&to=<?= h($dateTo) ?>" class="btn btn-sm btn-success me-1">
+      <a href="<?= APP_URL ?>/reports/generate_csv?from=<?= h($dateFrom) ?>&to=<?= h($dateTo) ?>" class="btn btn-sm btn-success me-1">
         <i class="bi bi-filetype-csv me-1"></i>Download CSV
       </a>
-      <a href="<?= APP_URL ?>/reports/generate_pdf.php?from=<?= h($dateFrom) ?>&to=<?= h($dateTo) ?>" class="btn btn-sm btn-danger">
+      <a href="<?= APP_URL ?>/reports/generate_pdf?from=<?= h($dateFrom) ?>&to=<?= h($dateTo) ?>" class="btn btn-sm btn-danger">
         <i class="bi bi-filetype-pdf me-1"></i>Download PDF
       </a>
     </div>

@@ -25,7 +25,7 @@ $ticket = $stmt->fetch();
 
 if (!$ticket) {
     setFlash('error', 'Ticket not found or not yet solved.');
-    header('Location: ' . APP_URL . '/user/my_tickets.php');
+    header('Location: ' . APP_URL . '/user/my_tickets');
     exit;
 }
 
@@ -34,7 +34,7 @@ $stmt = $pdo->prepare("SELECT id FROM feedback WHERE ticket_id = ?");
 $stmt->execute([$ticketId]);
 if ($stmt->fetch()) {
     setFlash('info', 'You have already submitted feedback for this ticket.');
-    header('Location: ' . APP_URL . '/user/ticket_detail.php?id=' . $ticketId);
+    header('Location: ' . APP_URL . '/user/ticket_detail?id=' . $ticketId);
     exit;
 }
 
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare("INSERT INTO feedback (ticket_id, user_id, rating, comment) VALUES (?,?,?,?)")
                 ->execute([$ticketId, $userId, $rating, $comment ?: null]);
             setFlash('success', 'Thank you for your feedback!');
-            header('Location: ' . APP_URL . '/user/ticket_detail.php?id=' . $ticketId);
+            header('Location: ' . APP_URL . '/user/ticket_detail?id=' . $ticketId);
             exit;
         }
     }
@@ -77,11 +77,11 @@ $unreadCount = (int)$stmt->fetchColumn();
 
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard.php"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item me-2">
-          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications.php">
+          <a class="nav-link notif-bell position-relative" href="<?= APP_URL ?>/user/notifications">
             <i class="bi bi-bell-fill" style="font-size:1.1rem;color:#fff;"></i>
             <span class="notif-badge badge rounded-pill bg-danger <?= $unreadCount ? '' : 'd-none' ?>" id="notif-badge"><?= $unreadCount ?: '' ?></span>
           </a>
@@ -89,7 +89,7 @@ $unreadCount = (int)$stmt->fetchColumn();
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['user_name']) ?></a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+            <li><a class="dropdown-item text-danger" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
           </ul>
         </li>
       </ul>
@@ -100,7 +100,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 
 <div class="container" style="max-width:600px;">
   <div class="py-4">
-    <a href="<?= APP_URL ?>/user/ticket_detail.php?id=<?= $ticketId ?>" class="btn btn-sm btn-outline-secondary mb-3">
+    <a href="<?= APP_URL ?>/user/ticket_detail?id=<?= $ticketId ?>" class="btn btn-sm btn-outline-secondary mb-3">
       <i class="bi bi-arrow-left me-1"></i>Back to Ticket
     </a>
 
@@ -129,7 +129,7 @@ $unreadCount = (int)$stmt->fetchColumn();
       <div class="card-body">
         <p class="text-muted mb-4" style="font-size:.9rem;">Your feedback helps us improve our IT support service. How was your experience?</p>
 
-        <form method="POST" action="feedback.php?ticket_id=<?= $ticketId ?>">
+        <form method="POST" action="feedback?ticket_id=<?= $ticketId ?>">
           <?= csrfField() ?>
 
           <div class="mb-4 text-center">
