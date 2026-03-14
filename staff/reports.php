@@ -44,7 +44,7 @@ $stmt = $pdo->prepare("
     FROM it_staff s
     LEFT JOIN tickets t ON t.assigned_to = s.id
         AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    WHERE s.is_active = 1
+    WHERE s.is_active = 1 AND s.role != 'admin'
     GROUP BY s.id
     ORDER BY solved_count DESC
 ");

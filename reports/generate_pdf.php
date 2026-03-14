@@ -32,7 +32,7 @@ $stmt = $pdo->prepare("
            ROUND(AVG(CASE WHEN t.solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) END),1) AS avg_hours
     FROM it_staff s
     LEFT JOIN tickets t ON t.assigned_to = s.id AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    WHERE s.is_active = 1 GROUP BY s.id ORDER BY solved_count DESC
+    WHERE s.is_active = 1 AND s.role != 'admin' GROUP BY s.id ORDER BY solved_count DESC
 ");
 $stmt->execute([$dateFrom, $dateTo]);
 $staffPerf = $stmt->fetchAll();
