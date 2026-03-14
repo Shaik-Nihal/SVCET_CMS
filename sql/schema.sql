@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     email          VARCHAR(150) NOT NULL UNIQUE,
     password_hash  VARCHAR(255) NOT NULL,
     phone          VARCHAR(15),
+    designation    VARCHAR(100),
     department     VARCHAR(100),
     roll_no        VARCHAR(30),
     email_verified TINYINT(1) DEFAULT 0,
