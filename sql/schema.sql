@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 CREATE TABLE IF NOT EXISTS ticket_assignments (
     id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     ticket_id   INT UNSIGNED NOT NULL,
-    assigned_by INT UNSIGNED NOT NULL,
+    assigned_by INT UNSIGNED NULL,
     assigned_to INT UNSIGNED NOT NULL,
     notes       TEXT,
     assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,

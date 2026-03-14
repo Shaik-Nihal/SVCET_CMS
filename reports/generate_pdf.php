@@ -7,7 +7,13 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-requireRole(ROLE_ICT_HEAD);
+requireLogin();
+if ($_SESSION['user_type'] !== 'staff' || ($_SESSION['staff_role'] !== ROLE_ICT_HEAD && $_SESSION['staff_role'] !== ROLE_ADMIN)) {
+    setFlash('error', 'Unauthorized access.');
+    $redir = ($_SESSION['staff_role'] ?? '') === ROLE_ADMIN ? '/admin/dashboard' : '/staff/dashboard';
+    header('Location: ' . APP_URL . $redir);
+    exit;
+}
 
 $pdo      = getDB();
 $dateFrom = $_GET['from'] ?? date('Y-m-d', strtotime('-7 days'));
