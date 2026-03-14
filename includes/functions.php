@@ -140,6 +140,16 @@ function resolutionTime(?string $createdAt, ?string $solvedAt): string {
 }
 
 /**
+ * Format a duration in minutes to a compact human string.
+ */
+function formatMinutes(int|float|null $minutes): string {
+    if ($minutes === null) return '—';
+    if ($minutes < 60) return round($minutes) . ' min';
+    if ($minutes < 1440) return round($minutes / 60, 1) . ' hr';
+    return round($minutes / 1440, 1) . ' days';
+}
+
+/**
  * Pagination helper - returns array of pagination data.
  */
 function paginate(int $totalRows, int $perPage = 15, string $pageParam = 'page'): array {

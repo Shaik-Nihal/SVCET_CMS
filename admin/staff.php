@@ -103,6 +103,9 @@ $staff = $pdo->query("SELECT * FROM it_staff ORDER BY role, name")->fetchAll();
               <?php endif; ?>
             </td>
             <td class="text-end">
+              <a href="<?= APP_URL ?>/admin/staff_detail.php?staff_id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-secondary" title="Performance & Tickets">
+                <i class="bi bi-graph-up"></i>
+              </a>
               <a href="<?= APP_URL ?>/admin/staff_form.php?id=<?= $s['id'] ?>" class="btn btn-sm btn-outline-primary" title="Edit">
                 <i class="bi bi-pencil-square"></i>
               </a>

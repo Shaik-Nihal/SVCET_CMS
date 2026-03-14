@@ -10,31 +10,32 @@ $pdo = getDB();
 
 // Handle deletion
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user_id'], $_POST['csrf_token'])) {
-    if (validateCSRFToken($_POST['csrf_token'])) {
-        $userId = (int)$_POST['delete_user_id'];
+  if (validateCSRFToken($_POST['csrf_token'])) {
+    $userId = (int)$_POST['delete_user_id'];
         
-        try {
-            $pdo->beginTransaction();
-            // Delete associated tickets/history first if necessary
-            $pdo->prepare("DELETE FROM ticket_history WHERE ticket_id IN (SELECT id FROM tickets WHERE user_id = ?)")->execute([$userId]);
-            $pdo->prepare("DELETE FROM tickets WHERE user_id = ?")->execute([$userId]);
-            $pdo->prepare("DELETE FROM password_history WHERE user_id = ? AND user_type = 'user'")->execute([$userId]);
-            $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$userId]);
-            $pdo->commit();
-            setFlash('success', 'User and all associated tickets deleted.');
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            setFlash('error', 'Error deleting user: ' . $e->getMessage());
-        }
-    } else {
-        setFlash('error', 'Invalid request.');
+    try {
+      $pdo->beginTransaction();
+
+      // Clean up notifications and password history; tickets cascade via FK
+      $pdo->prepare("DELETE FROM notifications WHERE recipient_id = ? AND recipient_type = 'user'")->execute([$userId]);
+      $pdo->prepare("DELETE FROM password_history WHERE user_id = ? AND user_type = 'user'")->execute([$userId]);
+      $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$userId]);
+
+      $pdo->commit();
+      setFlash('success', 'User and associated data deleted.');
+    } catch (Exception $e) {
+      $pdo->rollBack();
+      setFlash('error', 'Error deleting user: ' . $e->getMessage());
     }
-    header('Location: ' . APP_URL . '/admin/users.php');
-    exit;
+  } else {
+    setFlash('error', 'Invalid request.');
+  }
+  header('Location: ' . APP_URL . '/admin/users.php');
+  exit;
 }
 
 // Fetch users
-$users = $pdo->query("SELECT id, name, email, contact, is_active, created_at FROM users ORDER BY created_at DESC")->fetchAll();
+$users = $pdo->query("SELECT id, name, email, phone, email_verified, created_at FROM users ORDER BY created_at DESC")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -88,9 +89,9 @@ $users = $pdo->query("SELECT id, name, email, contact, is_active, created_at FRO
           <tr>
             <th>Name</th>
             <th>Email</th>
-            <th>Contact</th>
+            <th>Phone</th>
             <th>Registered On</th>
-            <th>Status</th>
+            <th>Verification</th>
             <th class="text-end">Actions</th>
           </tr>
         </thead>
@@ -101,16 +102,19 @@ $users = $pdo->query("SELECT id, name, email, contact, is_active, created_at FRO
               <div class="fw-bold text-dark"><?= h($u['name']) ?></div>
             </td>
             <td><?= h($u['email']) ?></td>
-            <td><?= h($u['contact'] ?? 'N/A') ?></td>
+            <td><?= h($u['phone'] ?? 'N/A') ?></td>
             <td><span class="text-muted small"><?= formatDate($u['created_at']) ?></span></td>
             <td>
-              <?php if ($u['is_active']): ?>
-                <span class="badge bg-success rounded-pill px-3">Active</span>
+              <?php if ($u['email_verified']): ?>
+                <span class="badge bg-success rounded-pill px-3">Verified</span>
               <?php else: ?>
-                <span class="badge bg-secondary rounded-pill px-3">Inactive</span>
+                <span class="badge bg-secondary rounded-pill px-3">Unverified</span>
               <?php endif; ?>
             </td>
             <td class="text-end">
+              <a href="<?= APP_URL ?>/admin/user_detail.php?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-secondary" title="View Profile & Tickets">
+                <i class="bi bi-person-lines-fill"></i> View
+              </a>
               <a href="<?= APP_URL ?>/admin/reset_password.php?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-primary" title="Force Password Reset">
                 <i class="bi bi-key"></i> Reset Password
               </a>

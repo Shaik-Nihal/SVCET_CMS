@@ -41,7 +41,7 @@
 
 .admin-main {
     margin-left: 250px;
-    padding: 1.5rem;
+    padding: calc(56px + 1.5rem) 1.5rem 1.5rem;
     min-height: calc(100vh - 56px);
     background: #f8fafc;
 }
@@ -115,5 +115,6 @@
     }
     .admin-main {
         margin-left: 0;
+        padding: calc(56px + 1rem) 1rem 1.25rem;
     }
 }
