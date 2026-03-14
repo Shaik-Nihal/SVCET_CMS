@@ -7,7 +7,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/constants.php';
 
 /**
- * Generate a unique ticket number: APL-YYYYMMDD-XXXX
+ * Generate a unique ticket number: AKC-YYYYMMDD-XXXX
  * Called within a transaction for safety.
  */
 function generateTicketNumber(): string {
@@ -105,8 +105,8 @@ function createTicket(array $data): int {
         // Initial assignment record
         $pdo->prepare("
             INSERT INTO ticket_assignments (ticket_id, assigned_by, assigned_to, notes)
-            VALUES (?, ?, ?, 'Ticket raised by user')
-        ")->execute([$ticketId, $data['user_id'], $data['assigned_to']]);
+            VALUES (?, NULL, ?, 'Ticket raised by user')
+        ")->execute([$ticketId, $data['assigned_to']]);
 
         // Initial status history
         $pdo->prepare("
