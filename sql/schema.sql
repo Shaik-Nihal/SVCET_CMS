@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS it_staff (
     name           VARCHAR(100) NOT NULL,
     email          VARCHAR(150) NOT NULL UNIQUE,
     password_hash  VARCHAR(255) NOT NULL,
-    role           ENUM('ict_head','assistant_manager','assistant_ict','sr_it_executive','assistant_it') NOT NULL,
+    role           ENUM('admin','ict_head','assistant_manager','assistant_ict','sr_it_executive','assistant_it') NOT NULL,
     designation    VARCHAR(100),
     contact        VARCHAR(15),
     is_active      TINYINT(1) DEFAULT 1,
@@ -159,4 +159,16 @@ CREATE TABLE IF NOT EXISTS password_history (
     password_hash VARCHAR(255) NOT NULL,
     changed_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user (user_id, user_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ============================================================
+-- 11. login_attempts (DB-backed brute-force protection)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS login_attempts (
+    id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ip_address   VARCHAR(45) NOT NULL,
+    email        VARCHAR(150) NOT NULL,
+    attempted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ip_email (ip_address, email),
+    INDEX idx_attempted (attempted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

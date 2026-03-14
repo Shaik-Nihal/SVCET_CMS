@@ -1,11 +1,18 @@
 <?php
-// AJAX: Mark a notification as read
+// AJAX: Mark a notification as read (POST only — state mutation)
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 
 startSecureSession();
 header('Content-Type: application/json');
+
+// Only allow POST for state-mutating operations
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+}
 
 if (empty($_SESSION['user_type'])) {
     http_response_code(401);
@@ -14,7 +21,10 @@ if (empty($_SESSION['user_type'])) {
 }
 
 $pdo = getDB();
-$id  = (int)($_GET['id'] ?? 0);
+
+// Accept ID from POST body (JSON or form data)
+$input = json_decode(file_get_contents('php://input'), true);
+$id = (int)($input['id'] ?? $_POST['id'] ?? 0);
 
 if ($_SESSION['user_type'] === 'staff') {
     $recipientId   = currentStaffId();

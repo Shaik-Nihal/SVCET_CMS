@@ -49,6 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->fetch()) $errors[] = "Email is already registered by another staff member.";
 
         if (!$isEdit && !$pass) $errors[] = "Password is required for new staff.";
+        if ($pass && !isValidPassword($pass)) {
+            $errors[] = "Password must be at least 8 characters with uppercase, number, and special character.";
+        }
+        if ($staff['contact'] && !preg_match('/^[0-9]{10,15}$/', $staff['contact'])) {
+            $errors[] = "Contact number must be 10-15 digits.";
+        }
         
         if (empty($errors)) {
             if ($isEdit) {

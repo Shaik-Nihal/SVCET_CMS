@@ -1,0 +1,43 @@
+# ============================================================
+# Apollo TMS — Root .htaccess Security Rules
+# ============================================================
+
+# Disable directory listing
+Options -Indexes
+
+# Disable server signature
+ServerSignature Off
+
+# ── Block access to hidden files (.git, .env, .htaccess in subdirs) ──
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# ── Block access to sensitive file types ──
+<FilesMatch "\.(sql|md|log|env|bak|old|orig|save|swp|dist|example|ini|sh|bash)$">
+    Require all denied
+</FilesMatch>
+
+# ── Block access to config/includes/sql/vendor via direct URL ──
+# (These directories already have their own .htaccess, but defense in depth)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to .git directory
+    RewriteRule ^\.git(/.*)?$ - [F,L]
+
+    # Block direct access to admin_seed (extra protection)
+    # Uncomment AFTER seeding is done:
+    # RewriteRule ^admin_seed(/.*)?$ - [F,L]
+</IfModule>
+
+# ── Prevent Apache from serving PHP source if PHP fails ──
+<IfModule !mod_php.c>
+    <IfModule !mod_php7.c>
+        <IfModule !mod_php8.c>
+            <FilesMatch "\.php$">
+                Require all denied
+            </FilesMatch>
+        </IfModule>
+    </IfModule>
+</IfModule>

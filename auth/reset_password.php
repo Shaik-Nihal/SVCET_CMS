@@ -38,9 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 SELECT password_hash FROM password_history
                 WHERE user_id = ? AND user_type = ?
                 ORDER BY changed_at DESC
-                LIMIT " . PASSWORD_HISTORY_DEPTH
-            );
-            $stmt->execute([$userId, $userType]);
+                LIMIT ?
+            ");
+            $stmt->bindValue(1, $userId, PDO::PARAM_INT);
+            $stmt->bindValue(2, $userType, PDO::PARAM_STR);
+            $stmt->bindValue(3, PASSWORD_HISTORY_DEPTH, PDO::PARAM_INT);
+            $stmt->execute();
             $history = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
             $reused = false;

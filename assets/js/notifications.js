@@ -65,8 +65,13 @@
         if (!item) return;
         const id = item.dataset.id;
         if (id) {
-            fetch(document.querySelector('meta[name="app-url"]')?.content + '/api/mark_notification_read.php?id=' + id, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            fetch(document.querySelector('meta[name="app-url"]')?.content + '/api/mark_notification_read.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ id: parseInt(id) })
             }).catch(() => {});
         }
     });

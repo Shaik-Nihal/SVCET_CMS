@@ -79,6 +79,7 @@ function priorityBadge(string $priority): string {
  */
 function roleLabel(string $role): string {
     $map = [
+        'admin'             => 'System Admin',
         'ict_head'          => 'ICT Head',
         'assistant_manager' => 'Assistant Manager',
         'assistant_ict'     => 'Assistant ICT',
@@ -244,6 +245,7 @@ function renderStars(int $rating): string {
  */
 function roleBadge(string $role): string {
     $colors = [
+        'admin'             => 'bg-dark',
         'ict_head'          => 'bg-danger',
         'assistant_manager' => 'bg-warning text-dark',
         'assistant_ict'     => 'bg-info text-dark',

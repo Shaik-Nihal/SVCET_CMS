@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pass = $_POST['new_password'] ?? '';
         $confirm = $_POST['confirm_password'] ?? '';
 
-        if (strlen($pass) < 8) {
-            $errors[] = "Password must be at least 8 characters.";
+        if (!isValidPassword($pass)) {
+            $errors[] = "Password must be at least 8 characters with uppercase, number, and special character.";
         }
         if ($pass !== $confirm) {
             $errors[] = "Passwords do not match.";
@@ -53,7 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             } catch (Exception $e) {
                 $pdo->rollBack();
-                $errors[] = "Database error: " . $e->getMessage();
+                error_log('Admin password reset error: ' . $e->getMessage());
+                $errors[] = "An error occurred. Please try again.";
             }
         }
     }

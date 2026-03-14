@@ -6,7 +6,11 @@ startSecureSession();
 // Redirect to appropriate dashboard if logged in, else to login
 if (!empty($_SESSION['user_type'])) {
     if ($_SESSION['user_type'] === 'staff') {
-        header('Location: ' . APP_URL . '/staff/dashboard.php');
+        if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
+            header('Location: ' . APP_URL . '/admin/dashboard.php');
+        } else {
+            header('Location: ' . APP_URL . '/staff/dashboard.php');
+        }
     } else {
         header('Location: ' . APP_URL . '/user/dashboard.php');
     }

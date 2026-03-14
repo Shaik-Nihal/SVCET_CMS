@@ -38,6 +38,7 @@ define('LOGIN_LOCKOUT_SECS', 300); // 5 minutes
 define('TICKET_PREFIX', 'APL');
 
 // Roles
+define('ROLE_ADMIN', 'admin');
 define('ROLE_ICT_HEAD', 'ict_head');
 define('ROLE_ASST_MANAGER', 'assistant_manager');
 define('ROLE_ASST_ICT', 'assistant_ict');
@@ -77,3 +78,10 @@ define('GRAPH_SENDER', getenv('GRAPH_SENDER') ?: MAIL_FROM); // mailbox UPN
 // ============================================================
 define('BASE_PATH', dirname(__DIR__)); // n:\TMS
 define('VENDOR_PATH', BASE_PATH . '/vendor');
+
+// ============================================================
+// Security Headers (auto-applied to every page)
+// ============================================================
+if (php_sapi_name() !== 'cli' && !headers_sent()) {
+    require_once BASE_PATH . '/includes/security_headers.php';
+}

@@ -13,49 +13,49 @@ redirectIfLoggedIn();
 $type  = $_GET['type'] ?? 'user';  // 'user' or 'staff'
 $error = '';
 
+// Periodically clean up old login attempts (lightweight, runs on page load)
+cleanupOldLoginAttempts();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid request. Please refresh and try again.';
-    } elseif (checkLoginLock()) {
-        $remaining = ceil(($_SESSION['login_locked_until'] - time()) / 60);
-        $error = "Too many failed attempts. Please wait {$remaining} minute(s) before trying again.";
     } else {
         $email    = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
         $loginAs  = $_POST['login_as'] ?? 'user';
         $pdo      = getDB();
 
-        if ($loginAs === 'staff') {
-            // Check for special Admin login
-            if ($email === 'tms@apollouniversity.edu.in' && $password === 'Apollo@2026!') {
-                session_regenerate_id(true);
-                resetLoginFailures();
-                $_SESSION['admin_id']       = 1;
-                $_SESSION['admin_name']     = 'System Admin';
-                $_SESSION['user_type']      = 'admin';
-                $_SESSION['last_activity']  = time();
-                $_SESSION['session_created']= time();
-                header('Location: ' . APP_URL . '/admin/dashboard.php');
-                exit;
-            }
-
+        // DB-backed brute force check
+        $lockRemaining = checkLoginLockDB($email);
+        if ($lockRemaining > 0) {
+            $remaining = (int) ceil($lockRemaining / 60);
+            $error = "Too many failed attempts. Please wait {$remaining} minute(s) before trying again.";
+        } elseif ($loginAs === 'staff') {
+            // All staff (including admin) authenticate from the it_staff table
             $stmt = $pdo->prepare("SELECT id, name, password_hash, role FROM it_staff WHERE email = ? AND is_active = 1 LIMIT 1");
             $stmt->execute([$email]);
             $row = $stmt->fetch();
 
             if ($row && password_verify($password, $row['password_hash'])) {
                 session_regenerate_id(true);
-                resetLoginFailures();
+                clearLoginFailuresDB($email);
+                rotateCSRFToken();
                 $_SESSION['staff_id']       = $row['id'];
                 $_SESSION['staff_name']     = $row['name'];
                 $_SESSION['staff_role']     = $row['role'];
                 $_SESSION['user_type']      = 'staff';
                 $_SESSION['last_activity']  = time();
                 $_SESSION['session_created']= time();
-                header('Location: ' . APP_URL . '/staff/dashboard.php');
+
+                // Admin role goes to admin dashboard, all others to staff dashboard
+                if ($row['role'] === ROLE_ADMIN) {
+                    header('Location: ' . APP_URL . '/admin/dashboard.php');
+                } else {
+                    header('Location: ' . APP_URL . '/staff/dashboard.php');
+                }
                 exit;
             } else {
-                recordLoginFailure();
+                recordLoginFailureDB($email);
                 $error = 'Invalid email or password.';
             }
         } else {
@@ -65,7 +65,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($row && password_verify($password, $row['password_hash'])) {
                 session_regenerate_id(true);
-                resetLoginFailures();
+                clearLoginFailuresDB($email);
+                rotateCSRFToken();
                 $_SESSION['user_id']        = $row['id'];
                 $_SESSION['user_name']      = $row['name'];
                 $_SESSION['user_type']      = 'user';
@@ -74,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: ' . APP_URL . '/user/dashboard.php');
                 exit;
             } else {
-                recordLoginFailure();
+                recordLoginFailureDB($email);
                 $error = 'Invalid email or password.';
             }
         }

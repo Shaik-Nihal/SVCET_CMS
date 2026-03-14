@@ -4,6 +4,7 @@
 // ============================================================
 
 require_once __DIR__ . '/../config/constants.php';
+require_once __DIR__ . '/../config/database.php';
 
 // ── Session Bootstrap ──────────────────────────────────────
 function startSecureSession(): void {
@@ -58,6 +59,15 @@ function validateCSRFToken(string $token): bool {
     return $stored !== '' && hash_equals($stored, $token);
 }
 
+/**
+ * Rotate CSRF token after successful form processing.
+ * Call this after a successful POST to prevent token reuse.
+ */
+function rotateCSRFToken(): void {
+    startSecureSession();
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 function csrfField(): string {
     return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(generateCSRFToken(), ENT_QUOTES, 'UTF-8') . '">';
 }
@@ -110,9 +120,9 @@ function requireLogin(): void {
 function requireUser(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'user') {
-        if ($_SESSION['user_type'] === 'admin') {
+        if ($_SESSION['user_type'] === 'staff' && ($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
             header('Location: ' . APP_URL . '/admin/dashboard.php');
-        } else {
+        } elseif ($_SESSION['user_type'] === 'staff') {
             header('Location: ' . APP_URL . '/staff/dashboard.php');
         }
         exit;
@@ -125,11 +135,12 @@ function requireUser(): void {
 function requireStaff(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'staff') {
-        if ($_SESSION['user_type'] === 'admin') {
-            header('Location: ' . APP_URL . '/admin/dashboard.php');
-        } else {
-            header('Location: ' . APP_URL . '/user/dashboard.php');
-        }
+        header('Location: ' . APP_URL . '/user/dashboard.php');
+        exit;
+    }
+    // Admin is a staff member but shouldn't access regular staff pages — redirect to admin
+    if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
+        header('Location: ' . APP_URL . '/admin/dashboard.php');
         exit;
     }
 }
@@ -149,47 +160,27 @@ function requireRole($roles): void {
 }
 
 /**
- * Require a logged-in admin.
+ * Require a logged-in admin (staff with admin role).
  */
 function requireAdmin(): void {
     requireLogin();
-    if ($_SESSION['user_type'] !== 'admin') {
+    if ($_SESSION['user_type'] !== 'staff' || ($_SESSION['staff_role'] ?? '') !== ROLE_ADMIN) {
         setFlash('error', 'Admin access required.');
         header('Location: ' . APP_URL . '/auth/login.php');
         exit;
     }
 }
 
-// ── Login Brute-Force ──────────────────────────────────────
-function checkLoginLock(): bool {
-    if (!empty($_SESSION['login_locked_until'])) {
-        if (time() < $_SESSION['login_locked_until']) {
-            return true; // still locked
-        }
-        unset($_SESSION['login_locked_until'], $_SESSION['login_failures']);
-    }
-    return false;
-}
-
-function recordLoginFailure(): void {
-    $_SESSION['login_failures'] = ($_SESSION['login_failures'] ?? 0) + 1;
-    if ($_SESSION['login_failures'] >= LOGIN_MAX_FAILURES) {
-        $_SESSION['login_locked_until'] = time() + LOGIN_LOCKOUT_SECS;
-    }
-}
-
-function resetLoginFailures(): void {
-    unset($_SESSION['login_failures'], $_SESSION['login_locked_until']);
-}
-
 // ── Redirect if already logged in ─────────────────────────
 function redirectIfLoggedIn(): void {
     startSecureSession();
     if (!empty($_SESSION['user_type'])) {
-        if ($_SESSION['user_type'] === 'admin') {
-            header('Location: ' . APP_URL . '/admin/dashboard.php');
-        } elseif ($_SESSION['user_type'] === 'staff') {
-            header('Location: ' . APP_URL . '/staff/dashboard.php');
+        if ($_SESSION['user_type'] === 'staff') {
+            if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
+                header('Location: ' . APP_URL . '/admin/dashboard.php');
+            } else {
+                header('Location: ' . APP_URL . '/staff/dashboard.php');
+            }
         } else {
             header('Location: ' . APP_URL . '/user/dashboard.php');
         }
@@ -208,4 +199,79 @@ function currentStaffId(): int {
 
 function currentRole(): string {
     return $_SESSION['staff_role'] ?? '';
+}
+
+// ── Client IP Helper ──────────────────────────────────────
+function getClientIP(): string {
+    // Check for forwarded headers (behind reverse proxy)
+    $headers = ['HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'HTTP_CLIENT_IP', 'REMOTE_ADDR'];
+    foreach ($headers as $header) {
+        if (!empty($_SERVER[$header])) {
+            // X-Forwarded-For may contain comma-separated list, take the first
+            $ip = trim(explode(',', $_SERVER[$header])[0]);
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+    }
+    return '0.0.0.0';
+}
+
+// ── DB-Backed Login Brute-Force Protection ────────────────
+/**
+ * Check if login is locked for a given email+IP combination.
+ * Returns remaining seconds if locked, 0 if not.
+ */
+function checkLoginLockDB(string $email): int {
+    $pdo = getDB();
+    $ip  = getClientIP();
+    $window = LOGIN_LOCKOUT_SECS; // 5 minutes
+
+    // Count recent failures for this IP+email within the lockout window
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) FROM login_attempts
+        WHERE ip_address = ? AND email = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL ? SECOND)
+    ");
+    $stmt->execute([$ip, $email, $window]);
+    $count = (int) $stmt->fetchColumn();
+
+    if ($count >= LOGIN_MAX_FAILURES) {
+        // Find when the oldest attempt in the window was
+        $stmt = $pdo->prepare("
+            SELECT MIN(attempted_at) FROM login_attempts
+            WHERE ip_address = ? AND email = ? AND attempted_at > DATE_SUB(NOW(), INTERVAL ? SECOND)
+        ");
+        $stmt->execute([$ip, $email, $window]);
+        $oldest = $stmt->fetchColumn();
+        $remaining = $window - (time() - strtotime($oldest));
+        return max(0, $remaining);
+    }
+    return 0;
+}
+
+/**
+ * Record a failed login attempt in the database.
+ */
+function recordLoginFailureDB(string $email): void {
+    $pdo = getDB();
+    $ip  = getClientIP();
+    $pdo->prepare("INSERT INTO login_attempts (ip_address, email) VALUES (?, ?)")->execute([$ip, $email]);
+}
+
+/**
+ * Clear login failures for a given email+IP (on successful login).
+ */
+function clearLoginFailuresDB(string $email): void {
+    $pdo = getDB();
+    $ip  = getClientIP();
+    $pdo->prepare("DELETE FROM login_attempts WHERE ip_address = ? AND email = ?")->execute([$ip, $email]);
+}
+
+/**
+ * Clean up old login attempts (call periodically, e.g. on login page load).
+ */
+function cleanupOldLoginAttempts(): void {
+    $pdo = getDB();
+    // Remove attempts older than 1 hour
+    $pdo->exec("DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 1 HOUR)");
 }

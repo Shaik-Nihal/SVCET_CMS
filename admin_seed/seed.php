@@ -23,6 +23,7 @@ echo "<h2>Apollo TMS — Database Seeder</h2><pre>";
 
 // ── Seed IT Staff ───────────────────────────────────────────
 $staffData = [
+    ['System Admin',         'tms@apollouniversity.edu.in',              'admin',             'System Administrator',        '0000000000'],
     ['Dr G B Hima Bindu',  'dyd_ict@apollouniversity.edu.in',         'ict_head',          'Deputy Director ICT (DICT)',  '9876543210'],
     ['Dr Pakkairaha',      'pakkairaha@apollouniversity.edu.in',       'assistant_ict',     'Assistant Director of ICT',   '9876543211'],
     ['Mr Ashok Kumar',     'ashok.kumar@apollouniversity.edu.in',      'assistant_manager', 'Assistant Manager IT',        '9876543212'],
@@ -111,6 +112,7 @@ echo "\n";
 echo "Login credentials:\n";
 echo "─────────────────────────────────────────────\n";
 echo "Test User:           test@apollouniversity.edu.in / Test@2026!\n";
+echo "System Admin:        tms@apollouniversity.edu.in / {$defaultPassword}\n";
 echo "ICT Head (DICT):     dyd_ict@apollouniversity.edu.in / {$defaultPassword}\n";
 echo "Assistant ICT:       pakkairaha@apollouniversity.edu.in / {$defaultPassword}\n";
 echo "Asst Manager IT:     ashok.kumar@apollouniversity.edu.in / {$defaultPassword}\n";
