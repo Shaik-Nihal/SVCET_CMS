@@ -39,10 +39,40 @@ function getNextStatus(string $current): ?string {
  */
 function canAssignTo(string $actorRole, string $targetRole): bool {
     $allowed = [
-        ROLE_ICT_HEAD     => [ROLE_ASST_MANAGER, ROLE_SR_IT_EXEC],
-        ROLE_ASST_MANAGER => [ROLE_SR_IT_EXEC],
+        ROLE_ICT_HEAD     => [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC],
+        ROLE_ASST_MANAGER => [ROLE_SR_IT_EXEC, ROLE_ASST_IT],
+        ROLE_ASST_ICT     => [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC],
+        ROLE_SR_IT_EXEC   => [ROLE_ASST_IT],
     ];
     return in_array($targetRole, $allowed[$actorRole] ?? [], true);
+}
+
+/**
+ * Domain-aware assignment check.
+ * For @aimsr.in tickets, ONLY the Assistant Manager can assign.
+ * ICT Head and Assistant ICT can view but NOT assign @aimsr.in tickets.
+ */
+function canAssignForTicket(string $actorRole, string $targetRole, string $userEmail): bool {
+    // Check if user is from AIMSR domain
+    if (str_ends_with(strtolower($userEmail), '@' . AIMSR_DOMAIN)) {
+        // Only Assistant Manager can assign AIMSR tickets
+        if ($actorRole !== ROLE_ASST_MANAGER) {
+            return false;
+        }
+    }
+    return canAssignTo($actorRole, $targetRole);
+}
+
+/**
+ * Check if a staff role can assign tickets for a given user's email domain.
+ * Used to decide whether to show the assignment UI at all.
+ */
+function canAssignForDomain(string $actorRole, string $userEmail): bool {
+    if (str_ends_with(strtolower($userEmail), '@' . AIMSR_DOMAIN)) {
+        return $actorRole === ROLE_ASST_MANAGER;
+    }
+    // For Apollo domain, ICT Head, Asst Manager, Asst ICT, and Sr IT Exec can all assign
+    return in_array($actorRole, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC], true);
 }
 
 /**
@@ -108,6 +138,10 @@ function assignTicket(int $ticketId, int $assignedById, int $assignedToId, strin
         $stmt->execute([$ticketId]);
         $current = $stmt->fetchColumn();
 
+        $staffStmt = $pdo->prepare("SELECT name FROM it_staff WHERE id = ? LIMIT 1");
+        $staffStmt->execute([$assignedToId]);
+        $assigneeName = (string)($staffStmt->fetchColumn() ?: 'Staff');
+
         $newStatus = STATUS_PROCESSING;
 
         $pdo->prepare("
@@ -120,11 +154,16 @@ function assignTicket(int $ticketId, int $assignedById, int $assignedToId, strin
             VALUES (?, ?, ?, ?)
         ")->execute([$ticketId, $assignedById, $assignedToId, $notes]);
 
+        $timelineNotes = "Assigned to {$assigneeName}";
+        if ($notes !== '') {
+            $timelineNotes .= " — {$notes}";
+        }
+
         $pdo->prepare("
             INSERT INTO ticket_status_history
                 (ticket_id, old_status, new_status, changed_by, changed_by_type, notes)
             VALUES (?, ?, ?, ?, 'staff', ?)
-        ")->execute([$ticketId, $current, $newStatus, $assignedById, "Assigned to staff — {$notes}"]);
+        ")->execute([$ticketId, $current, $newStatus, $assignedById, $timelineNotes]);
 
         $pdo->commit();
     } catch (Throwable $e) {
@@ -150,6 +189,10 @@ function updateTicketStatus(int $ticketId, int $staffId, string $newStatus, stri
 
     $pdo->beginTransaction();
     try {
+        $staffStmt = $pdo->prepare("SELECT name FROM it_staff WHERE id = ? LIMIT 1");
+        $staffStmt->execute([$staffId]);
+        $staffName = (string)($staffStmt->fetchColumn() ?: 'Technician');
+
         if ($newStatus === STATUS_SOLVED) {
             $pdo->prepare("
                 UPDATE tickets SET status = ?, updated_at = NOW(), solved_at = NOW() WHERE id = ?
@@ -160,11 +203,13 @@ function updateTicketStatus(int $ticketId, int $staffId, string $newStatus, stri
             ")->execute([$newStatus, $ticketId]);
         }
 
+        $timelineNotes = $notes !== '' ? $notes : "Status updated by {$staffName}";
+
         $pdo->prepare("
             INSERT INTO ticket_status_history
                 (ticket_id, old_status, new_status, changed_by, changed_by_type, notes)
             VALUES (?, ?, ?, ?, 'staff', ?)
-        ")->execute([$ticketId, $current, $newStatus, $staffId, $notes ?: 'Status updated by technician']);
+        ")->execute([$ticketId, $current, $newStatus, $staffId, $timelineNotes]);
 
         $pdo->commit();
         return true;

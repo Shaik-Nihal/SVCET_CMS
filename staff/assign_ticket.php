@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/ticket_helpers.php';
 require_once __DIR__ . '/../includes/notification_helpers.php';
 
-requireRole([ROLE_ICT_HEAD, ROLE_ASST_MANAGER]);
+requireRole([ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC]);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . APP_URL . '/staff/tickets.php');
@@ -27,18 +27,31 @@ $ticketId   = (int)($_POST['ticket_id'] ?? 0);
 $assignedTo = (int)($_POST['assigned_to'] ?? 0);
 $notes      = trim($_POST['notes'] ?? '');
 
-// Validate ticket
-$stmt = $pdo->prepare("SELECT t.id, t.ticket_number, t.status, COALESCE(pc.name,'Custom') AS category_name, u.id AS user_id FROM tickets t LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id LEFT JOIN users u ON t.user_id = u.id WHERE t.id = ?");
-$stmt->execute([$ticketId]);
+// Validate ticket and get user email for domain check
+if ($role === ROLE_SR_IT_EXEC) {
+    // Sr IT can assign if ticket is on self OR currently with an Assistant IT previously delegated by this Sr IT.
+    $stmt = $pdo->prepare("SELECT t.id, t.ticket_number, t.status, COALESCE(pc.name,'Custom') AS category_name, u.id AS user_id, u.email AS user_email FROM tickets t LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id LEFT JOIN users u ON t.user_id = u.id WHERE t.id = ? AND (t.assigned_to = ? OR (t.assigned_to IN (SELECT id FROM it_staff WHERE role = ?) AND EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_by = ? AND ta.assigned_to = t.assigned_to)))");
+    $stmt->execute([$ticketId, $staffId, ROLE_ASST_IT, $staffId]);
+} else {
+    $stmt = $pdo->prepare("SELECT t.id, t.ticket_number, t.status, COALESCE(pc.name,'Custom') AS category_name, u.id AS user_id, u.email AS user_email FROM tickets t LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id LEFT JOIN users u ON t.user_id = u.id WHERE t.id = ?");
+    $stmt->execute([$ticketId]);
+}
 $ticket = $stmt->fetch();
 
 if (!$ticket) {
-    setFlash('error', 'Ticket not found.');
+    setFlash('error', 'Ticket not found or not assigned to you.');
     header('Location: ' . APP_URL . '/staff/tickets.php');
     exit;
 }
 if ($ticket['status'] === 'solved') {
     setFlash('error', 'Cannot reassign a solved ticket.');
+    header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
+    exit;
+}
+
+// Domain-based access check: @aimsr.in tickets can only be assigned by Assistant Manager
+if (!canAssignForDomain($role, $ticket['user_email'] ?? '')) {
+    setFlash('error', 'You do not have permission to assign tickets from this domain.');
     header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
     exit;
 }
@@ -54,8 +67,8 @@ if (!$assignee) {
     exit;
 }
 
-// Permission check
-if (!canAssignTo($role, $assignee['role'])) {
+// Permission check (role hierarchy + domain)
+if (!canAssignForTicket($role, $assignee['role'], $ticket['user_email'] ?? '')) {
     setFlash('error', 'You do not have permission to assign to this role.');
     header('Location: ' . APP_URL . '/staff/ticket_detail.php?id=' . $ticketId);
     exit;
@@ -89,7 +102,13 @@ try {
         ]);
     }
 
-    setFlash('success', "Ticket assigned to <strong>{$assignee['name']}</strong> successfully.");
+    setFlash('success', "Ticket assigned to {$assignee['name']} successfully.");
+
+    // If Sr IT Executive assigned to Assistant IT, ticket may no longer be visible on detail page.
+    if ($role === ROLE_SR_IT_EXEC && $assignedTo !== $staffId) {
+        header('Location: ' . APP_URL . '/staff/tickets.php');
+        exit;
+    }
 } catch (Throwable $e) {
     error_log('Assign ticket error: ' . $e->getMessage());
     setFlash('error', 'Assignment failed. Please try again.');

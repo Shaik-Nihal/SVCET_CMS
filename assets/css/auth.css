@@ -20,9 +20,8 @@ body.auth-page::before {
     content: '';
     position: fixed;
     inset: 0;
-    /* background: linear-gradient(135deg, rgba(26, 58, 92, .82) 0%, rgba(26, 122, 138, .65) 50%, rgba(26, 58, 92, .78) 100%); */
-    background: rgba(173, 216, 230, .30);
-    /* light blue tint — 30% opaque */
+    background: rgba(0, 0, 0, .55);
+    /* transparent black overlay — 55% opaque */
     z-index: 0;
 }
 

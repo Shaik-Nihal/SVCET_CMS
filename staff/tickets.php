@@ -22,12 +22,19 @@ $where   = "WHERE 1=1";
 $params  = [];
 
 if ($role === ROLE_SR_IT_EXEC) {
-    $where  .= " AND t.assigned_to = ?";
-    $params[] = $staffId;
-} elseif ($role === ROLE_ASST_MANAGER) {
-    $where  .= " AND (t.assigned_to = ? OR t.id IN (SELECT ticket_id FROM ticket_assignments WHERE assigned_to = ?))";
-    $params[] = $staffId;
-    $params[] = $staffId;
+  // Sr IT can see tickets they are involved in:
+  // - currently assigned to self
+  // - previously assigned to self
+  // - assigned/reassigned by self
+  $where  .= " AND (t.assigned_to = ? OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_to = ?) OR EXISTS (SELECT 1 FROM ticket_assignments ta2 WHERE ta2.ticket_id = t.id AND ta2.assigned_by = ?))";
+  $params[] = $staffId;
+  $params[] = $staffId;
+  $params[] = $staffId;
+} elseif ($role === ROLE_ASST_IT) {
+  // Assistant IT can see currently assigned tickets + tickets previously assigned to them (read-only).
+  $where  .= " AND (t.assigned_to = ? OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_to = ?))";
+  $params[] = $staffId;
+  $params[] = $staffId;
 }
 
 if ($filterStatus && in_array($filterStatus, $validStatuses)) {
@@ -78,7 +85,13 @@ $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE recipient_id=? A
 $stmt->execute([$staffId]);
 $unreadCount = (int)$stmt->fetchColumn();
 
-$pageTitle = $role === ROLE_ICT_HEAD ? 'All Tickets' : 'My Assigned Tickets';
+if ($role === ROLE_ICT_HEAD) {
+  $pageTitle = 'All Tickets';
+} elseif ($role === ROLE_SR_IT_EXEC) {
+  $pageTitle = 'My & Delegated Tickets';
+} else {
+  $pageTitle = 'My Assigned Tickets';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -184,7 +197,7 @@ $pageTitle = $role === ROLE_ICT_HEAD ? 'All Tickets' : 'My Assigned Tickets';
         <table class="table table-apollo mb-0">
           <thead><tr>
             <th>Ticket #</th><th>Raised By</th><th>Category</th>
-            <?php if ($role !== ROLE_SR_IT_EXEC): ?><th>Assigned To</th><?php endif; ?>
+            <?php if ($role !== ROLE_ASST_IT): ?><th>Assigned To</th><?php endif; ?>
             <th>Priority</th><th>Status</th><th>Date</th><th>Resolve Time</th><th></th>
           </tr></thead>
           <tbody>
@@ -196,7 +209,7 @@ $pageTitle = $role === ROLE_ICT_HEAD ? 'All Tickets' : 'My Assigned Tickets';
                 <?php if ($t['category_icon']): ?><i class="bi <?= h($t['category_icon']) ?> me-1 text-muted"></i><?php endif; ?>
                 <?= h($t['category_name']) ?>
               </td>
-              <?php if ($role !== ROLE_SR_IT_EXEC): ?>
+              <?php if ($role !== ROLE_ASST_IT): ?>
               <td><?= $t['assigned_name'] ? h($t['assigned_name']) . '<br><small class="text-muted">' . h($t['designation']) . '</small>' : '<span class="text-muted">Unassigned</span>' ?></td>
               <?php endif; ?>
               <td><span class="badge <?= priorityBadge($t['priority']) ?>"><?= ucfirst(h($t['priority'])) ?></span></td>

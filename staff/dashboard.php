@@ -70,7 +70,7 @@ if ($role === ROLE_ICT_HEAD) {
     $recentTickets = $stmt->fetchAll();
     $statusCounts  = [];
 } else {
-    // Sr IT Executive
+  // Sr IT Executive / Assistant IT
     $stmt = $pdo->prepare("SELECT
         COUNT(*) AS total,
         SUM(status != 'solved') AS open_count,
@@ -207,7 +207,7 @@ if ($role === ROLE_ICT_HEAD) {
         <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
         <div><div class="stat-num"><?= (int)($stats['today_count'] ?? 0) ?></div><div class="stat-label">Raised Today</div></div>
       </div>
-      <?php elseif ($role === ROLE_SR_IT_EXEC): ?>
+      <?php elseif (in_array($role, [ROLE_SR_IT_EXEC, ROLE_ASST_IT], true)): ?>
       <div class="stat-card green">
         <div class="stat-icon"><i class="bi bi-trophy-fill"></i></div>
         <div><div class="stat-num"><?= (int)($stats['solved_this_week'] ?? 0) ?></div><div class="stat-label">Solved This Week</div></div>

@@ -7,7 +7,14 @@
 define('APP_NAME', 'Apollo University IT Support');
 define('APP_SHORT', 'Apollo TMS');
 define('APP_URL', 'http://localhost/TMS'); // No trailing slash
-define('EMAIL_DOMAIN', 'apollouniversity.edu.in'); // Allowed registration domain
+define('APP_TIMEZONE', 'Asia/Kolkata');
+
+// Keep all PHP date/time operations in one timezone for consistent "x min ago" values.
+date_default_timezone_set(APP_TIMEZONE);
+
+define('EMAIL_DOMAINS', ['apollouniversity.edu.in', 'aimsr.in']); // Allowed registration domains
+define('EMAIL_DOMAIN', 'apollouniversity.edu.in'); // Primary domain (kept for backward compat)
+define('AIMSR_DOMAIN', 'aimsr.in'); // AIMSR domain - only Assistant Manager can assign
 
 // Session
 define('SESSION_IDLE_TIMEOUT', 1800); // 30 minutes idle
@@ -27,7 +34,9 @@ define('TICKET_PREFIX', 'APL');
 // Roles
 define('ROLE_ICT_HEAD', 'ict_head');
 define('ROLE_ASST_MANAGER', 'assistant_manager');
+define('ROLE_ASST_ICT', 'assistant_ict');
 define('ROLE_SR_IT_EXEC', 'sr_it_executive');
+define('ROLE_ASST_IT', 'assistant_it');
 
 // Ticket Statuses
 define('STATUS_NOTIFIED', 'notified');

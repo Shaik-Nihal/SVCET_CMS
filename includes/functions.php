@@ -81,7 +81,9 @@ function roleLabel(string $role): string {
     $map = [
         'ict_head'          => 'ICT Head',
         'assistant_manager' => 'Assistant Manager',
+        'assistant_ict'     => 'Assistant ICT',
         'sr_it_executive'   => 'Sr. IT Executive',
+        'assistant_it'      => 'Assistant IT',
     ];
     return $map[$role] ?? ucwords(str_replace('_', ' ', $role));
 }
@@ -98,12 +100,32 @@ function formatDate(string $datetime, string $format = 'd M Y, h:i A'): string {
  * Time elapsed string (e.g. "2 hours ago").
  */
 function timeAgo(string $datetime): string {
-    $diff = time() - strtotime($datetime);
-    if ($diff < 60)         return 'Just now';
-    if ($diff < 3600)       return floor($diff / 60) . ' min ago';
-    if ($diff < 86400)      return floor($diff / 3600) . ' hr ago';
-    if ($diff < 604800)     return floor($diff / 86400) . ' day' . (floor($diff/86400)>1?'s':'') . ' ago';
-    return formatDate($datetime, 'd M Y');
+    $ts = strtotime($datetime);
+    if (!$ts) return '—';
+
+    $diff = max(0, time() - $ts);
+    $timePart = date('h:i A', $ts);
+
+    if ($diff < 60) {
+        return $timePart . ' (0 min ago)';
+    }
+
+    if ($diff >= 60 && $diff < 3600) {
+        $mins = floor($diff / 60);
+        return $timePart . " ({$mins} min ago)";
+    }
+
+    if ($diff >= 3600 && $diff < 86400) {
+        $hrs = floor($diff / 3600);
+        return $timePart . " ({$hrs} hr ago)";
+    }
+
+    if ($diff >= 86400 && $diff < 604800) {
+        $days = floor($diff / 86400);
+        return $timePart . ' (' . $days . ' day' . ($days > 1 ? 's' : '') . ' ago)';
+    }
+
+    return formatDate($datetime, 'd M Y, h:i A');
 }
 
 /**
@@ -214,7 +236,9 @@ function roleBadge(string $role): string {
     $colors = [
         'ict_head'          => 'bg-danger',
         'assistant_manager' => 'bg-warning text-dark',
+        'assistant_ict'     => 'bg-info text-dark',
         'sr_it_executive'   => 'bg-primary',
+        'assistant_it'      => 'bg-secondary',
     ];
     $cls = $colors[$role] ?? 'bg-secondary';
     return '<span class="badge ' . $cls . '">' . h(roleLabel($role)) . '</span>';

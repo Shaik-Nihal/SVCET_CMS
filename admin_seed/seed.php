@@ -23,12 +23,15 @@ echo "<h2>Apollo TMS — Database Seeder</h2><pre>";
 
 // ── Seed IT Staff ───────────────────────────────────────────
 $staffData = [
-    ['Dr. Ramesh Kumar',  'ramesh.kumar@apollouniversity.edu.in',  'ict_head',          'ICT Head',           '9876543210'],
-    ['Ms. Priya Sharma',  'priya.sharma@apollouniversity.edu.in',  'ict_head',          'Assistant ICT',      '9876543211'],
-    ['Mr. Arun Verma',    'arun.verma@apollouniversity.edu.in',    'assistant_manager', 'Assistant Manager',  '9876543212'],
-    ['Mr. Kiran Patel',   'kiran.patel@apollouniversity.edu.in',   'sr_it_executive',   'Sr. IT Executive',   '9876543213'],
-    ['Mr. Suresh Reddy',  'suresh.reddy@apollouniversity.edu.in',  'sr_it_executive',   'Sr. IT Executive',   '9876543214'],
-    ['Ms. Deepa Nair',    'deepa.nair@apollouniversity.edu.in',    'sr_it_executive',   'Sr. IT Executive',   '9876543215'],
+    ['Dr G B Hima Bindu',  'dyd_ict@apollouniversity.edu.in',         'ict_head',          'Deputy Director ICT (DICT)',  '9876543210'],
+    ['Dr Pakkairaha',      'pakkairaha@apollouniversity.edu.in',       'assistant_ict',     'Assistant Director of ICT',   '9876543211'],
+    ['Mr Ashok Kumar',     'ashok.kumar@apollouniversity.edu.in',      'assistant_manager', 'Assistant Manager IT',        '9876543212'],
+    ['Mr K Prasanna',      'k.prasanna@apollouniversity.edu.in',       'sr_it_executive',   'Sr. IT Executive',            '9876543213'],
+    ['Mr K Jagadeesh',     'k.jagadeesh@apollouniversity.edu.in',      'sr_it_executive',   'Sr. IT Executive',            '9876543214'],
+    ['Mr Mohan',           'mohan@apollouniversity.edu.in',            'assistant_it',      'Assistant IT Executive',      '9876543220'],
+    ['Mr Bhargav',         'bhargav@apollouniversity.edu.in',          'assistant_it',      'Assistant IT Executive',      '9876543221'],
+    ['Mr Gopi',            'gopi@apollouniversity.edu.in',             'assistant_it',      'Assistant IT Executive',      '9876543222'],
+    ['Mr Vijay',           'vijay@apollouniversity.edu.in',            'assistant_it',      'Assistant IT Executive',      '9876543223'],
 ];
 
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM it_staff");
@@ -107,13 +110,16 @@ echo "════════════════════════�
 echo "\n";
 echo "Login credentials:\n";
 echo "─────────────────────────────────────────────\n";
-echo "Test User:        test@apollouniversity.edu.in / Test@2026!\n";
-echo "ICT Head:         ramesh.kumar@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Assistant ICT:    priya.sharma@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Asst Manager:     arun.verma@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Sr IT Executive:  kiran.patel@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Sr IT Executive:  suresh.reddy@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Sr IT Executive:  deepa.nair@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Test User:           test@apollouniversity.edu.in / Test@2026!\n";
+echo "ICT Head (DICT):     dyd_ict@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Assistant ICT:       pakkairaha@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Asst Manager IT:     ashok.kumar@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Sr IT Executive:     k.prasanna@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Sr IT Executive:     k.jagadeesh@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Asst IT Executive:   mohan@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Asst IT Executive:   bhargav@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Asst IT Executive:   gopi@apollouniversity.edu.in / {$defaultPassword}\n";
+echo "Asst IT Executive:   vijay@apollouniversity.edu.in / {$defaultPassword}\n";
 echo "\n";
 echo "⚠ DELETE THIS FILE (admin_seed/seed.php) IMMEDIATELY!\n";
 echo "</pre>";

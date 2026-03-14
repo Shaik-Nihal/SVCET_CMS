@@ -35,11 +35,18 @@ $baseQuery = "
     WHERE t.id = ?
 ";
 
-if ($role === ROLE_ICT_HEAD) {
-    $stmt = $pdo->prepare($baseQuery);
-    $stmt->execute([$ticketId]);
-} elseif ($role === ROLE_ASST_MANAGER) {
-    $stmt = $pdo->prepare($baseQuery . " AND (t.assigned_to = ? OR t.id IN (SELECT ticket_id FROM ticket_assignments WHERE assigned_to = ?))");
+if (in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT])) {
+  // Leadership roles can view all tickets regardless of assignment
+  $stmt = $pdo->prepare($baseQuery);
+  $stmt->execute([$ticketId]);
+} elseif ($role === ROLE_SR_IT_EXEC) {
+  // Sr IT can view tickets they are involved in:
+  // current assignee, previous assignee, or assigner/reassigner.
+  $stmt = $pdo->prepare($baseQuery . " AND (t.assigned_to = ? OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_to = ?) OR EXISTS (SELECT 1 FROM ticket_assignments ta2 WHERE ta2.ticket_id = t.id AND ta2.assigned_by = ?))");
+  $stmt->execute([$ticketId, $staffId, $staffId, $staffId]);
+  } elseif ($role === ROLE_ASST_IT) {
+    // Assistant IT can still view tickets previously assigned to them (read-only if no longer current assignee).
+    $stmt = $pdo->prepare($baseQuery . " AND (t.assigned_to = ? OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_to = ?))");
     $stmt->execute([$ticketId, $staffId, $staffId]);
 } else {
     $stmt = $pdo->prepare($baseQuery . " AND t.assigned_to = ?");
@@ -54,14 +61,14 @@ if (!$ticket) {
 }
 
 // Status history
-$histStmt = $pdo->prepare("SELECT * FROM ticket_status_history WHERE ticket_id = ? ORDER BY created_at ASC");
+$histStmt = $pdo->prepare("\n    SELECT h.*,\n           changer.name AS changed_by_name,\n           (\n               SELECT assignee.name\n               FROM ticket_assignments ta\n               LEFT JOIN it_staff assignee ON ta.assigned_to = assignee.id\n               WHERE ta.ticket_id = h.ticket_id\n                 AND ta.assigned_at <= h.created_at\n               ORDER BY ta.assigned_at DESC, ta.id DESC\n               LIMIT 1\n           ) AS assigned_to_name\n    FROM ticket_status_history h\n    LEFT JOIN it_staff changer\n           ON h.changed_by_type = 'staff' AND h.changed_by = changer.id\n    WHERE h.ticket_id = ?\n    ORDER BY h.created_at ASC, h.id ASC\n");
 $histStmt->execute([$ticketId]);
 $history = $histStmt->fetchAll();
 
 // Assignment history
 $assnStmt = $pdo->prepare("
     SELECT ta.*, s1.name AS assigner_name, s1.designation AS assigner_desig,
-           s2.name AS assignee_name, s2.designation AS assignee_desig
+         s2.id AS assignee_id, s2.role AS assignee_role, s2.name AS assignee_name, s2.designation AS assignee_desig
     FROM ticket_assignments ta
     LEFT JOIN it_staff s1 ON ta.assigned_by = s1.id
     LEFT JOIN it_staff s2 ON ta.assigned_to = s2.id
@@ -70,16 +77,46 @@ $assnStmt = $pdo->prepare("
 $assnStmt->execute([$ticketId]);
 $assignments = $assnStmt->fetchAll();
 
-// Eligible staff to assign (based on role)
+    // Metric: count reassignment hops between executive-level assignees.
+    $executiveRoles = [ROLE_SR_IT_EXEC, ROLE_ASST_IT];
+    $executiveReassignCount = 0;
+    $prevExecAssigneeId = 0;
+    foreach ($assignments as $a) {
+      $assigneeId = (int)($a['assignee_id'] ?? 0);
+      $assigneeRole = (string)($a['assignee_role'] ?? '');
+
+      if ($assigneeId > 0 && in_array($assigneeRole, $executiveRoles, true)) {
+        if ($prevExecAssigneeId > 0 && $assigneeId !== $prevExecAssigneeId) {
+          $executiveReassignCount++;
+        }
+        $prevExecAssigneeId = $assigneeId;
+      }
+    }
+
+// Eligible staff to assign (based on role & ticket domain)
 $eligibleStaff = [];
-if (in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER])) {
-    $eligibleRoles = ($role === ROLE_ICT_HEAD)
-        ? ['assistant_manager','sr_it_executive']
-        : ['sr_it_executive'];
-    $placeholders = implode(',', array_fill(0, count($eligibleRoles), '?'));
-    $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE role IN ($placeholders) AND is_active=1 AND id != ? ORDER BY role, name");
-    $stmt->execute([...$eligibleRoles, $staffId]);
-    $eligibleStaff = $stmt->fetchAll();
+$canAssign = canAssignForDomain($role, $ticket['user_email'] ?? '');
+
+if ($canAssign && in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC])) {
+    $eligibleRoles = [];
+    if ($role === ROLE_ICT_HEAD) {
+    $eligibleRoles = [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC];
+    } elseif (in_array($role, [ROLE_ASST_MANAGER, ROLE_ASST_ICT])) {
+    if ($role === ROLE_ASST_MANAGER) {
+      $eligibleRoles = [ROLE_SR_IT_EXEC, ROLE_ASST_IT];
+    } else {
+      $eligibleRoles = [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC];
+    }
+    } elseif ($role === ROLE_SR_IT_EXEC) {
+    $eligibleRoles = [ROLE_ASST_IT];
+    }
+    
+    if (!empty($eligibleRoles)) {
+        $placeholders = implode(',', array_fill(0, count($eligibleRoles), '?'));
+        $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE role IN ($placeholders) AND is_active=1 AND id != ? ORDER BY role, name");
+        $stmt->execute([...$eligibleRoles, $staffId]);
+        $eligibleStaff = $stmt->fetchAll();
+    }
 }
 
 $nextStatus    = getNextStatus($ticket['status']);
@@ -90,6 +127,22 @@ $unreadCount = (int)$stmt->fetchColumn();
 
 $statusOrder = ['notified'=>0,'processing'=>1,'solving'=>2,'solved'=>3];
 $currentStep = $statusOrder[$ticket['status']] ?? 0;
+
+$ticketDomain = 'unknown';
+$domainBadgeClass = 'bg-secondary';
+$domainBadgeLabel = 'Unknown Domain';
+if (!empty($ticket['user_email'])) {
+  $email = strtolower((string)$ticket['user_email']);
+  if (str_ends_with($email, '@' . AIMSR_DOMAIN)) {
+    $ticketDomain = 'aimsr';
+    $domainBadgeClass = 'bg-warning text-dark';
+    $domainBadgeLabel = 'Domain: AIMSR';
+  } elseif (str_ends_with($email, '@' . EMAIL_DOMAIN)) {
+    $ticketDomain = 'apollo';
+    $domainBadgeClass = 'bg-primary';
+    $domainBadgeLabel = 'Domain: Apollo';
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -198,7 +251,7 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
       </div>
 
       <!-- ACTION: Update Status (Sr IT Executive) -->
-      <?php if ($role === ROLE_SR_IT_EXEC && $nextStatus && $ticket['status'] !== 'solved'): ?>
+      <?php if (in_array($role, [ROLE_SR_IT_EXEC, ROLE_ASST_IT], true) && (int)$ticket['assigned_to'] === $staffId && $nextStatus && $ticket['status'] !== 'solved'): ?>
       <div class="card mb-3 border-primary">
         <div class="card-header bg-primary text-white"><i class="bi bi-arrow-up-circle me-2"></i>Update Ticket Status</div>
         <div class="card-body">
@@ -222,8 +275,17 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
       </div>
       <?php endif; ?>
 
-      <!-- ACTION: Assign Ticket (ICT Head / Asst Manager) -->
-      <?php if (in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER]) && $ticket['status'] !== 'solved' && !empty($eligibleStaff)): ?>
+      <?php if ($role === ROLE_ASST_IT && (int)$ticket['assigned_to'] !== $staffId): ?>
+      <div class="card mb-3 border-secondary">
+        <div class="card-header bg-secondary text-white"><i class="bi bi-eye me-2"></i>Read-Only Access</div>
+        <div class="card-body">
+          This ticket was reassigned to another executive. You can view details and timeline, but you cannot change status.
+        </div>
+      </div>
+      <?php endif; ?>
+
+      <!-- ACTION: Assign Ticket -->
+      <?php if (in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC]) && $ticket['status'] !== 'solved' && !empty($eligibleStaff)): ?>
       <div class="card mb-3 border-warning">
         <div class="card-header bg-warning text-dark"><i class="bi bi-person-fill-gear me-2"></i>Assign / Re-assign Ticket</div>
         <div class="card-body">
@@ -257,6 +319,7 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
       <div class="card mb-3">
         <div class="card-header"><i class="bi bi-clock-history me-2"></i>Activity Timeline</div>
         <div class="card-body">
+          <div class="mb-2 small text-muted"><i class="bi bi-arrow-left-right me-1"></i>Executive reassignments: <strong><?= (int)$executiveReassignCount ?></strong></div>
           <div class="timeline">
             <?php foreach ($history as $h_item): ?>
             <div class="timeline-item">
@@ -265,7 +328,21 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
               <div class="timeline-text">
                 <strong><?= statusLabel($h_item['new_status']) ?></strong>
                 <?php if ($h_item['old_status']): ?><span class="text-muted"> ← <?= statusLabel($h_item['old_status']) ?></span><?php endif; ?>
-                <br><small class="text-muted"><?= h($h_item['notes'] ?? '') ?></small>
+                <?php
+                  $timelineNote = trim((string)($h_item['notes'] ?? ''));
+                  $looksGenericAssign = stripos($timelineNote, 'assigned to staff') === 0;
+                  $looksGenericUpdate = strcasecmp($timelineNote, 'Status updated by technician') === 0;
+                  if ($timelineNote === '' || $looksGenericAssign || $looksGenericUpdate) {
+                    if (($h_item['new_status'] ?? '') === STATUS_PROCESSING && !empty($h_item['assigned_to_name'])) {
+                      $timelineNote = 'Assigned to ' . $h_item['assigned_to_name'];
+                    } elseif (!empty($h_item['changed_by_name'])) {
+                      $timelineNote = 'Updated by ' . $h_item['changed_by_name'];
+                    }
+                  }
+                ?>
+                <?php if ($timelineNote !== ''): ?>
+                <br><small class="text-muted"><?= h($timelineNote) ?></small>
+                <?php endif; ?>
               </div>
             </div>
             <?php endforeach; ?>
@@ -291,6 +368,9 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
       <div class="card mb-3">
         <div class="card-header"><i class="bi bi-person me-2"></i>Raised By</div>
         <div class="card-body" style="font-size:.85rem;">
+          <div class="mb-2">
+            <span class="badge <?= $domainBadgeClass ?>"><?= h($domainBadgeLabel) ?></span>
+          </div>
           <div class="fw-semibold"><?= h($ticket['user_name']) ?></div>
           <div class="text-muted"><?= h($ticket['user_dept'] ?? '') ?></div>
           <?php if ($ticket['user_email']): ?><div><i class="bi bi-envelope me-1"></i><a href="mailto:<?= h($ticket['user_email']) ?>"><?= h($ticket['user_email']) ?></a></div><?php endif; ?>

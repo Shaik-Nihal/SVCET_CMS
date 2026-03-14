@@ -110,7 +110,11 @@ function requireLogin(): void {
 function requireUser(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'user') {
-        header('Location: ' . APP_URL . '/staff/dashboard.php');
+        if ($_SESSION['user_type'] === 'admin') {
+            header('Location: ' . APP_URL . '/admin/dashboard.php');
+        } else {
+            header('Location: ' . APP_URL . '/staff/dashboard.php');
+        }
         exit;
     }
 }
@@ -121,7 +125,11 @@ function requireUser(): void {
 function requireStaff(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'staff') {
-        header('Location: ' . APP_URL . '/user/dashboard.php');
+        if ($_SESSION['user_type'] === 'admin') {
+            header('Location: ' . APP_URL . '/admin/dashboard.php');
+        } else {
+            header('Location: ' . APP_URL . '/user/dashboard.php');
+        }
         exit;
     }
 }
@@ -136,6 +144,18 @@ function requireRole($roles): void {
     if (!in_array($_SESSION['staff_role'], $roles, true)) {
         setFlash('error', 'You do not have permission to access that page.');
         header('Location: ' . APP_URL . '/staff/dashboard.php');
+        exit;
+    }
+}
+
+/**
+ * Require a logged-in admin.
+ */
+function requireAdmin(): void {
+    requireLogin();
+    if ($_SESSION['user_type'] !== 'admin') {
+        setFlash('error', 'Admin access required.');
+        header('Location: ' . APP_URL . '/auth/login.php');
         exit;
     }
 }
@@ -166,7 +186,9 @@ function resetLoginFailures(): void {
 function redirectIfLoggedIn(): void {
     startSecureSession();
     if (!empty($_SESSION['user_type'])) {
-        if ($_SESSION['user_type'] === 'staff') {
+        if ($_SESSION['user_type'] === 'admin') {
+            header('Location: ' . APP_URL . '/admin/dashboard.php');
+        } elseif ($_SESSION['user_type'] === 'staff') {
             header('Location: ' . APP_URL . '/staff/dashboard.php');
         } else {
             header('Location: ' . APP_URL . '/user/dashboard.php');

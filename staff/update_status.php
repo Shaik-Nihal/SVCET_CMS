@@ -1,5 +1,5 @@
 <?php
-// POST handler - Update ticket status (Sr IT Executive only)
+// POST handler - Update ticket status (Sr IT Executive / Assistant IT)
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/ticket_helpers.php';
 require_once __DIR__ . '/../includes/notification_helpers.php';
 
-requireRole(ROLE_SR_IT_EXEC);
+requireRole([ROLE_SR_IT_EXEC, ROLE_ASST_IT]);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . APP_URL . '/staff/tickets.php');

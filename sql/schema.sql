@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS it_staff (
     name           VARCHAR(100) NOT NULL,
     email          VARCHAR(150) NOT NULL UNIQUE,
     password_hash  VARCHAR(255) NOT NULL,
-    role           ENUM('ict_head','assistant_manager','sr_it_executive') NOT NULL,
+    role           ENUM('ict_head','assistant_manager','assistant_ict','sr_it_executive','assistant_it') NOT NULL,
     designation    VARCHAR(100),
     contact        VARCHAR(15),
     is_active      TINYINT(1) DEFAULT 1,

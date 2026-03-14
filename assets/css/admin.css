@@ -1,0 +1,119 @@
+/**
+ * Admin Panel Styles
+ */
+.admin-navbar {
+    background: #0f172a; /* Darker than main app */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.admin-sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    background: #1e293b;
+    color: #fff;
+    overflow-y: auto;
+    z-index: 100;
+    transition: all 0.3s ease;
+}
+
+.admin-sidebar .nav-link {
+    color: #cbd5e1;
+    padding: 0.8rem 1.25rem;
+    font-size: 0.95rem;
+    border-left: 3px solid transparent;
+}
+
+.admin-sidebar .nav-link:hover,
+.admin-sidebar .nav-link.active {
+    background: #334155;
+    color: #fff;
+    border-left-color: #38bdf8;
+}
+
+.admin-sidebar .nav-link i {
+    width: 24px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.admin-main {
+    margin-left: 250px;
+    padding: 1.5rem;
+    min-height: calc(100vh - 56px);
+    background: #f8fafc;
+}
+
+.admin-stat-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    border-top: 4px solid #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.admin-stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: #e0f2fe;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.admin-stat-info h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+.admin-stat-info p {
+    margin: 0;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Data Tables */
+.admin-table-container {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.admin-table {
+    margin-bottom: 0;
+}
+.admin-table th {
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 600;
+    padding: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+.admin-table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+    }
+    .admin-sidebar.show {
+        transform: translateX(0);
+    }
+    .admin-main {
+        margin-left: 0;
+    }
+}

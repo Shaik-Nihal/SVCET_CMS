@@ -27,8 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Validate
         if (strlen($input['name']) < 2)  $errors[] = 'Full name must be at least 2 characters.';
-        if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL) || !str_ends_with($input['email'], '@' . EMAIL_DOMAIN)) {
-            $errors[] = 'Email must be a valid @' . EMAIL_DOMAIN . ' address.';
+        $domainValid = false;
+        foreach (EMAIL_DOMAINS as $domain) {
+            if (str_ends_with($input['email'], '@' . $domain)) {
+                $domainValid = true;
+                break;
+            }
+        }
+        if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL) || !$domainValid) {
+            $errors[] = 'Email must be a valid ' . implode(' or ', EMAIL_DOMAINS) . ' address.';
         }
         if ($input['phone'] && !isValidPhone($input['phone'])) {
             $errors[] = 'Phone number must be a 10-digit Indian mobile number.';
@@ -122,10 +129,10 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
                     <div class="input-group">
                         <input type="email" name="email" class="form-control"
                                value="<?= h($input['email'] ?? '') ?>"
-                               placeholder="yourname@<?= EMAIL_DOMAIN ?>" required id="emailField">
+                               placeholder="yourname@apollouniversity.edu.in" required id="emailField" data-domains="<?= h(json_encode(EMAIL_DOMAINS)) ?>">
                         <span class="input-group-text" id="emailCheck"></span>
                     </div>
-                    <small class="text-muted">Must be a @<?= EMAIL_DOMAIN ?> email address</small>
+                    <small class="text-muted">Must be an @apollouniversity.edu.in or @aimsr.in email</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Phone Number</label>
@@ -202,9 +209,20 @@ document.getElementById('confirmPwd').addEventListener('input', function() {
 // Email domain validation (client-side preview)
 document.getElementById('emailField').addEventListener('blur', function() {
     const check = document.getElementById('emailCheck');
-    if (this.value.endsWith('@<?= EMAIL_DOMAIN ?>')) {
+    const val = this.value.toLowerCase();
+    const domains = JSON.parse(this.dataset.domains || '[]');
+    let isValid = false;
+    
+    for (let d of domains) {
+        if (val.endsWith('@' + d)) {
+            isValid = true;
+            break;
+        }
+    }
+    
+    if (isValid) {
         check.innerHTML = '<i class="bi bi-check-circle-fill text-success"></i>';
-    } else if (this.value.includes('@')) {
+    } else if (val.includes('@')) {
         check.innerHTML = '<i class="bi bi-x-circle-fill text-danger"></i>';
     }
 });

@@ -56,18 +56,18 @@ function dispatchNotification(array $params): void {
 }
 
 /**
- * Notify all ICT Heads about a new ticket.
+ * Notify all leadership (ICT Head, Assistant Manager, Assistant ICT) about a new ticket.
  */
-function notifyICTHeads(int $ticketId, string $ticketNumber, string $userName, string $category): void {
+function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userName, string $category): void {
     $pdo  = getDB();
-    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role = 'ict_head' AND is_active = 1");
+    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager','assistant_ict') AND is_active = 1");
     $stmt->execute();
-    $heads = $stmt->fetchAll();
+    $leaders = $stmt->fetchAll();
 
-    foreach ($heads as $head) {
+    foreach ($leaders as $leader) {
         $msg  = "New ticket {$ticketNumber} raised by {$userName}. Problem: {$category}. Please review and assign.";
         $body = emailTemplate("New IT Support Ticket — {$ticketNumber}", "
-            <p>Dear {$head['name']},</p>
+            <p>Dear {$leader['name']},</p>
             <p>A new support ticket has been raised by <strong>{$userName}</strong>.</p>
             <table style='width:100%;border-collapse:collapse;'>
               <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
@@ -77,13 +77,13 @@ function notifyICTHeads(int $ticketId, string $ticketNumber, string $userName, s
         ");
 
         dispatchNotification([
-            'recipient_id'   => $head['id'],
+            'recipient_id'   => $leader['id'],
             'recipient_type' => 'staff',
             'message'        => $msg,
             'ticket_id'      => $ticketId,
-            'email'          => $head['email'],
-            'name'           => $head['name'],
-            'phone'          => $head['contact'] ?? '',
+            'email'          => $leader['email'],
+            'name'           => $leader['name'],
+            'phone'          => $leader['contact'] ?? '',
             'subject'        => "New Ticket: {$ticketNumber} — {$category}",
             'email_body'     => $body,
         ]);
@@ -208,7 +208,7 @@ function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber
  */
 function notifyManagementStatusChange(int $ticketId, string $ticketNumber, string $newStatus, int $updatedByStaffId): void {
     $pdo  = getDB();
-    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager') AND is_active = 1 AND id != ?");
+    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager','assistant_ict') AND is_active = 1 AND id != ?");
     $stmt->execute([$updatedByStaffId]);
     $managers = $stmt->fetchAll();
 

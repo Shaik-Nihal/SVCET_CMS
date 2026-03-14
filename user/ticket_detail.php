@@ -36,7 +36,22 @@ if (!$ticket) {
 
 // Status history
 $histStmt = $pdo->prepare("
-    SELECT * FROM ticket_status_history WHERE ticket_id = ? ORDER BY created_at ASC
+    SELECT h.*,
+           changer.name AS changed_by_name,
+           (
+               SELECT assignee.name
+               FROM ticket_assignments ta
+               LEFT JOIN it_staff assignee ON ta.assigned_to = assignee.id
+               WHERE ta.ticket_id = h.ticket_id
+                 AND ta.assigned_at <= h.created_at
+               ORDER BY ta.assigned_at DESC, ta.id DESC
+               LIMIT 1
+           ) AS assigned_to_name
+    FROM ticket_status_history h
+    LEFT JOIN it_staff changer
+           ON h.changed_by_type = 'staff' AND h.changed_by = changer.id
+    WHERE h.ticket_id = ?
+    ORDER BY h.created_at ASC, h.id ASC
 ");
 $histStmt->execute([$ticketId]);
 $history = $histStmt->fetchAll();
@@ -195,7 +210,21 @@ $currentStep = $statusOrder[$ticket['status']] ?? 0;
                 <?php if ($h_item['old_status']): ?>
                 <span class="text-muted"> (was <?= statusLabel($h_item['old_status']) ?>)</span>
                 <?php endif; ?>
-                <br><small class="text-muted"><?= h($h_item['notes'] ?? '') ?></small>
+                <?php
+                  $timelineNote = trim((string)($h_item['notes'] ?? ''));
+                  $looksGenericAssign = stripos($timelineNote, 'assigned to staff') === 0;
+                  $looksGenericUpdate = strcasecmp($timelineNote, 'Status updated by technician') === 0;
+                  if ($timelineNote === '' || $looksGenericAssign || $looksGenericUpdate) {
+                    if (($h_item['new_status'] ?? '') === STATUS_PROCESSING && !empty($h_item['assigned_to_name'])) {
+                      $timelineNote = 'Assigned to ' . $h_item['assigned_to_name'];
+                    } elseif (!empty($h_item['changed_by_name'])) {
+                      $timelineNote = 'Updated by ' . $h_item['changed_by_name'];
+                    }
+                  }
+                ?>
+                <?php if ($timelineNote !== ''): ?>
+                <br><small class="text-muted"><?= h($timelineNote) ?></small>
+                <?php endif; ?>
               </div>
             </div>
             <?php endforeach; ?>

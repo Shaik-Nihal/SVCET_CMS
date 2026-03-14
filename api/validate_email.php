@@ -17,8 +17,16 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-if (!str_ends_with($email, '@' . EMAIL_DOMAIN)) {
-    echo json_encode(['valid' => false, 'message' => 'Must be a @' . EMAIL_DOMAIN . ' email.']);
+$domainValid = false;
+foreach (EMAIL_DOMAINS as $domain) {
+    if (str_ends_with($email, '@' . $domain)) {
+        $domainValid = true;
+        break;
+    }
+}
+
+if (!$domainValid) {
+    echo json_encode(['valid' => false, 'message' => 'Must be a valid ' . implode(' or ', EMAIL_DOMAINS) . ' email.']);
     exit;
 }
 

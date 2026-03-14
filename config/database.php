@@ -7,16 +7,19 @@ function getDB(): PDO
 {
     static $pdo = null;
     if ($pdo === null) {
-        $host = 'localhost';
+        // Prefer TCP to avoid socket path issues on XAMPP/LAMPP
+        $host   = '127.0.0.1';
+        $port   = 3306;
         $dbName = 'tms_apollo';
-        $user = 'root';
+        $user   = 'root';
 
         // ── No password (current) ──
         $pass = '';
 
         // ── If your DB has a password, comment the line above and uncomment below ──
         // $pass = 'root';
-        $dsn = "mysql:host={$host};dbname={$dbName};charset=utf8mb4";
+
+        $dsn = "mysql:host={$host};port={$port};dbname={$dbName};charset=utf8mb4";
         $options = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
