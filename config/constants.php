@@ -3,6 +3,12 @@
 // Application Constants
 // ============================================================
 
+// Optional local secrets bootstrap (kept out of version control).
+$localSecrets = __DIR__ . '/local.env.php';
+if (is_file($localSecrets)) {
+	require_once $localSecrets;
+}
+
 // App Info
 define('APP_NAME', 'Apollo University IT Support');
 define('APP_SHORT', 'Apollo TMS');
@@ -52,18 +58,19 @@ define('PRIORITY_HIGH', 'high');
 // ============================================================
 // Email (Gmail SMTP via PHPMailer)
 // ============================================================
-define('MAIL_HOST', 'smtp.gmail.com');
-define('MAIL_PORT', 587);
-define('MAIL_USERNAME', 'iamthanos0001@gmail.com'); // <<< CHANGE THIS
-define('MAIL_PASSWORD', 'ncwe qwgv cwhv ocpb'); // <<< Gmail App Password
-define('MAIL_FROM', 'iamthanos0001@gmail.com'); // <<< CHANGE THIS
+define('MAIL_DRIVER', getenv('MAIL_DRIVER') ?: 'smtp'); // smtp|graph
+define('MAIL_HOST', getenv('MAIL_HOST') ?: 'smtp.office365.com');
+define('MAIL_PORT', (int)(getenv('MAIL_PORT') ?: 587));
+define('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: 'tms@apollouniversity.edu.in');
+define('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ?: '');
+define('MAIL_FROM', getenv('MAIL_FROM') ?: MAIL_USERNAME);
 define('MAIL_FROM_NAME', APP_NAME);
 
-// ============================================================
-// SMS (Fast2SMS)
-// ============================================================
-define('FAST2SMS_API_KEY', '9YXiyBk7ehNPsWDEFpM8HjG1aKUg6tmJZnul0A3TrvCx54VdfoMdB3XWn1DRxqJkjcCzrp6oa7FSH5we'); // <<< CHANGE THIS
-define('FAST2SMS_URL', 'https://www.fast2sms.com/dev/bulkV2');
+// Microsoft Graph Mail (recommended for Microsoft 365)
+define('GRAPH_TENANT_ID', getenv('GRAPH_TENANT_ID') ?: '');
+define('GRAPH_CLIENT_ID', getenv('GRAPH_CLIENT_ID') ?: '');
+define('GRAPH_CLIENT_SECRET', getenv('GRAPH_CLIENT_SECRET') ?: '');
+define('GRAPH_SENDER', getenv('GRAPH_SENDER') ?: MAIL_FROM); // mailbox UPN
 
 // ============================================================
 // Paths

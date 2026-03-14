@@ -13,6 +13,122 @@ require_once VENDOR_PATH . '/phpmailer/src/PHPMailer.php';
 require_once VENDOR_PATH . '/phpmailer/src/SMTP.php';
 
 /**
+ * Check if Graph configuration is complete.
+ */
+function isGraphConfigured(): bool {
+  return GRAPH_TENANT_ID !== '' && GRAPH_CLIENT_ID !== '' && GRAPH_CLIENT_SECRET !== '' && GRAPH_SENDER !== '';
+}
+
+/**
+ * Acquire app-only access token for Microsoft Graph.
+ */
+function graphAccessToken(): ?string {
+  if (!isGraphConfigured()) {
+    return null;
+  }
+
+  if (!function_exists('curl_init')) {
+    error_log('Graph mail error: cURL extension is not enabled.');
+    return null;
+  }
+
+  $url = 'https://login.microsoftonline.com/' . rawurlencode(GRAPH_TENANT_ID) . '/oauth2/v2.0/token';
+  $postFields = http_build_query([
+    'client_id' => GRAPH_CLIENT_ID,
+    'client_secret' => GRAPH_CLIENT_SECRET,
+    'scope' => 'https://graph.microsoft.com/.default',
+    'grant_type' => 'client_credentials',
+  ]);
+
+  $ch = curl_init($url);
+  curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => $postFields,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
+    CURLOPT_TIMEOUT => 20,
+  ]);
+
+  $response = curl_exec($ch);
+  $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  $err = curl_error($ch);
+  curl_close($ch);
+
+  if ($response === false || $status >= 400) {
+    error_log('Graph token error: HTTP ' . $status . ' ' . $err . ' ' . (string)$response);
+    return null;
+  }
+
+  $json = json_decode($response, true);
+  return is_array($json) ? ($json['access_token'] ?? null) : null;
+}
+
+/**
+ * Send email via Microsoft Graph API.
+ */
+function sendEmailViaGraph(string $toEmail, string $toName, string $subject, string $htmlBody, string $plainBody = ''): bool {
+  $token = graphAccessToken();
+  if (!$token) {
+    return false;
+  }
+
+  if (!function_exists('curl_init')) {
+    error_log('Graph mail error: cURL extension is not enabled.');
+    return false;
+  }
+
+  $payload = [
+    'message' => [
+      'subject' => $subject,
+      'body' => [
+        'contentType' => 'HTML',
+        'content' => $htmlBody,
+      ],
+      'toRecipients' => [[
+        'emailAddress' => [
+          'address' => $toEmail,
+          'name' => $toName,
+        ],
+      ]],
+    ],
+    'saveToSentItems' => true,
+  ];
+
+  // Keep plain text in body for compatibility with existing call signature.
+  if ($plainBody !== '') {
+    $payload['message']['internetMessageHeaders'] = [[
+      'name' => 'X-Alt-Text',
+      'value' => $plainBody,
+    ]];
+  }
+
+  $url = 'https://graph.microsoft.com/v1.0/users/' . rawurlencode(GRAPH_SENDER) . '/sendMail';
+  $ch = curl_init($url);
+  curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+      'Authorization: Bearer ' . $token,
+      'Content-Type: application/json',
+    ],
+    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+    CURLOPT_TIMEOUT => 20,
+  ]);
+
+  $response = curl_exec($ch);
+  $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  $err = curl_error($ch);
+  curl_close($ch);
+
+  if ($response === false || ($status !== 202 && $status !== 200)) {
+    error_log('Graph sendMail error: HTTP ' . $status . ' ' . $err . ' ' . (string)$response);
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Returns a pre-configured PHPMailer instance.
  * Caller sets: addAddress(), Subject, Body, AltBody then calls send().
  */
@@ -35,6 +151,10 @@ function getMailer(): PHPMailer {
  * Send a simple HTML email.
  */
 function sendEmail(string $toEmail, string $toName, string $subject, string $htmlBody, string $plainBody = ''): bool {
+  if (MAIL_DRIVER === 'graph') {
+    return sendEmailViaGraph($toEmail, $toName, $subject, $htmlBody, $plainBody);
+  }
+
     try {
         $mail = getMailer();
         $mail->addAddress($toEmail, $toName);

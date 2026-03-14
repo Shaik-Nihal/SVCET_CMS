@@ -6,12 +6,11 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/mailer.php';
-require_once __DIR__ . '/../config/sms.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 /**
  * Core notification dispatcher.
- * Always saves to DB. Email and SMS failures are logged but never abort operations.
+ * Always saves to DB. Email failures are logged but never abort operations.
  *
  * @param array $params {
  *   recipient_id   int
@@ -20,7 +19,6 @@ require_once __DIR__ . '/../includes/functions.php';
  *   ticket_id      int|null
  *   email          string   (recipient email)
  *   name           string   (recipient name)
- *   phone          string   (recipient phone, 10-digit)
  *   subject        string   (email subject)
  *   email_body     string   (HTML email body)
  * }
@@ -49,10 +47,6 @@ function dispatchNotification(array $params): void {
         sendEmail($params['email'], $params['name'] ?? '', $params['subject'], $body);
     }
 
-    // 3. Send SMS (non-blocking)
-    if (!empty($params['phone'])) {
-        sendSMS($params['phone'], APP_NAME . ': ' . strip_tags($params['message']));
-    }
 }
 
 /**
@@ -83,7 +77,6 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
             'ticket_id'      => $ticketId,
             'email'          => $leader['email'],
             'name'           => $leader['name'],
-            'phone'          => $leader['contact'] ?? '',
             'subject'        => "New Ticket: {$ticketNumber} — {$category}",
             'email_body'     => $body,
         ]);
@@ -119,7 +112,6 @@ function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumbe
         'ticket_id'      => $ticketId,
         'email'          => $user['email'],
         'name'           => $user['name'],
-        'phone'          => $user['phone'] ?? '',
         'subject'        => "Ticket {$ticketNumber} Received",
         'email_body'     => $body,
     ]);
@@ -154,7 +146,6 @@ function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, 
         'ticket_id'      => $ticketId,
         'email'          => $staff['email'],
         'name'           => $staff['name'],
-        'phone'          => $staff['contact'] ?? '',
         'subject'        => "Ticket Assigned: {$ticketNumber}",
         'email_body'     => $body,
     ]);
@@ -197,7 +188,6 @@ function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber
         'ticket_id'      => $ticketId,
         'email'          => $user['email'],
         'name'           => $user['name'],
-        'phone'          => $user['phone'] ?? '',
         'subject'        => "Ticket {$ticketNumber} — Status: {$statusText}",
         'email_body'     => $body,
     ]);
@@ -221,7 +211,6 @@ function notifyManagementStatusChange(int $ticketId, string $ticketNumber, strin
             'ticket_id'      => $ticketId,
             'email'          => $mgr['email'],
             'name'           => $mgr['name'],
-            'phone'          => '',  // No SMS to management for status updates
             'subject'        => '',  // No email for minor status updates
         ]);
     }

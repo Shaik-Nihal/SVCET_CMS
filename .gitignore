@@ -1,0 +1,4 @@
+config/local.env.php
+.env
+.env.*
+*.log
