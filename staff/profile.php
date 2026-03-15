@@ -47,8 +47,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         } elseif ($new !== $cfm) {
             $pwdErrors[] = 'Passwords do not match.';
         } else {
-            $stmt = $pdo->prepare("SELECT password_hash FROM password_history WHERE user_id=? AND user_type='staff' ORDER BY changed_at DESC LIMIT " . PASSWORD_HISTORY_DEPTH);
-            $stmt->execute([$staffId]);
+            $stmt = $pdo->prepare("SELECT password_hash FROM password_history WHERE user_id=? AND user_type='staff' ORDER BY changed_at DESC LIMIT ?");
+            $stmt->bindValue(1, $staffId, PDO::PARAM_INT);
+            $stmt->bindValue(2, PASSWORD_HISTORY_DEPTH, PDO::PARAM_INT);
+            $stmt->execute();
             $history = $stmt->fetchAll(PDO::FETCH_COLUMN);
             $reused  = false;
             foreach ($history as $old) { if (password_verify($new, $old)) { $reused = true; break; } }

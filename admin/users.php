@@ -25,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_user_id'], $_P
       setFlash('success', 'User and associated data deleted.');
     } catch (Exception $e) {
       $pdo->rollBack();
-      setFlash('error', 'Error deleting user: ' . $e->getMessage());
+      error_log('User delete error: ' . $e->getMessage());
+      setFlash('error', 'Error deleting user. Please try again.');
     }
   } else {
     setFlash('error', 'Invalid request.');
@@ -58,7 +59,7 @@ $users = $pdo->query("SELECT id, name, email, phone, designation, email_verified
     </button>
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
     <div class="ms-auto">
-      <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i>System Admin</span>
+      <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
     </div>
   </div>

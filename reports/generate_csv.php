@@ -14,8 +14,9 @@ if ($_SESSION['user_type'] !== 'staff' || ($_SESSION['staff_role'] !== ROLE_ICT_
 }
 
 $pdo      = getDB();
-$dateFrom = $_GET['from'] ?? date('Y-m-d', strtotime('-7 days'));
-$dateTo   = $_GET['to']   ?? date('Y-m-d');
+// Sanitize date inputs
+$dateFrom = preg_replace('/[^0-9\-]/', '', $_GET['from'] ?? date('Y-m-d', strtotime('-7 days')));
+$dateTo   = preg_replace('/[^0-9\-]/', '', $_GET['to']   ?? date('Y-m-d'));
 
 $stmt = $pdo->prepare("
     SELECT
@@ -44,8 +45,10 @@ $stmt = $pdo->prepare("
 $stmt->execute([$dateFrom, $dateTo]);
 $rows = $stmt->fetchAll();
 
-// Stream CSV
-$filename = 'TMS_Report_' . date('Ymd', strtotime($dateFrom)) . '_to_' . date('Ymd', strtotime($dateTo)) . '.csv';
+// Stream CSV — sanitize filename to prevent header injection
+$safeDateFrom = preg_replace('/[^0-9]/', '', $dateFrom);
+$safeDateTo   = preg_replace('/[^0-9]/', '', $dateTo);
+$filename = 'TMS_Report_' . $safeDateFrom . '_to_' . $safeDateTo . '.csv';
 
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

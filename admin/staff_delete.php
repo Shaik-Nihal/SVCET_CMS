@@ -35,7 +35,8 @@ try {
     setFlash('success', 'Staff member deleted successfully. Their tickets are now unassigned.');
 } catch (Exception $e) {
     $pdo->rollBack();
-    setFlash('error', 'Failed to delete staff member: ' . $e->getMessage());
+    error_log('Staff delete error: ' . $e->getMessage());
+    setFlash('error', 'Failed to delete staff member. Please try again.');
 }
 
 header('Location: ' . APP_URL . '/admin/staff');
