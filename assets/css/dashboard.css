@@ -4,31 +4,62 @@
 
 /* Welcome banner */
 .welcome-banner {
-    background: linear-gradient(135deg, #1a3a5c 0%, #1a7a8a 60%, #1a3a5c 100%);
+    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 50%, #1a7a8a 100%);
     color: #fff;
-    border-radius: 12px;
-    padding: 1.5rem 2rem;
-    margin-bottom: 1.5rem;
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    box-shadow: 0 10px 30px rgba(26, 58, 92, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.05)"/></svg>') no-repeat center center;
+    background-size: cover;
+    z-index: 0;
+}
+
+.welcome-banner > div, .welcome-banner > a {
+    z-index: 1;
+    position: relative;
 }
 
 .welcome-banner h5 {
     margin: 0;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
 }
 
 .welcome-banner p {
-    margin: .3rem 0 0;
-    font-size: .85rem;
-    opacity: .8;
+    margin: .5rem 0 0;
+    font-size: .95rem;
+    opacity: .9;
 }
 
 .welcome-banner .btn-outline-light {
-    font-size: .82rem;
-    padding: .4rem .9rem;
+    font-size: .9rem;
+    padding: .6rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.welcome-banner .btn-outline-light:hover {
+    background: #fff;
+    color: var(--apollo-navy);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
 }
 
 /* Quick action buttons */
@@ -42,29 +73,38 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
-    border-radius: 10px;
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
     background: #fff;
     border: 1px solid #e2e8f0;
-    color: #1a3a5c;
-    font-size: .78rem;
+    color: var(--apollo-navy);
+    font-size: .85rem;
     font-weight: 600;
-    min-width: 90px;
-    transition: all .15s;
+    min-width: 95px;
+    transition: all .25s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .btn-quick i {
-    font-size: 1.4rem;
-    margin-bottom: .3rem;
+    font-size: 1.6rem;
+    margin-bottom: .4rem;
+    color: var(--apollo-blue);
+    transition: transform 0.3s ease;
 }
 
 .btn-quick:hover {
-    background: #1a3a5c;
+    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 100%);
     color: #fff;
-    border-color: #1a3a5c;
-    transform: translateY(-2px);
+    border-color: transparent;
+    transform: translateY(-4px);
     text-decoration: none;
+    box-shadow: 0 8px 20px rgba(37, 99, 168, 0.15);
+}
+
+.btn-quick:hover i {
+    color: #fff;
+    transform: scale(1.1);
 }
 
 /* Recent tickets mini-list */

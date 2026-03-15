@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 /* ============================================================
    Apollo University TMS - Global Styles
    ============================================================ */
@@ -14,7 +16,7 @@
 
 /* ── Base ────────────────────────────────────────────────── */
 body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: #f0f4f8;
     color: #2d3748;
     min-height: 100vh;
@@ -30,8 +32,8 @@ a:hover {
 
 /* ── Navbar ──────────────────────────────────────────────── */
 .navbar-apollo {
-    background: var(--apollo-navy);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 100%);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .2);
 }
 
 .navbar-apollo .navbar-brand {
@@ -44,10 +46,10 @@ a:hover {
 }
 
 .navbar-apollo .navbar-brand img {
-    height: 30px;
+    height: 48px;
     width: auto;
-    margin-right: 8px;
-    border-radius: 4px;
+    margin-right: 12px;
+    border-radius: 6px;
 }
 
 .navbar-apollo .nav-link {
@@ -159,19 +161,19 @@ a:hover {
 /* Stat cards */
 .stat-card {
     border-left: 4px solid;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #fff;
-    padding: 1.25rem;
+    padding: 1.5rem 1.25rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, .06);
-    transition: transform .15s, box-shadow .15s;
+    gap: 1.25rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, .05);
+    transition: transform .25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, .1);
 }
 
 .stat-card.blue {
@@ -191,14 +193,19 @@ a:hover {
 }
 
 .stat-card .stat-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
+    width: 58px;
+    height: 58px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1);
 }
 
 .stat-card.blue .stat-icon {
@@ -482,14 +489,17 @@ a:hover {
 }
 
 .btn-apollo {
-    background: var(--apollo-navy);
+    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 100%);
     color: #fff;
     border: none;
+    transition: all 0.3s ease;
 }
 
 .btn-apollo:hover {
-    background: #0f2540;
+    background: linear-gradient(135deg, var(--apollo-blue) 0%, #1a7a8a 100%);
     color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 168, 0.3);
 }
 
 .ticket-number {
