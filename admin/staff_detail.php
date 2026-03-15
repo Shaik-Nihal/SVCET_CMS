@@ -92,6 +92,11 @@ $tickets = $ticketsStmt->fetchAll();
     <a class="nav-link" href="<?= APP_URL ?>/admin/dashboard"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a class="nav-link active" href="<?= APP_URL ?>/admin/staff"><i class="bi bi-person-badge"></i> IT Staff Management</a>
     <a class="nav-link" href="<?= APP_URL ?>/admin/users"><i class="bi bi-people"></i> User Management</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/reports"><i class="bi bi-bar-chart-line-fill"></i> System Reports</a>
+  </nav>
+  <div class="p-3 text-uppercase text-secondary small fw-bold">Account</div>
+  <nav class="nav flex-column">
+    <a class="nav-link" href="<?= APP_URL ?>/admin/profile"><i class="bi bi-person-gear"></i> My Profile</a>
   </nav>
 </div>
 
