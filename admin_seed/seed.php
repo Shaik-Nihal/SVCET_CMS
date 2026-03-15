@@ -31,6 +31,7 @@ $staffData = [
     ['Jagadeesh Karunakaaran','jagadeesh_k@aimsrchittoor.edu.in',        'sr_it_executive',   'Sr. IT Executive',            '7013033153'],
     ['N Bharagav Ramudu',    'bhargava_ramudu_n@aimsrchittoor.edu.in',   'assistant_it',      'IT Assistant',                '8919239200'],
     ['NS Gopinath',          'gopinath_ns@aimsrchittoor.edu.in',         'assistant_it',      'IT Assistant',                '8722230752'],
+    ['G Vijaya Sekhar',      'vijaysekhar_g@aimsrchittoor.edu.in',       'assistant_it',      'IT Assistant',                '9704805971'],
 ];
 
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM it_staff");
