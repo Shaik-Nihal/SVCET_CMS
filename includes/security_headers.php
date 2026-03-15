@@ -44,3 +44,6 @@ header("Content-Security-Policy: "
 // Prevent caching of sensitive pages (login, forms, etc.)
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
+
+// CDN preconnect — speeds up Bootstrap/Icon font loading (~100-200ms saved)
+header('Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin', false);

@@ -69,8 +69,10 @@ CREATE TABLE IF NOT EXISTS tickets (
     FOREIGN KEY (problem_category_id) REFERENCES problem_categories(id) ON DELETE SET NULL,
     FOREIGN KEY (assigned_to) REFERENCES it_staff(id) ON DELETE SET NULL,
     INDEX idx_user (user_id),
+    INDEX idx_user_status (user_id, status),
     INDEX idx_status (status),
     INDEX idx_assigned (assigned_to),
+    INDEX idx_assigned_status (assigned_to, status),
     INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -117,7 +119,8 @@ CREATE TABLE IF NOT EXISTS feedback (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT chk_rating CHECK (rating BETWEEN 1 AND 5)
+    CONSTRAINT chk_rating CHECK (rating BETWEEN 1 AND 5),
+    INDEX idx_feedback_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ============================================================
@@ -146,6 +149,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     is_read        TINYINT(1) DEFAULT 0,
     created_at     DATETIME DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_recipient (recipient_id, recipient_type),
+    INDEX idx_recipient_unread (recipient_id, recipient_type, is_read),
     INDEX idx_read (is_read),
     INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

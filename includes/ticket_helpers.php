@@ -8,18 +8,26 @@ require_once __DIR__ . '/../config/constants.php';
 
 /**
  * Generate a unique ticket number: AKC-YYYYMMDD-XXXX
+ * Uses MAX-based sequence to avoid COUNT(*) race conditions.
  * Called within a transaction for safety.
  */
 function generateTicketNumber(): string {
     $pdo  = getDB();
     $date = date('Ymd');
+    $prefix = TICKET_PREFIX . '-' . $date . '-';
 
-    // Count tickets created today
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE DATE(created_at) = CURDATE()");
-    $stmt->execute();
-    $count = (int) $stmt->fetchColumn();
+    // Find highest sequence for today
+    $stmt = $pdo->prepare("SELECT MAX(ticket_number) FROM tickets WHERE ticket_number LIKE ?");
+    $stmt->execute([$prefix . '%']);
+    $maxTicket = $stmt->fetchColumn();
 
-    return TICKET_PREFIX . '-' . $date . '-' . str_pad((string)($count + 1), 4, '0', STR_PAD_LEFT);
+    if ($maxTicket) {
+        $seq = (int)substr($maxTicket, -4) + 1;
+    } else {
+        $seq = 1;
+    }
+
+    return $prefix . str_pad((string)$seq, 4, '0', STR_PAD_LEFT);
 }
 
 /**
@@ -76,52 +84,61 @@ function canAssignForDomain(string $actorRole, string $userEmail): bool {
 }
 
 /**
- * Create a ticket (inside transaction).
- * Returns new ticket ID or throws on error.
+ * Create a ticket (inside transaction with retry for ticket number uniqueness).
+ * Returns ['id' => int, 'ticket_number' => string] or throws on error.
  */
-function createTicket(array $data): int {
+function createTicket(array $data): array {
     $pdo = getDB();
-    $pdo->beginTransaction();
+    $maxRetries = 3;
 
-    try {
-        $ticketNumber = generateTicketNumber();
+    for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
+        $pdo->beginTransaction();
+        try {
+            $ticketNumber = generateTicketNumber();
 
-        $stmt = $pdo->prepare("
-            INSERT INTO tickets
-                (ticket_number, user_id, problem_category_id, custom_description,
-                 assigned_to, status, priority)
-            VALUES (?, ?, ?, ?, ?, 'notified', ?)
-        ");
-        $stmt->execute([
-            $ticketNumber,
-            $data['user_id'],
-            $data['category_id'] ?: null,
-            $data['description'] ?: null,
-            $data['assigned_to'],
-            $data['priority'] ?? PRIORITY_MEDIUM,
-        ]);
-        $ticketId = (int) $pdo->lastInsertId();
+            $stmt = $pdo->prepare("
+                INSERT INTO tickets
+                    (ticket_number, user_id, problem_category_id, custom_description,
+                     assigned_to, status, priority)
+                VALUES (?, ?, ?, ?, ?, 'notified', ?)
+            ");
+            $stmt->execute([
+                $ticketNumber,
+                $data['user_id'],
+                $data['category_id'] ?: null,
+                $data['description'] ?: null,
+                $data['assigned_to'],
+                $data['priority'] ?? PRIORITY_MEDIUM,
+            ]);
+            $ticketId = (int) $pdo->lastInsertId();
 
-        // Initial assignment record
-        $pdo->prepare("
-            INSERT INTO ticket_assignments (ticket_id, assigned_by, assigned_to, notes)
-            VALUES (?, NULL, ?, 'Ticket raised by user')
-        ")->execute([$ticketId, $data['assigned_to']]);
+            // Initial assignment record
+            $pdo->prepare("
+                INSERT INTO ticket_assignments (ticket_id, assigned_by, assigned_to, notes)
+                VALUES (?, NULL, ?, 'Ticket raised by user')
+            ")->execute([$ticketId, $data['assigned_to']]);
 
-        // Initial status history
-        $pdo->prepare("
-            INSERT INTO ticket_status_history
-                (ticket_id, old_status, new_status, changed_by, changed_by_type, notes)
-            VALUES (?, NULL, 'notified', ?, 'user', 'Ticket created')
-        ")->execute([$ticketId, $data['user_id']]);
+            // Initial status history
+            $pdo->prepare("
+                INSERT INTO ticket_status_history
+                    (ticket_id, old_status, new_status, changed_by, changed_by_type, notes)
+                VALUES (?, NULL, 'notified', ?, 'user', 'Ticket created')
+            ")->execute([$ticketId, $data['user_id']]);
 
-        $pdo->commit();
-        return $ticketId;
-    } catch (Throwable $e) {
-        $pdo->rollBack();
-        error_log('createTicket error: ' . $e->getMessage());
-        throw $e;
+            $pdo->commit();
+            return ['id' => $ticketId, 'ticket_number' => $ticketNumber];
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            // Retry on duplicate ticket number (unique constraint violation)
+            if ($attempt < $maxRetries - 1 && strpos($e->getMessage(), 'Duplicate') !== false) {
+                usleep(50000); // 50ms backoff
+                continue;
+            }
+            error_log('createTicket error: ' . $e->getMessage());
+            throw $e;
+        }
     }
+    throw new RuntimeException('Failed to create ticket after retries');
 }
 
 /**

@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// Notification Helpers
+// Notification Helpers — with deferred email queue
 // ============================================================
 
 require_once __DIR__ . '/../config/database.php';
@@ -8,9 +8,65 @@ require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/mailer.php';
 require_once __DIR__ . '/../includes/functions.php';
 
+// ── Deferred Email Queue ───────────────────────────────────
+// Emails are queued in memory during request processing and
+// flushed after the HTTP response is sent to the user.
+// This makes ticket creation near-instant.
+
+/** @var array[] Queued emails to send after response */
+$_EMAIL_QUEUE = [];
+
+/**
+ * Queue an email for deferred sending.
+ */
+function queueEmail(string $toEmail, string $toName, string $subject, string $htmlBody): void {
+    global $_EMAIL_QUEUE;
+    $_EMAIL_QUEUE[] = compact('toEmail', 'toName', 'subject', 'htmlBody');
+}
+
+/**
+ * Flush the email queue — sends all queued emails.
+ * Call this AFTER the HTTP response has been sent.
+ */
+function flushEmailQueue(): void {
+    global $_EMAIL_QUEUE;
+    if (empty($_EMAIL_QUEUE)) return;
+
+    foreach ($_EMAIL_QUEUE as $mail) {
+        sendEmail($mail['toEmail'], $mail['toName'], $mail['subject'], $mail['htmlBody']);
+    }
+    $_EMAIL_QUEUE = [];
+}
+
+/**
+ * Register a shutdown handler to flush emails after response.
+ * Safe to call multiple times — only registers once.
+ */
+function registerEmailFlush(): void {
+    static $registered = false;
+    if ($registered) return;
+    $registered = true;
+
+    register_shutdown_function(function () {
+        // Close the connection to let browser finish loading
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } elseif (!headers_sent()) {
+            // For non-FPM: flush output and close connection
+            ignore_user_abort(true);
+            if (ob_get_level() > 0) ob_end_flush();
+            flush();
+            if (function_exists('litespeed_finish_request')) {
+                litespeed_finish_request();
+            }
+        }
+        flushEmailQueue();
+    });
+}
+
 /**
  * Core notification dispatcher.
- * Always saves to DB. Email failures are logged but never abort operations.
+ * Saves to DB immediately. Emails are QUEUED (not sent inline).
  *
  * @param array $params {
  *   recipient_id   int
@@ -26,7 +82,7 @@ require_once __DIR__ . '/../includes/functions.php';
 function dispatchNotification(array $params): void {
     $pdo = getDB();
 
-    // 1. Save in-app notification
+    // 1. Save in-app notification (instant)
     try {
         $pdo->prepare("
             INSERT INTO notifications (recipient_id, recipient_type, message, ticket_id)
@@ -41,10 +97,11 @@ function dispatchNotification(array $params): void {
         error_log('Notification DB insert error: ' . $e->getMessage());
     }
 
-    // 2. Send email (non-blocking)
+    // 2. Queue email for deferred sending (non-blocking)
     if (!empty($params['email']) && !empty($params['subject'])) {
         $body = $params['email_body'] ?? emailTemplate($params['subject'], '<p>' . nl2br(h($params['message'])) . '</p>');
-        sendEmail($params['email'], $params['name'] ?? '', $params['subject'], $body);
+        queueEmail($params['email'], $params['name'] ?? '', $params['subject'], $body);
+        registerEmailFlush();
     }
 
 }
@@ -52,19 +109,16 @@ function dispatchNotification(array $params): void {
 /**
  * Notify all leadership (ICT Head, Assistant Manager, Assistant ICT) about a new ticket.
  */
-function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userName, string $category): void {
+function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userName, string $category, string $userDesignation = ''): void {
     $pdo  = getDB();
     $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager','assistant_ict') AND is_active = 1");
     $stmt->execute();
     $leaders = $stmt->fetchAll();
 
-    // Fetch user designation
-    $reqStmt = $pdo->prepare("SELECT u.name, u.designation FROM tickets t JOIN users u ON t.user_id = u.id WHERE t.id = ?");
-    $reqStmt->execute([$ticketId]);
-    $requestor = $reqStmt->fetch();
-    $reqName = $requestor['name'] ?? $userName;
-    $reqDesigStr = !empty($requestor['designation']) ? " ({$requestor['designation']})" : "";
-    $raisedByDisplay = h($reqName) . h($reqDesigStr);
+    $raisedByDisplay = h($userName);
+    if ($userDesignation !== '') {
+        $raisedByDisplay .= ' (' . h($userDesignation) . ')';
+    }
 
     foreach ($leaders as $leader) {
         $msg  = "New ticket {$ticketNumber} raised by {$userName}. Problem: {$category}. Please review and assign.";
@@ -94,11 +148,15 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
 /**
  * Notify user about their ticket being received.
  */
-function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumber, string $staffName): void {
-    $pdo  = getDB();
-    $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
-    $stmt->execute([$userId]);
-    $user = $stmt->fetch();
+function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumber, string $staffName, ?array $userData = null): void {
+    if ($userData) {
+        $user = $userData;
+    } else {
+        $pdo  = getDB();
+        $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+    }
     if (!$user) return;
 
     $msg  = "Your ticket {$ticketNumber} has been raised successfully and assigned to {$staffName}. We will get back to you shortly.";

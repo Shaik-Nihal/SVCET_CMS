@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (empty($errors)) {
             try {
-                $ticketId = createTicket([
+                $result = createTicket([
                     'user_id'     => $userId,
                     'category_id' => $categoryId,
                     'description' => $description,
@@ -71,13 +71,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'priority'    => $priority,
                 ]);
 
-                // Get ticket number for notifications
-                $stmt = $pdo->prepare("SELECT ticket_number FROM tickets WHERE id = ?");
-                $stmt->execute([$ticketId]);
-                $ticketNumber = $stmt->fetchColumn();
+                $ticketId     = $result['id'];
+                $ticketNumber = $result['ticket_number'];
 
-                notifyUserTicketCreated($userId, $ticketId, $ticketNumber, $staffRow['name'] . ' (' . $staffRow['designation'] . ')');
-                notifyAllLeadership($ticketId, $ticketNumber, $_SESSION['user_name'], $cat['name']);
+                // Fetch user data once for notifications (avoids re-query)
+                $stmt = $pdo->prepare("SELECT name, email, phone, designation FROM users WHERE id = ? LIMIT 1");
+                $stmt->execute([$userId]);
+                $userData = $stmt->fetch();
+
+                notifyUserTicketCreated($userId, $ticketId, $ticketNumber, $staffRow['name'] . ' (' . $staffRow['designation'] . ')', $userData);
+                notifyAllLeadership($ticketId, $ticketNumber, $_SESSION['user_name'], $cat['name'], $userData['designation'] ?? '');
 
                 setFlash('success', "Ticket <strong>{$ticketNumber}</strong> raised successfully! You will be notified of updates.");
                 header('Location: ' . APP_URL . '/user/ticket_detail?id=' . $ticketId);
