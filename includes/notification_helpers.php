@@ -25,7 +25,8 @@ $_EMAIL_QUEUE = [];
 /**
  * Queue an email for deferred sending.
  */
-function queueEmail(string $toEmail, string $toName, string $subject, string $htmlBody): void {
+function queueEmail(string $toEmail, string $toName, string $subject, string $htmlBody): void
+{
     global $_EMAIL_QUEUE;
     $_EMAIL_QUEUE[] = compact('toEmail', 'toName', 'subject', 'htmlBody');
 }
@@ -33,14 +34,17 @@ function queueEmail(string $toEmail, string $toName, string $subject, string $ht
 /**
  * Flush the email queue — sends all queued emails.
  */
-function flushEmailQueue(): void {
+function flushEmailQueue(): void
+{
     global $_EMAIL_QUEUE;
-    if (empty($_EMAIL_QUEUE)) return;
+    if (empty($_EMAIL_QUEUE))
+        return;
 
     foreach ($_EMAIL_QUEUE as $mail) {
         try {
             sendEmail($mail['toEmail'], $mail['toName'], $mail['subject'], $mail['htmlBody']);
-        } catch (Throwable $e) {
+        }
+        catch (Throwable $e) {
             error_log('Deferred email error: ' . $e->getMessage());
         }
     }
@@ -55,7 +59,8 @@ function flushEmailQueue(): void {
  *
  * @param string $redirectUrl  The URL to redirect the browser to
  */
-function sendResponseAndFlushEmails(string $redirectUrl): void {
+function sendResponseAndFlushEmails(string $redirectUrl): void
+{
     global $_EMAIL_QUEUE;
 
     // If no emails queued, just redirect normally
@@ -73,7 +78,7 @@ function sendResponseAndFlushEmails(string $redirectUrl): void {
 
     // Write a minimal redirect body
     $body = '<html><head><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirectUrl, ENT_QUOTES) . '"></head>'
-          . '<body>Redirecting...</body></html>';
+        . '<body>Redirecting...</body></html>';
 
     // 1. Send redirect + connection close headers
     header('Location: ' . $redirectUrl);
@@ -92,8 +97,9 @@ function sendResponseAndFlushEmails(string $redirectUrl): void {
     // 4. If PHP-FPM or LiteSpeed, use their native finish functions
     if (function_exists('fastcgi_finish_request')) {
         fastcgi_finish_request();
-    } elseif (function_exists('litespeed_finish_request')) {
-        litespeed_finish_request();
+    }
+    elseif (function_exists('litespeed_finish_request')) {
+        call_user_func('litespeed_finish_request');
     }
 
     // ── Browser has now moved on — send emails in background ──
@@ -122,7 +128,8 @@ function sendResponseAndFlushEmails(string $redirectUrl): void {
  *   email_body     string   (HTML email body)
  * }
  */
-function dispatchNotification(array $params): void {
+function dispatchNotification(array $params): void
+{
     $pdo = getDB();
 
     // 1. Save in-app notification (instant)
@@ -136,7 +143,8 @@ function dispatchNotification(array $params): void {
             $params['message'],
             $params['ticket_id'] ?? null,
         ]);
-    } catch (Throwable $e) {
+    }
+    catch (Throwable $e) {
         error_log('Notification DB insert error: ' . $e->getMessage());
     }
 
@@ -151,8 +159,9 @@ function dispatchNotification(array $params): void {
 /**
  * Notify all leadership (ICT Head, Assistant Manager, Assistant ICT) about a new ticket.
  */
-function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userName, string $category, string $userDesignation = ''): void {
-    $pdo  = getDB();
+function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userName, string $category, string $userDesignation = ''): void
+{
+    $pdo = getDB();
     $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager','assistant_ict') AND is_active = 1");
     $stmt->execute();
     $leaders = $stmt->fetchAll();
@@ -163,7 +172,7 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
     }
 
     foreach ($leaders as $leader) {
-        $msg  = "New ticket {$ticketNumber} raised by {$userName}. Problem: {$category}. Please review and assign.";
+        $msg = "New ticket {$ticketNumber} raised by {$userName}. Problem: {$category}. Please review and assign.";
         $body = emailTemplate("New IT Support Ticket — {$ticketNumber}", "
             <p>Dear {$leader['name']},</p>
             <p>A new support ticket has been raised by <strong>{$raisedByDisplay}</strong>.</p>
@@ -175,14 +184,14 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
         ");
 
         dispatchNotification([
-            'recipient_id'   => $leader['id'],
+            'recipient_id' => $leader['id'],
             'recipient_type' => 'staff',
-            'message'        => $msg,
-            'ticket_id'      => $ticketId,
-            'email'          => $leader['email'],
-            'name'           => $leader['name'],
-            'subject'        => "New Ticket: {$ticketNumber} — {$category}",
-            'email_body'     => $body,
+            'message' => $msg,
+            'ticket_id' => $ticketId,
+            'email' => $leader['email'],
+            'name' => $leader['name'],
+            'subject' => "New Ticket: {$ticketNumber} — {$category}",
+            'email_body' => $body,
         ]);
     }
 }
@@ -190,18 +199,21 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
 /**
  * Notify user about their ticket being received.
  */
-function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumber, string $staffName, ?array $userData = null): void {
+function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumber, string $staffName, ?array $userData = null): void
+{
     if ($userData) {
         $user = $userData;
-    } else {
-        $pdo  = getDB();
+    }
+    else {
+        $pdo = getDB();
         $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();
     }
-    if (!$user) return;
+    if (!$user)
+        return;
 
-    $msg  = "Your ticket {$ticketNumber} has been raised successfully and assigned to {$staffName}. We will get back to you shortly.";
+    $msg = "Your ticket {$ticketNumber} has been raised successfully and assigned to {$staffName}. We will get back to you shortly.";
     $body = emailTemplate("Ticket {$ticketNumber} Received", "
         <p>Dear {$user['name']},</p>
         <p>Your support ticket has been received and assigned to our IT team.</p>
@@ -214,26 +226,28 @@ function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumbe
     ");
 
     dispatchNotification([
-        'recipient_id'   => $userId,
+        'recipient_id' => $userId,
         'recipient_type' => 'user',
-        'message'        => $msg,
-        'ticket_id'      => $ticketId,
-        'email'          => $user['email'],
-        'name'           => $user['name'],
-        'subject'        => "Ticket {$ticketNumber} Received",
-        'email_body'     => $body,
+        'message' => $msg,
+        'ticket_id' => $ticketId,
+        'email' => $user['email'],
+        'name' => $user['name'],
+        'subject' => "Ticket {$ticketNumber} Received",
+        'email_body' => $body,
     ]);
 }
 
 /**
  * Notify assigned staff of new assignment.
  */
-function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, string $assignedByName, string $category, string $notes = ''): void {
-    $pdo  = getDB();
+function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, string $assignedByName, string $category, string $notes = ''): void
+{
+    $pdo = getDB();
     $stmt = $pdo->prepare("SELECT name, email, contact FROM it_staff WHERE id = ?");
     $stmt->execute([$staffId]);
     $staff = $stmt->fetch();
-    if (!$staff) return;
+    if (!$staff)
+        return;
 
     // Fetch user designation
     $reqStmt = $pdo->prepare("SELECT u.name, u.designation FROM tickets t JOIN users u ON t.user_id = u.id WHERE t.id = ?");
@@ -243,7 +257,7 @@ function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, 
     $reqDesigStr = !empty($requestor['designation']) ? " ({$requestor['designation']})" : "";
     $raisedByDisplay = h($reqName) . h($reqDesigStr);
 
-    $msg  = "Ticket {$ticketNumber} ({$category}) has been assigned to you by {$assignedByName}. " . ($notes ? "Note: {$notes}" : "");
+    $msg = "Ticket {$ticketNumber} ({$category}) has been assigned to you by {$assignedByName}. " . ($notes ? "Note: {$notes}" : "");
     $body = emailTemplate("Ticket Assigned: {$ticketNumber}", "
         <p>Dear {$staff['name']},</p>
         <p>A support ticket has been assigned to you by <strong>{$assignedByName}</strong>.</p>
@@ -257,29 +271,31 @@ function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, 
     ");
 
     dispatchNotification([
-        'recipient_id'   => $staffId,
+        'recipient_id' => $staffId,
         'recipient_type' => 'staff',
-        'message'        => $msg,
-        'ticket_id'      => $ticketId,
-        'email'          => $staff['email'],
-        'name'           => $staff['name'],
-        'subject'        => "Ticket Assigned: {$ticketNumber}",
-        'email_body'     => $body,
+        'message' => $msg,
+        'ticket_id' => $ticketId,
+        'email' => $staff['email'],
+        'name' => $staff['name'],
+        'subject' => "Ticket Assigned: {$ticketNumber}",
+        'email_body' => $body,
     ]);
 }
 
 /**
  * Notify user about status change.
  */
-function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber, string $newStatus): void {
-    $pdo  = getDB();
+function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber, string $newStatus): void
+{
+    $pdo = getDB();
     $stmt = $pdo->prepare("SELECT name, email, phone FROM users WHERE id = ?");
     $stmt->execute([$userId]);
     $user = $stmt->fetch();
-    if (!$user) return;
+    if (!$user)
+        return;
 
     $statusText = statusLabel($newStatus);
-    $msg  = "Your ticket {$ticketNumber} status has been updated to: {$statusText}.";
+    $msg = "Your ticket {$ticketNumber} status has been updated to: {$statusText}.";
     if ($newStatus === STATUS_SOLVED) {
         $msg .= " Please submit your feedback.";
     }
@@ -299,22 +315,23 @@ function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber
     ");
 
     dispatchNotification([
-        'recipient_id'   => $userId,
+        'recipient_id' => $userId,
         'recipient_type' => 'user',
-        'message'        => $msg,
-        'ticket_id'      => $ticketId,
-        'email'          => $user['email'],
-        'name'           => $user['name'],
-        'subject'        => "Ticket {$ticketNumber} — Status: {$statusText}",
-        'email_body'     => $body,
+        'message' => $msg,
+        'ticket_id' => $ticketId,
+        'email' => $user['email'],
+        'name' => $user['name'],
+        'subject' => "Ticket {$ticketNumber} — Status: {$statusText}",
+        'email_body' => $body,
     ]);
 }
 
 /**
  * Notify ICT Heads + Asst Managers of a status update (for awareness).
  */
-function notifyManagementStatusChange(int $ticketId, string $ticketNumber, string $newStatus, int $updatedByStaffId): void {
-    $pdo  = getDB();
+function notifyManagementStatusChange(int $ticketId, string $ticketNumber, string $newStatus, int $updatedByStaffId): void
+{
+    $pdo = getDB();
     $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager','assistant_ict') AND is_active = 1 AND id != ?");
     $stmt->execute([$updatedByStaffId]);
     $managers = $stmt->fetchAll();
@@ -322,13 +339,13 @@ function notifyManagementStatusChange(int $ticketId, string $ticketNumber, strin
     $statusText = statusLabel($newStatus);
     foreach ($managers as $mgr) {
         dispatchNotification([
-            'recipient_id'   => $mgr['id'],
+            'recipient_id' => $mgr['id'],
             'recipient_type' => 'staff',
-            'message'        => "Ticket {$ticketNumber} status updated to {$statusText}.",
-            'ticket_id'      => $ticketId,
-            'email'          => $mgr['email'],
-            'name'           => $mgr['name'],
-            'subject'        => '',  // No email for minor status updates
+            'message' => "Ticket {$ticketNumber} status updated to {$statusText}.",
+            'ticket_id' => $ticketId,
+            'email' => $mgr['email'],
+            'name' => $mgr['name'],
+            'subject' => '', // No email for minor status updates
         ]);
     }
 }

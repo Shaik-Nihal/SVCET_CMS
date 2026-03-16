@@ -173,6 +173,11 @@ function sendEmail(string $toEmail, string $toName, string $subject, string $htm
     return sendEmailViaGraph($toEmail, $toName, $subject, $htmlBody, $plainBody);
   }
 
+  if (empty(MAIL_PASSWORD)) {
+      error_log('Mailer skipped: MAIL_PASSWORD is empty. Emails disabled for development.');
+      return false;
+  }
+
     try {
         $mail = getMailer();
         $mail->addAddress($toEmail, $toName);
