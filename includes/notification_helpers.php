@@ -9,9 +9,15 @@ require_once __DIR__ . '/../config/mailer.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 // ── Deferred Email Queue ───────────────────────────────────
-// Emails are queued in memory during request processing and
-// flushed after the HTTP response is sent to the user.
-// This makes ticket creation near-instant.
+// Emails are queued in memory during request processing.
+// After the ticket is created and the redirect is sent,
+// sendResponseAndFlushEmails() closes the HTTP connection
+// and sends emails in the background.
+//
+// NOTE: register_shutdown_function() does NOT work for this
+// on Apache mod_php (XAMPP/LAMPP) — Apache buffers the
+// entire response until PHP dies, including shutdown handlers.
+// We must explicitly close the connection using HTTP headers.
 
 /** @var array[] Queued emails to send after response */
 $_EMAIL_QUEUE = [];
@@ -26,43 +32,80 @@ function queueEmail(string $toEmail, string $toName, string $subject, string $ht
 
 /**
  * Flush the email queue — sends all queued emails.
- * Call this AFTER the HTTP response has been sent.
  */
 function flushEmailQueue(): void {
     global $_EMAIL_QUEUE;
     if (empty($_EMAIL_QUEUE)) return;
 
     foreach ($_EMAIL_QUEUE as $mail) {
-        sendEmail($mail['toEmail'], $mail['toName'], $mail['subject'], $mail['htmlBody']);
+        try {
+            sendEmail($mail['toEmail'], $mail['toName'], $mail['subject'], $mail['htmlBody']);
+        } catch (Throwable $e) {
+            error_log('Deferred email error: ' . $e->getMessage());
+        }
     }
     $_EMAIL_QUEUE = [];
 }
 
 /**
- * Register a shutdown handler to flush emails after response.
- * Safe to call multiple times — only registers once.
+ * Send the HTTP response (redirect) to the browser immediately,
+ * then flush the email queue in the background.
+ *
+ * Works on Apache mod_php (XAMPP/LAMPP), PHP-FPM, LiteSpeed, etc.
+ *
+ * @param string $redirectUrl  The URL to redirect the browser to
  */
-function registerEmailFlush(): void {
-    static $registered = false;
-    if ($registered) return;
-    $registered = true;
+function sendResponseAndFlushEmails(string $redirectUrl): void {
+    global $_EMAIL_QUEUE;
 
-    register_shutdown_function(function () {
-        // Close the connection to let browser finish loading
-        if (function_exists('fastcgi_finish_request')) {
-            fastcgi_finish_request();
-        } elseif (!headers_sent()) {
-            // For non-FPM: flush output and close connection
-            ignore_user_abort(true);
-            if (ob_get_level() > 0) ob_end_flush();
-            flush();
-            if (function_exists('litespeed_finish_request')) {
-                litespeed_finish_request();
-            }
-        }
-        flushEmailQueue();
-    });
+    // If no emails queued, just redirect normally
+    if (empty($_EMAIL_QUEUE)) {
+        header('Location: ' . $redirectUrl);
+        exit;
+    }
+
+    // ── Close the HTTP connection BEFORE sending emails ──
+    // This tells the browser "we're done, go to the redirect URL"
+    // while PHP continues running in the background to send emails.
+
+    ignore_user_abort(true);
+    set_time_limit(120); // Allow up to 2 minutes for emails
+
+    // Write a minimal redirect body
+    $body = '<html><head><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($redirectUrl, ENT_QUOTES) . '"></head>'
+          . '<body>Redirecting...</body></html>';
+
+    // 1. Send redirect + connection close headers
+    header('Location: ' . $redirectUrl);
+    header('Connection: close');
+    header('Content-Length: ' . strlen($body));
+
+    // 2. Flush all output buffers
+    while (ob_get_level() > 0) {
+        ob_end_flush();
+    }
+
+    // 3. Write body and flush to Apache
+    echo $body;
+    flush();
+
+    // 4. If PHP-FPM or LiteSpeed, use their native finish functions
+    if (function_exists('fastcgi_finish_request')) {
+        fastcgi_finish_request();
+    } elseif (function_exists('litespeed_finish_request')) {
+        litespeed_finish_request();
+    }
+
+    // ── Browser has now moved on — send emails in background ──
+    // Close the session so it doesn't block other requests
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+
+    flushEmailQueue();
+    exit;
 }
+
 
 /**
  * Core notification dispatcher.
@@ -101,7 +144,6 @@ function dispatchNotification(array $params): void {
     if (!empty($params['email']) && !empty($params['subject'])) {
         $body = $params['email_body'] ?? emailTemplate($params['subject'], '<p>' . nl2br(h($params['message'])) . '</p>');
         queueEmail($params['email'], $params['name'] ?? '', $params['subject'], $body);
-        registerEmailFlush();
     }
 
 }

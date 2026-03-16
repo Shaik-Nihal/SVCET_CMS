@@ -59,5 +59,4 @@ if ($updated) {
     setFlash('error', 'Status update failed. Invalid transition or ticket not found.');
 }
 
-header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
-exit;
+sendResponseAndFlushEmails(APP_URL . '/staff/ticket_detail?id=' . $ticketId);

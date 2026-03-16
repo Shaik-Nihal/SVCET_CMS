@@ -46,7 +46,8 @@ function graphAccessToken(): ?string {
     CURLOPT_POSTFIELDS => $postFields,
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_HTTPHEADER => ['Content-Type: application/x-www-form-urlencoded'],
-    CURLOPT_TIMEOUT => 20,
+    CURLOPT_TIMEOUT => 5,
+    CURLOPT_CONNECTTIMEOUT => 3,
   ]);
 
   $response = curl_exec($ch);
@@ -126,7 +127,8 @@ function sendEmailViaGraph(string $toEmail, string $toName, string $subject, str
       'Content-Type: application/json',
     ],
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-    CURLOPT_TIMEOUT => 20,
+    CURLOPT_TIMEOUT => 5,
+    CURLOPT_CONNECTTIMEOUT => 3,
   ]);
 
   $response = curl_exec($ch);
@@ -158,6 +160,8 @@ function getMailer(): PHPMailer {
     $mail->setFrom(MAIL_FROM, MAIL_FROM_NAME);
     $mail->isHTML(true);
     $mail->CharSet = 'UTF-8';
+    $mail->Timeout = 5;          // SMTP timeout: 5 seconds (fail fast)
+    $mail->SMTPKeepAlive = true; // Reuse connection for multiple emails
     return $mail;
 }
 

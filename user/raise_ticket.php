@@ -83,8 +83,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 notifyAllLeadership($ticketId, $ticketNumber, $_SESSION['user_name'], $cat['name'], $userData['designation'] ?? '');
 
                 setFlash('success', "Ticket <strong>{$ticketNumber}</strong> raised successfully! You will be notified of updates.");
-                header('Location: ' . APP_URL . '/user/ticket_detail?id=' . $ticketId);
-                exit;
+
+                // Redirect instantly — emails are sent AFTER the browser gets the response
+                sendResponseAndFlushEmails(APP_URL . '/user/ticket_detail?id=' . $ticketId);
             } catch (Throwable $e) {
                 $errors[] = 'Failed to raise ticket. Please try again.';
             }

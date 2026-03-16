@@ -106,13 +106,11 @@ try {
 
     // If Sr IT Executive assigned to Assistant IT, ticket may no longer be visible on detail page.
     if ($role === ROLE_SR_IT_EXEC && $assignedTo !== $staffId) {
-        header('Location: ' . APP_URL . '/staff/tickets');
-        exit;
+        sendResponseAndFlushEmails(APP_URL . '/staff/tickets');
     }
 } catch (Throwable $e) {
     error_log('Assign ticket error: ' . $e->getMessage());
     setFlash('error', 'Assignment failed. Please try again.');
 }
 
-header('Location: ' . APP_URL . '/staff/ticket_detail?id=' . $ticketId);
-exit;
+sendResponseAndFlushEmails(APP_URL . '/staff/ticket_detail?id=' . $ticketId);
