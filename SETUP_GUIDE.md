@@ -1,7 +1,7 @@
-# Apollo University TMS — Complete Setup Guide
+# Apollo University TMS — Complete Setup Guide (Windows)
 
 > **Ticket Management System** for Apollo University IT Support  
-> Tech Stack: PHP 8.x · MySQL 8.x · Bootstrap 5.3 · XAMPP/LAMPP
+> Tech Stack: PHP 8.x · MySQL 8.x · Bootstrap 5.3 · XAMPP (Windows)
 
 ---
 
@@ -21,7 +21,8 @@
 12. [API Endpoints](#12-api-endpoints)
 13. [File-by-File Reference](#13-file-by-file-reference)
 14. [Security Features](#14-security-features)
-15. [Troubleshooting](#15-troubleshooting)
+15. [Performance Optimizations](#15-performance-optimizations)
+16. [Troubleshooting](#16-troubleshooting)
 
 ---
 
@@ -31,7 +32,7 @@
 
 - **Students/Faculty** to register, raise IT support tickets, track their status, and submit feedback.
 - **IT Staff** (with role-based hierarchy) to receive, assign, resolve tickets, and generate reports.
-- **System Admin** to manage staff accounts, users, and view system-wide dashboards.
+- **System Admin** to manage staff accounts, users, view system-wide dashboards, and change their own password.
 
 ### Key Capabilities
 
@@ -39,8 +40,8 @@
 |---|---|
 | **Ticket Lifecycle** | Notified → Processing → Solving → Solved |
 | **Role-Based Access** | 5 staff roles + Admin + User with permission matrix |
-| **Email Notifications** | SMTP (PHPMailer) or Microsoft Graph API |
-| **PDF/CSV Reports** | ICT Head can generate date-ranged reports (FPDF or browser print) |
+| **Email Notifications** | Deferred email queue (SMTP or Microsoft Graph API) — ticket creation is instant |
+| **PDF/CSV Reports** | ICT Head & Admin can generate date-ranged reports |
 | **Real-Time Notifications** | AJAX polling (every 30s) for in-app notifications |
 | **Multi-Domain Support** | `@apollouniversity.edu.in` and `@aimsrchittoor.edu.in` email domains |
 | **Security** | CSRF protection, bcrypt passwords, DB-backed brute-force lockout, HTTP security headers, CSP, session timeouts, password history |
@@ -57,7 +58,7 @@ TMS/
 │
 ├── config/                      # Configuration (protected by .htaccess)
 │   ├── constants.php            # App-wide constants (roles, statuses, email, timeouts)
-│   ├── database.php             # PDO singleton database connection
+│   ├── database.php             # PDO singleton with persistent connections
 │   ├── mailer.php               # PHPMailer + Microsoft Graph email factory
 │   ├── local.env.php.example    # Template for local secrets (gitignored)
 │   └── .htaccess                # "Require all denied" — blocks direct access
@@ -66,8 +67,8 @@ TMS/
 │   ├── auth.php                 # Session, CSRF, flash messages, login guards, DB brute-force
 │   ├── functions.php            # Utility functions (formatting, pagination, validation)
 │   ├── ticket_helpers.php       # Ticket CRUD, assignment logic, status transitions
-│   ├── notification_helpers.php # Notification dispatch (DB + email) for all events
-│   ├── security_headers.php     # HTTP security headers (CSP, X-Frame-Options, etc.)
+│   ├── notification_helpers.php # Deferred email queue + notification dispatch
+│   ├── security_headers.php     # HTTP security headers (CSP, X-Frame-Options, preconnect)
 │   └── .htaccess                # Blocks direct access
 │
 ├── auth/                        # Authentication pages
@@ -80,7 +81,7 @@ TMS/
 │
 ├── user/                        # Student/Faculty portal
 │   ├── dashboard.php            # User home — ticket stats, recent tickets
-│   ├── raise_ticket.php         # Create new support ticket
+│   ├── raise_ticket.php         # Create new support ticket (optimized — instant creation)
 │   ├── my_tickets.php           # List all user's tickets with filters
 │   ├── ticket_detail.php        # Detailed ticket view + status timeline
 │   ├── feedback.php             # Submit feedback (1-5 stars) for solved tickets
@@ -101,16 +102,18 @@ TMS/
 │   ├── dashboard.php            # Overview — total staff, users, tickets, pending
 │   ├── staff.php                # IT Staff management (list + actions)
 │   ├── staff_form.php           # Add/edit staff member
-│   ├── staff_detail.php         # Detailed staff profile view
+│   ├── staff_detail.php         # Detailed staff performance view
 │   ├── staff_delete.php         # Deactivate/delete staff
 │   ├── users.php                # User management (list + actions)
 │   ├── user_detail.php          # Detailed user profile view
-│   └── reset_password.php       # Admin resets staff/user passwords
+│   ├── reset_password.php       # Admin resets staff/user passwords
+│   ├── reports.php              # System Reports (same as staff reports)
+│   └── profile.php              # Admin profile + password change
 │
 ├── api/                         # AJAX API endpoints (JSON responses)
 │   ├── get_notifications.php    # Poll notifications (unread count + recent list)
 │   ├── get_staff_list.php       # Get staff for ticket assignment dropdown
-│   ├── mark_notification_read.php # Mark notification as read
+│   ├── mark_notification_read.php # Mark notification as read (POST only)
 │   └── validate_email.php       # Check email domain + uniqueness during registration
 │
 ├── reports/                     # Report generation
@@ -118,10 +121,8 @@ TMS/
 │   └── generate_csv.php         # CSV export of ticket data
 │
 ├── sql/                         # Database scripts (protected by .htaccess)
-│   ├── schema.sql               # Full database schema (11 tables)
-│   ├── seed_data.sql            # Reference seed data (use seed.php instead)
-│   ├── migrate_roles.sql        # One-time migration for role expansion
-│   ├── migrate_security.sql     # Security hardening migration (admin role + login_attempts)
+│   ├── schema.sql               # Full database schema (11 tables with performance indexes)
+│   ├── migrate_performance.sql  # Performance indexes for existing databases
 │   └── .htaccess                # Blocks direct access
 │
 ├── admin_seed/                  # One-time database seeder (protected by .htaccess)
@@ -137,17 +138,14 @@ TMS/
 │   ├── js/
 │   │   ├── main.js              # Password strength meter, form helpers
 │   │   ├── notifications.js     # AJAX notification polling + rendering
-│   │   └── ticket.js            # Ticket form interactions (staff list loading, etc.)
+│   │   └── ticket.js            # Ticket form interactions
 │   └── images/
 │       ├── apollo_logo.png      # University logo
 │       └── Apollo_Background.png # Login page background
 │
 └── vendor/                      # Third-party libraries (not via Composer)
     ├── phpmailer/               # PHPMailer library (SMTP email sending)
-    │   └── src/
-    │       ├── Exception.php
-    │       ├── PHPMailer.php
-    │       └── SMTP.php
+    │   └── src/ (Exception.php, PHPMailer.php, SMTP.php)
     ├── fpdf/                    # FPDF library (native PDF generation)
     │   └── fpdf.php
     └── .htaccess                # Blocks direct access
@@ -159,86 +157,82 @@ TMS/
 
 | Requirement | Details |
 |---|---|
-| **XAMPP / LAMPP** | Version 8.x+ (includes Apache, MySQL, PHP) |
-| **PHP** | 8.0 or higher (uses `str_ends_with()`, named arguments, union types) |
-| **MySQL** | 5.7+ or MariaDB 10.3+ (with InnoDB support) |
-| **Web Browser** | Modern browser (Chrome, Firefox, Edge — Bootstrap 5 required) |
-| **cURL Extension** | Required if using Microsoft Graph email (`php-curl`) |
+| **XAMPP for Windows** | Version 8.x+ — download from [apachefriends.org](https://www.apachefriends.org/) |
+| **PHP** | 8.0 or higher (included with XAMPP 8.x) |
+| **MySQL** | 5.7+ or MariaDB 10.3+ (included with XAMPP) |
+| **Web Browser** | Chrome, Firefox, or Edge (Bootstrap 5 required) |
+| **Git** | Optional — for cloning the repository |
 
 ### Verify PHP Version
 
-```bash
-php -v
-# Should show PHP 8.0+ 
+Open **Command Prompt** and run:
+
+```cmd
+C:\xampp\php\php.exe -v
 ```
+
+Should show PHP 8.0 or higher.
 
 ### Verify Required PHP Extensions
 
-```bash
-php -m | grep -E "pdo_mysql|curl|mbstring|openssl"
+```cmd
+C:\xampp\php\php.exe -m
 ```
 
-You need: `pdo_mysql`, `curl` (for Graph mail), `mbstring`, `openssl` (for PHPMailer STARTTLS).
+You need: `pdo_mysql`, `curl` (for Graph mail), `mbstring`, `openssl` (for PHPMailer STARTTLS). These are all included by default in XAMPP.
 
 ---
 
 ## 4. Installation (Step-by-Step)
 
-### Step 1: Start XAMPP/LAMPP Services
+### Step 1: Start XAMPP Services
 
-```bash
-# Linux (LAMPP)
-sudo /opt/lampp/lampp start
+1. Open **XAMPP Control Panel** (`C:\xampp\xampp-control.exe`)
+2. Click **Start** next to **Apache**
+3. Click **Start** next to **MySQL**
 
-# Or start individually
-sudo /opt/lampp/lampp startapache
-sudo /opt/lampp/lampp startmysql
+Both should show green indicators.
+
+### Step 2: Clone/Copy the Project
+
+Place the project in XAMPP's document root:
+
 ```
-
-**On Windows (XAMPP):** Open XAMPP Control Panel → Start **Apache** and **MySQL**.
-
-### Step 2: Clone/Copy Project
-
-Place the project folder in the web server's document root:
-
-```bash
-# Linux
-/opt/lampp/htdocs/TMS/
-
-# Windows
 C:\xampp\htdocs\TMS\
 ```
 
-If cloning from Git:
+**If cloning from Git:**
 
-```bash
-cd /opt/lampp/htdocs
-git clone <repository-url> TMS
+Open Command Prompt:
+
+```cmd
+cd C:\xampp\htdocs
+git clone https://github.com/Shaik-Nihal/TMS.git TMS
 ```
 
-### Step 3: Set File Permissions (Linux Only)
+**If copying manually:** Extract or copy the TMS folder into `C:\xampp\htdocs\`.
 
-```bash
-sudo chown -R daemon:daemon /opt/lampp/htdocs/TMS
-sudo chmod -R 755 /opt/lampp/htdocs/TMS
-```
-
-### Step 4: Verify Apache Configuration
+### Step 3: Verify Apache Configuration
 
 Ensure `mod_rewrite` is enabled (for `.htaccess` files to work):
 
-```bash
-# Check if mod_rewrite is loaded
-/opt/lampp/bin/apachectl -M | grep rewrite
+1. Open `C:\xampp\apache\conf\httpd.conf` in a text editor
+2. Find the line: `#LoadModule rewrite_module modules/mod_rewrite.so`
+3. **Remove the `#`** to uncomment it (if commented)
+4. Find the `<Directory>` block for `htdocs` and ensure `AllowOverride All` is set:
+
+```apache
+<Directory "C:/xampp/htdocs">
+    AllowOverride All
+    Require all granted
+</Directory>
 ```
 
-If not enabled, edit `/opt/lampp/etc/httpd.conf`:
-- Uncomment: `LoadModule rewrite_module modules/mod_rewrite.so`
-- Ensure `AllowOverride All` is set for the `htdocs` directory
+5. **Restart Apache** from the XAMPP Control Panel
 
-### Step 5: Verify the Application Loads
+### Step 4: Verify the Application Loads
 
-Open: **http://localhost/TMS/**
+Open your browser and go to: **http://localhost/TMS/**
 
 You should be redirected to the login page at `http://localhost/TMS/auth/login.php`.
 
@@ -250,28 +244,34 @@ You should be redirected to the login page at `http://localhost/TMS/auth/login.p
 
 ### Step 1: Access MySQL
 
-```bash
-# Via command line
-/opt/lampp/bin/mysql -u root
+**Option A — Command Line:**
 
-# Or use phpMyAdmin
-# Open: http://localhost/phpmyadmin
+```cmd
+C:\xampp\mysql\bin\mysql.exe -u root
 ```
+
+**Option B — phpMyAdmin (recommended):**
+
+Open: **http://localhost/phpmyadmin**
 
 ### Step 2: Import the Schema
 
-This creates the `tms_apollo` database with all 11 tables:
+This creates the `tms_apollo` database with all 11 tables + performance indexes:
 
-```bash
-/opt/lampp/bin/mysql -u root < /opt/lampp/htdocs/TMS/sql/schema.sql
+**Via Command Line:**
+
+```cmd
+C:\xampp\mysql\bin\mysql.exe -u root < C:\xampp\htdocs\TMS\sql\schema.sql
 ```
 
-Or in phpMyAdmin:
-1. Go to **Import** tab
-2. Select `/opt/lampp/htdocs/TMS/sql/schema.sql`
+**Via phpMyAdmin:**
+1. Click the **Import** tab at the top
+2. Click **Choose File** → select `C:\xampp\htdocs\TMS\sql\schema.sql`
 3. Click **Go**
 
 ### Step 3: Verify Database Creation
+
+In phpMyAdmin or MySQL command line:
 
 ```sql
 SHOW DATABASES LIKE 'tms_apollo';
@@ -293,24 +293,14 @@ You should see these **11 tables**:
 | 8 | `password_reset_tokens` | OTP-based password reset tokens |
 | 9 | `notifications` | In-app notifications |
 | 10 | `password_history` | Prevents password reuse (last 5) |
-| 11 | `login_attempts` | DB-backed brute-force protection (IP + email tracking) |
+| 11 | `login_attempts` | DB-backed brute-force protection |
 
-### Step 4: (If Needed) Run Security Migration
+### Step 4: (Existing Databases) Apply Performance Migration
 
-If upgrading from a previous version of TMS, apply the security migration:
+If upgrading from a previous version, apply the performance indexes:
 
-```bash
-/opt/lampp/bin/mysql -u root tms_apollo < /opt/lampp/htdocs/TMS/sql/migrate_security.sql
-```
-
-This adds the `admin` role to `it_staff` and creates the `login_attempts` table.
-
-### Step 5: (If Needed) Run Role Migration
-
-If you imported older seed data and need the expanded roles (`assistant_ict`, `assistant_it`):
-
-```bash
-/opt/lampp/bin/mysql -u root tms_apollo < /opt/lampp/htdocs/TMS/sql/migrate_roles.sql
+```cmd
+C:\xampp\mysql\bin\mysql.exe -u root tms_apollo < C:\xampp\htdocs\TMS\sql\migrate_performance.sql
 ```
 
 ---
@@ -319,7 +309,7 @@ If you imported older seed data and need the expanded roles (`assistant_ict`, `a
 
 ### 6.1 Database Connection
 
-**File:** `config/database.php`
+**File:** `config\database.php`
 
 ```php
 $host   = '127.0.0.1';   // Use IP, not 'localhost' (avoids socket issues)
@@ -341,7 +331,7 @@ $pass = 'your_password_here';
 
 ### 6.2 Application Constants
 
-**File:** `config/constants.php`
+**File:** `config\constants.php`
 
 Key settings you may want to customize:
 
@@ -363,11 +353,11 @@ Key settings you may want to customize:
 
 For sensitive credentials, create a local secrets file:
 
-```bash
-cp config/local.env.php.example config/local.env.php
+```cmd
+copy config\local.env.php.example config\local.env.php
 ```
 
-Edit `config/local.env.php` with your real credentials. This file is **gitignored** and loaded automatically by `constants.php`.
+Edit `config\local.env.php` with your real credentials. This file is **gitignored** and loaded automatically by `constants.php`.
 
 ---
 
@@ -418,10 +408,10 @@ WiFi Issues, No Internet, Computer/Laptop, Printer, Email/Login, Software Instal
 
 > The admin account is stored in the `it_staff` database table with `role = 'admin'`.
 
-> ⚠️ **CRITICAL SECURITY:** Delete `admin_seed/seed.php` immediately after seeding!
+> ⚠️ **CRITICAL SECURITY:** Delete `admin_seed\seed.php` immediately after seeding!
 
-```bash
-rm /opt/lampp/htdocs/TMS/admin_seed/seed.php
+```cmd
+del C:\xampp\htdocs\TMS\admin_seed\seed.php
 ```
 
 ---
@@ -432,7 +422,7 @@ The system supports **two** email drivers:
 
 ### Option A: SMTP (PHPMailer)
 
-Set in `config/constants.php` or `config/local.env.php`:
+Set in `config\constants.php` or `config\local.env.php`:
 
 ```php
 putenv('MAIL_DRIVER=smtp');
@@ -464,6 +454,8 @@ putenv('GRAPH_SENDER=tms@apollouniversity.edu.in');
 ### Disable Email (Development)
 
 If you don't need emails during development, leave `MAIL_PASSWORD` empty. Emails will fail silently (logged to PHP error log) but won't break app functionality.
+
+> **Note:** Emails are sent asynchronously via a deferred queue — ticket creation is always instant regardless of email configuration.
 
 ---
 
@@ -525,7 +517,7 @@ Each transition is irreversible and logged in `ticket_status_history`.
 
 | Feature | URL | Description |
 |---|---|---|
-| Login | `/auth/login.php?type=staff` | "IT Staff" tab |
+| Login | `/auth/login.php` | "IT Staff" tab |
 | Dashboard | `/staff/dashboard.php` | Assigned/pending ticket stats |
 | All Tickets | `/staff/tickets.php` | Browse all tickets with filters |
 | Ticket Detail | `/staff/ticket_detail.php?id=X` | View + assign + update status |
@@ -538,11 +530,13 @@ Each transition is irreversible and logged in `ticket_status_history`.
 
 | Feature | URL | Description |
 |---|---|---|
-| Login | `/auth/login.php?type=staff` | Use `tms@apollouniversity.edu.in` |
+| Login | `/auth/login.php` | Use **IT Staff** tab with `tms@apollouniversity.edu.in` |
 | Dashboard | `/admin/dashboard.php` | System-wide overview |
 | Staff Management | `/admin/staff.php` | Add/edit/deactivate IT staff |
 | User Management | `/admin/users.php` | View/manage registered users |
+| System Reports | `/admin/reports.php` | Date-ranged analytics + CSV/PDF export |
 | Reset Passwords | `/admin/reset_password.php` | Admin password reset for any account |
+| My Profile | `/admin/profile.php` | Admin profile + change own password |
 
 ---
 
@@ -560,12 +554,13 @@ problem_categories ─────┘
 notifications (polymorphic: user or staff)
 password_reset_tokens (polymorphic: user or staff)
 password_history (polymorphic: user or staff)
+login_attempts (IP + email tracking)
 ```
 
 ### Key Column Details
 
 **`tickets` Table:**
-- `ticket_number` — Format: `APL-YYYYMMDD-XXXX` (auto-generated, unique per day)
+- `ticket_number` — Format: `APL-YYYYMMDD-XXXX` (auto-generated using MAX-based sequence, race-condition safe)
 - `status` — ENUM: `notified`, `processing`, `solving`, `solved`
 - `priority` — ENUM: `low`, `medium`, `high`
 - `solved_at` — Set automatically when status changes to `solved`
@@ -573,9 +568,6 @@ password_history (polymorphic: user or staff)
 **`it_staff` Table:**
 - `role` — ENUM: `admin`, `ict_head`, `assistant_manager`, `assistant_ict`, `sr_it_executive`, `assistant_it`
 - `is_active` — Soft delete flag (0 = deactivated)
-
-**`notifications` Table:**
-- `recipient_type` — ENUM: `user`, `staff` (polymorphic reference)
 
 ---
 
@@ -598,32 +590,20 @@ All API endpoints return JSON and are located in `/api/`:
 
 | File | Purpose |
 |---|---|
-| `config/constants.php` | All app constants. Loads `local.env.php` if present. Defines roles, statuses, email config. |
-| `config/database.php` | `getDB()` — PDO singleton with `127.0.0.1` TCP connection, error-handling wrapper. |
-| `config/mailer.php` | `sendEmail()` — auto-routes to SMTP or Graph. `emailTemplate()` — branded HTML wrapper. |
-| `config/local.env.php.example` | Template for local secrets. Copy to `local.env.php` and fill values. |
+| `config\constants.php` | All app constants. Loads `local.env.php` if present. Defines roles, statuses, email config. |
+| `config\database.php` | `getDB()` — PDO singleton with persistent connections, `127.0.0.1` TCP connection. |
+| `config\mailer.php` | `sendEmail()` — auto-routes to SMTP or Graph. `emailTemplate()` — branded HTML wrapper. |
+| `config\local.env.php.example` | Template for local secrets. Copy to `local.env.php` and fill values. |
 
 ### Includes Layer
 
 | File | Key Functions |
 |---|---|
-| `includes/auth.php` | `startSecureSession()`, `requireLogin()`, `requireUser()`, `requireStaff()`, `requireRole()`, `requireAdmin()`, CSRF token management + rotation, DB-backed brute-force lockout (`checkLoginLockDB()`, `recordLoginFailureDB()`, `clearLoginFailuresDB()`), `getClientIP()`, flash messages. |
-| `includes/functions.php` | `h()` (XSS-safe output), `redirect()`, `statusBadge()`, `roleLabel()`, `timeAgo()`, `paginate()`, `renderPagination()`, `isValidPhone()`, `isValidPassword()`, `generateOTP()`. |
-| `includes/ticket_helpers.php` | `generateTicketNumber()`, `createTicket()`, `assignTicket()`, `updateTicketStatus()`, `getTicketById()`, `canAssignTo()`, `canAssignForDomain()`. |
-| `includes/notification_helpers.php` | `dispatchNotification()`, `notifyAllLeadership()`, `notifyUserTicketCreated()`, `notifyStaffAssigned()`, `notifyUserStatusChange()`, `notifyManagementStatusChange()`. |
-| `includes/security_headers.php` | Sends HTTP security headers: `X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`, `X-Robots-Tag`, `Content-Security-Policy`, `Cache-Control`. Removes `X-Powered-By`. |
-
-### Frontend Assets
-
-| File | Purpose |
-|---|---|
-| `assets/css/style.css` | Main styles — navbar, sidebar, cards, ticket cards, responsive layout. |
-| `assets/css/auth.css` | Login/register page styling — centered card, background image, tabs. |
-| `assets/css/dashboard.css` | Dashboard stat cards, quick-action tiles. |
-| `assets/css/admin.css` | Admin panel — dark sidebar, stat cards, table styles. |
-| `assets/js/main.js` | Password strength meter (`updateStrengthMeter()`), common UI helpers. |
-| `assets/js/notifications.js` | AJAX polling every 30s, notification badge update, dropdown rendering. |
-| `assets/js/ticket.js` | Staff list loading via AJAX, dynamic category-based form interactions. |
+| `includes\auth.php` | `startSecureSession()`, `requireLogin()`, `requireUser()`, `requireStaff()`, `requireRole()`, `requireAdmin()`, CSRF token management + rotation, DB-backed brute-force lockout, flash messages. |
+| `includes\functions.php` | `h()` (XSS-safe output), `redirect()`, `statusBadge()`, `roleLabel()`, `timeAgo()`, `paginate()`, `isValidPhone()`, `isValidPassword()`, `generateOTP()`. |
+| `includes\ticket_helpers.php` | `generateTicketNumber()` (MAX-based), `createTicket()` (returns id + ticket_number), `assignTicket()`, `updateTicketStatus()`, `getTicketById()`, `canAssignTo()`. |
+| `includes\notification_helpers.php` | `dispatchNotification()` (DB + queued email), `queueEmail()`, `flushEmailQueue()`, `registerEmailFlush()`, `notifyAllLeadership()`, `notifyUserTicketCreated()`, `notifyStaffAssigned()`, `notifyUserStatusChange()`. |
+| `includes\security_headers.php` | HTTP security headers: CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cache-Control, CDN preconnect. |
 
 ---
 
@@ -631,30 +611,38 @@ All API endpoints return JSON and are located in `/api/`:
 
 | Feature | Implementation |
 |---|---|
-| **HTTP Security Headers** | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`, `X-Robots-Tag: noindex`, `Content-Security-Policy` — auto-applied via `security_headers.php`. |
-| **Content Security Policy** | Only allows scripts/styles from `self` + `cdn.jsdelivr.net`. Blocks `frame-ancestors`, restricts `form-action` to `self`. |
-| **CSRF Protection** | Token generated per session, validated on every POST form, **rotated after each successful submission** to prevent reuse. |
-| **Password Hashing** | bcrypt with cost factor 12 (`password_hash()` + `password_verify()`). |
-| **Password History** | Last 5 passwords stored in `password_history` — prevents reuse. |
-| **Password Complexity** | Min 8 chars + uppercase + digit + special character (`isValidPassword()`). Enforced on all forms including admin reset. |
-| **DB-Backed Brute-Force** | After 5 failed attempts → 5-minute lockout. Tracked in `login_attempts` table by IP + email. **Cannot be bypassed** by clearing cookies. Automatically cleaned up after 1 hour. |
+| **HTTP Security Headers** | `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection`, `Referrer-Policy`, `Permissions-Policy`, `X-Robots-Tag`, `Content-Security-Policy` — auto-applied via `security_headers.php`. |
+| **Content Security Policy** | Only allows scripts/styles from `self` + `cdn.jsdelivr.net`. Blocks `frame-ancestors`, restricts `form-action`. |
+| **CSRF Protection** | Token generated per session, validated on every POST, **rotated after each successful submission**. |
+| **Password Hashing** | bcrypt with cost factor 12. |
+| **Password History** | Last 5 passwords stored — prevents reuse. Uses prepared statements for LIMIT clause. |
+| **Password Complexity** | Min 8 chars + uppercase + digit + special character. Enforced on all forms. |
+| **DB-Backed Brute-Force** | 5 failed attempts → 5-minute lockout. Tracked in `login_attempts` by IP + email. |
 | **Session Security** | HTTPOnly cookies, SameSite=Strict, 30-min idle timeout, 8-hr absolute timeout. |
-| **Session Regeneration** | `session_regenerate_id(true)` on every successful login. |
-| **XSS Prevention** | `h()` function used in all template outputs (`htmlspecialchars`). |
-| **SQL Injection** | All queries use PDO prepared statements with parameter binding (including LIMIT clauses). |
-| **Directory Protection** | Root `.htaccess` disables directory listing (`Options -Indexes`). Subdirectory `.htaccess` with `Require all denied` on `config/`, `includes/`, `sql/`, `vendor/`, `admin_seed/`. |
-| **Sensitive File Blocking** | Root `.htaccess` blocks direct access to `.sql`, `.md`, `.log`, `.env`, `.bak`, `.git` files and directories. |
-| **Server Info Hidden** | `X-Powered-By` header removed. `ServerSignature Off` set in `.htaccess`. |
-| **API Security** | State-mutating endpoints (`mark_notification_read`) use POST only. GET returns 405. |
-| **Email Domain Validation** | Server-side validation — only allowed domains can register. |
-| **OTP Security** | SHA-256 hashed in DB, 15-minute expiry, max 3 attempts. |
-| **Error Disclosure** | Database error messages are logged (not exposed to users). |
-| **Sensitive Files Gitignored** | `config/local.env.php`, `.env`, `*.log` files excluded from version control. |
-| **HSTS Ready** | HSTS header prepared in `security_headers.php` — uncomment when running on HTTPS. |
+| **XSS Prevention** | `h()` function used in all template outputs. |
+| **SQL Injection** | All queries use PDO prepared statements with parameter binding (including LIMIT). |
+| **Directory Protection** | Root `.htaccess` disables listing. Subdirectory `.htaccess` blocks `config/`, `includes/`, `sql/`, `vendor/`, `admin_seed/`. |
+| **Sensitive File Blocking** | `.htaccess` blocks access to `.sql`, `.md`, `.log`, `.env`, `.bak`, `.git` files. |
+| **Error Disclosure** | Database errors are logged server-side, never shown to users. |
+| **API Security** | State-mutating endpoints use POST only. |
+| **HSTS Ready** | Uncomment in `security_headers.php` when running on HTTPS. |
 
 ---
 
-## 15. Troubleshooting
+## 15. Performance Optimizations
+
+| Optimization | Impact | Details |
+|---|---|---|
+| **Deferred Email Queue** | Ticket creation: 5-20s → <1s | Emails queued in memory, sent via `register_shutdown_function()` after HTTP response |
+| **Persistent DB Connections** | ~10-20ms saved per request | `PDO::ATTR_PERSISTENT => true` reuses TCP connections |
+| **Composite DB Indexes** | Faster dashboards & notifications | `idx_user_status`, `idx_assigned_status`, `idx_recipient_unread`, `idx_feedback_user` |
+| **Ticket Number (MAX-based)** | Race-condition safe | Uses `MAX(ticket_number)` + retry loop instead of `COUNT(*)` |
+| **Reduced DB Queries** | 4 fewer queries per ticket | `createTicket()` returns ticket_number, user data passed to notification functions |
+| **CDN Preconnect** | ~100-200ms faster first load | `Link: <cdn.jsdelivr.net>; rel=preconnect` header on every page |
+
+---
+
+## 16. Troubleshooting
 
 ### Database Connection Error
 
@@ -663,18 +651,17 @@ Database Error: Could not connect to the database.
 ```
 
 **Fix:**
-1. Ensure MySQL is running: `sudo /opt/lampp/lampp startmysql`
+1. Ensure MySQL is running in XAMPP Control Panel (green indicator)
 2. Verify database exists: `SHOW DATABASES LIKE 'tms_apollo';`
-3. Check credentials in `config/database.php` (password, port)
-4. Ensure using `127.0.0.1` not `localhost` (avoids socket path issues)
+3. Check credentials in `config\database.php` (password, port)
+4. Ensure using `127.0.0.1` not `localhost` (avoids socket path issues on Windows)
 
 ### Blank Page / 500 Error
 
 **Fix:**
-1. Check PHP error log: `tail -f /opt/lampp/logs/php_error_log`
-2. Enable error display for debugging:
+1. Check PHP error log: `C:\xampp\php\logs\php_error_log`
+2. Enable error display temporarily — add to `index.php`:
    ```php
-   // Add temporarily to index.php
    ini_set('display_errors', 1);
    error_reporting(E_ALL);
    ```
@@ -683,9 +670,10 @@ Database Error: Could not connect to the database.
 ### .htaccess Not Working
 
 **Fix:**
-1. Enable `mod_rewrite` in Apache config
-2. Set `AllowOverride All` in your Apache virtual host or `httpd.conf`
-3. Restart Apache: `sudo /opt/lampp/lampp restartapache`
+1. Open `C:\xampp\apache\conf\httpd.conf`
+2. Uncomment: `LoadModule rewrite_module modules/mod_rewrite.so`
+3. Set `AllowOverride All` in the `<Directory>` block for `htdocs`
+4. **Restart Apache** from XAMPP Control Panel
 
 ### Emails Not Sending
 
@@ -693,12 +681,12 @@ Database Error: Could not connect to the database.
 1. Check PHP error log for mailer errors
 2. For SMTP: Verify credentials; for Gmail use App Passwords
 3. For Graph: Verify tenant/client IDs, ensure `Mail.Send` permission is admin-consented
-4. Verify `php-curl` extension is enabled: `php -m | grep curl`
-5. Email failures are **non-blocking** — tickets still get created
+4. Verify `curl` extension is enabled in `C:\xampp\php\php.ini` (uncomment `extension=curl`)
+5. Email failures are **non-blocking** — tickets still get created instantly
 
 ### Session Expiring Too Quickly
 
-**Fix:** Adjust timeouts in `config/constants.php`:
+**Fix:** Adjust timeouts in `config\constants.php`:
 ```php
 define('SESSION_IDLE_TIMEOUT', 3600);  // 60 minutes
 define('SESSION_ABS_TIMEOUT', 43200);  // 12 hours
@@ -706,48 +694,51 @@ define('SESSION_ABS_TIMEOUT', 43200);  // 12 hours
 
 ### Login Locked Out
 
-After 5 failed attempts, wait 5 minutes. The lockout is **database-backed** (tracked by IP + email) and cannot be bypassed by clearing cookies.
+After 5 failed attempts, wait 5 minutes. The lockout is **database-backed** and cannot be bypassed by clearing cookies.
 
-To manually clear a lockout (admin/developer only):
+To manually clear (admin only):
 ```sql
 DELETE FROM login_attempts WHERE email = 'user@example.com';
 ```
 
-### Security Headers Not Showing
-
-**Fix:** Verify `mod_headers` is enabled in Apache:
-```bash
-/opt/lampp/bin/apachectl -M | grep headers
-```
-If not enabled, edit `/opt/lampp/etc/httpd.conf` and uncomment `LoadModule headers_module modules/mod_headers.so`.
-
-### Sensitive Files Accessible (403 Not Working)
+### Port Conflicts (Apache Won't Start)
 
 **Fix:**
-1. Ensure `mod_rewrite` is enabled and `AllowOverride All` is set
-2. Check that the root `.htaccess` file exists in `/opt/lampp/htdocs/TMS/`
-3. Restart Apache: `sudo /opt/lampp/lampp restartapache`
+1. Open XAMPP Control Panel → Click **Config** next to Apache → `httpd.conf`
+2. Change `Listen 80` to `Listen 8080` (or another free port)
+3. Also change `ServerName localhost:80` to `ServerName localhost:8080`
+4. Update `APP_URL` in `config\constants.php` to `http://localhost:8080/TMS`
+5. Restart Apache
+
+### MySQL Won't Start (Port 3306 in Use)
+
+**Fix:**
+1. Open XAMPP Control Panel → Click **Config** next to MySQL → `my.ini`
+2. Change `port=3306` to `port=3307`
+3. Update `$port = 3307;` in `config\database.php`
+4. Restart MySQL
 
 ---
 
 ## Quick Start Checklist
 
-- [ ] XAMPP/LAMPP installed and running (Apache + MySQL)
-- [ ] Project placed in `/opt/lampp/htdocs/TMS/` (or `C:\xampp\htdocs\TMS\`)
-- [ ] PHP 8.0+ verified
-- [ ] `mod_rewrite` and `AllowOverride All` confirmed in Apache config
-- [ ] Database schema imported (`sql/schema.sql`)
-- [ ] Security migration applied (if upgrading: `sql/migrate_security.sql`)
-- [ ] Database credentials configured (`config/database.php`)
+- [ ] XAMPP installed and running (Apache + MySQL green in Control Panel)
+- [ ] Project placed in `C:\xampp\htdocs\TMS\`
+- [ ] PHP 8.0+ verified (`C:\xampp\php\php.exe -v`)
+- [ ] `mod_rewrite` enabled and `AllowOverride All` set in `httpd.conf`
+- [ ] Database schema imported (`sql\schema.sql`)
+- [ ] Performance migration applied if upgrading (`sql\migrate_performance.sql`)
+- [ ] Database credentials configured (`config\database.php`)
 - [ ] Seeder run (`http://localhost/TMS/admin_seed/seed.php`)
-- [ ] `admin_seed/seed.php` deleted after seeding
-- [ ] (Optional) Email configured (`config/local.env.php`)
+- [ ] `admin_seed\seed.php` **deleted** after seeding
+- [ ] (Optional) Email configured (`config\local.env.php`)
 - [ ] Application accessible at `http://localhost/TMS/`
 - [ ] Login tested: Admin via IT Staff tab (`tms@apollouniversity.edu.in` / `Apollo@2026!`)
 - [ ] Security headers verified (F12 → Network → check response headers)
-- [ ] Sensitive files blocked (try accessing `http://localhost/TMS/sql/schema.sql` → should return 403)
-- [ ] (When on HTTPS) Uncomment HSTS header in `includes/security_headers.php`
+- [ ] Sensitive files blocked (try `http://localhost/TMS/sql/schema.sql` → should return 403)
+- [ ] (When on HTTPS) Uncomment HSTS header in `includes\security_headers.php`
 
 ---
 
-*Generated for Apollo University TMS — Updated 14 March 2026 (Security Hardening Applied)*
+*Generated for Apollo University TMS — Updated 15 March 2026*  
+*Includes: Security Hardening + Performance Optimization + Admin Profile*
