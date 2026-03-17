@@ -148,7 +148,7 @@ if (!empty($ticket['user_email'])) {
 </head>
 <body data-user-type="staff">
 
-<nav class="navbar navbar-svcet fixed-top" style="z-index:200;">
+<nav class="navbar navbar-svcet fixed-top staff-navbar" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
@@ -169,7 +169,7 @@ if (!empty($ticket['user_email'])) {
     </div>
   </div>
 </nav>
-<div style="padding-top:56px;"></div>
+<div class="staff-top-spacer"></div>
 
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>

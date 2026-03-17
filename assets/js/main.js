@@ -36,8 +36,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
     if (sidebarToggle && sidebar) {
+        let backdrop = document.querySelector('.sidebar-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'sidebar-backdrop';
+            document.body.appendChild(backdrop);
+        }
+
+        const closeSidebar = () => {
+            sidebar.classList.remove('show');
+            backdrop.classList.remove('show');
+        };
+
         sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('show');
+            backdrop.classList.toggle('show', sidebar.classList.contains('show'));
+        });
+
+        backdrop.addEventListener('click', closeSidebar);
+
+        sidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth < 992) closeSidebar();
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 992) closeSidebar();
         });
     }
 });

@@ -42,18 +42,18 @@ $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
 </head>
 <body data-user-type="staff">
 
-<nav class="navbar navbar-svcet fixed-top" style="z-index:200;">
+<nav class="navbar navbar-svcet fixed-top staff-navbar" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications">
+      <a class="staff-nav-icon" href="<?= APP_URL ?>/staff/notifications" aria-label="Notifications">
         <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
         <span class="badge rounded-pill bg-danger position-absolute <?= $unreadCount ? '' : 'd-none' ?>"
               id="notif-badge" style="top:-6px;right:-8px;font-size:.6rem;"><?= $unreadCount ?: '' ?></span>
       </a>
       <div class="dropdown">
-        <a class="text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i></a>
+        <a class="staff-user-toggle dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i><span class="d-none d-md-inline"><?= h($_SESSION['staff_name'] ?? 'Staff') ?></span></a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
           <li><hr class="dropdown-divider"></li>
@@ -63,7 +63,7 @@ $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
     </div>
   </div>
 </nav>
-<div style="padding-top:56px;"></div>
+<div class="staff-top-spacer"></div>
 
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
