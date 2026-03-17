@@ -2,7 +2,7 @@
 // ============================================================
 // ONE-TIME DATABASE SEEDER
 // Run once after importing schema.sql, then DELETE THIS FILE.
-// Access: http://localhost/TMS/admin_seed/seed.php
+// Access: http://localhost/SVCET/admin_seed/seed.php
 // ============================================================
 
 // Safety: only allow from localhost
@@ -14,24 +14,24 @@ if (!in_array($_SERVER['REMOTE_ADDR'] ?? '', $allowedIPs)) {
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
 
-$defaultPassword = 'Apollo@2026!';
+$defaultPassword = 'ChangeMe@2026!';
 $hash = password_hash($defaultPassword, PASSWORD_BCRYPT, ['cost' => 12]);
 
 $pdo = getDB();
 
-echo "<h2>Apollo TMS — Database Seeder</h2><pre>";
+echo "<h2>College TMS — Database Seeder</h2><pre>";
 
 // ── Seed IT Staff ───────────────────────────────────────────
 $staffData = [
-    ['System Admin',         'tms@apollouniversity.edu.in',              'admin',             'System Administrator',        '7989039796'],
-    ['Dr G B Hima Bindu',    'dyd_ict@apollouniversity.edu.in',          'ict_head',          'Deputy Director ICT (DICT)',  '6303388078'],
-    ['Dr C Pakkiraiah',      'ad_ict@apollouniversity.edu.in',           'assistant_ict',     'Assistant Director ICT',      '8074262455'],
-    ['M Ashok Kumar',        'assistantmanager_it@aimsrchittoor.edu.in', 'assistant_manager', 'Assistant Manager',           '9032697478'],
-    ['M Prasanna Kumar',     'prasanna_k@apollouniversity.edu.in',       'sr_it_executive',   'Sr. IT Executive',            '7842450863'],
-    ['Jagadeesh Karunakaaran','jagadeesh_k@aimsrchittoor.edu.in',        'sr_it_executive',   'Sr. IT Executive',            '7013033153'],
-    ['N Bharagav Ramudu',    'bhargava_ramudu_n@aimsrchittoor.edu.in',   'assistant_it',      'IT Assistant',                '8919239200'],
-    ['NS Gopinath',          'gopinath_ns@aimsrchittoor.edu.in',         'assistant_it',      'IT Assistant',                '8722230752'],
-    ['G Vijaya Sekhar',      'vijaysekhar_g@aimsrchittoor.edu.in',       'assistant_it',      'IT Assistant',                '9704805971'],
+    ['System Admin',          'tms@' . EMAIL_DOMAIN,           'admin',             'System Administrator',        '9000000001'],
+    ['ICT Head',              'icthead@' . EMAIL_DOMAIN,       'ict_head',          'ICT Head',                    '9000000002'],
+    ['Assistant ICT',          'assistantict@' . EMAIL_DOMAIN, 'assistant_ict',     'Assistant ICT',               '9000000003'],
+    ['Assistant Manager',      'assistantmanager@' . EMAIL_DOMAIN, 'assistant_manager', 'Assistant Manager',         '9000000004'],
+    ['Sr IT Executive',        'sritexec1@' . EMAIL_DOMAIN,    'sr_it_executive',   'Sr. IT Executive',            '9000000005'],
+    ['Sr IT Executive',        'sritexec2@' . EMAIL_DOMAIN,    'sr_it_executive',   'Sr. IT Executive',            '9000000006'],
+    ['Assistant IT',           'assistantit1@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000007'],
+    ['Assistant IT',           'assistantit2@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000008'],
+    ['Assistant IT',           'assistantit3@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000009'],
 ];
 
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM it_staff");
@@ -87,7 +87,7 @@ if ($existingCats === 0) {
 }
 
 // ── Create a test user ──────────────────────────────────────
-$testEmail = 'test@apollouniversity.edu.in';
+$testEmail = 'test@' . EMAIL_DOMAIN;
 $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
 $stmt->execute([$testEmail]);
 
@@ -110,15 +110,15 @@ echo "════════════════════════�
 echo "\n";
 echo "Login credentials:\n";
 echo "─────────────────────────────────────────────\n";
-echo "Test User:           test@apollouniversity.edu.in / Test@2026!\n";
-echo "System Admin:        tms@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "ICT Head (DICT):     dyd_ict@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Assistant ICT:       ad_ict@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Asst Manager IT:     assistantmanager_it@aimsrchittoor.edu.in / {$defaultPassword}\n";
-echo "Sr IT Executive:     prasanna_k@apollouniversity.edu.in / {$defaultPassword}\n";
-echo "Sr IT Executive:     jagadeesh_k@aimsrchittoor.edu.in / {$defaultPassword}\n";
-echo "IT Assistant:        bhargava_ramudu_n@aimsrchittoor.edu.in / {$defaultPassword}\n";
-echo "IT Assistant:        gopinath_ns@aimsrchittoor.edu.in / {$defaultPassword}\n";
+echo "Test User:           test@" . EMAIL_DOMAIN . " / Test@2026!\n";
+echo "System Admin:        tms@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "ICT Head:            icthead@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "Assistant ICT:       assistantict@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "Asst Manager IT:     assistantmanager@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "Sr IT Executive:     sritexec1@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "Sr IT Executive:     sritexec2@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "IT Assistant:        assistantit1@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "IT Assistant:        assistantit2@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
 echo "\n";
 echo "⚠ DELETE THIS FILE (admin_seed/seed.php) IMMEDIATELY!\n";
 echo "</pre>";

@@ -83,7 +83,7 @@ if ($useFPDF) {
     class TMS_PDF extends FPDF {
         function Header() {
             $this->SetFont('Arial','B',16);
-            $this->Cell(0, 10, 'Apollo University IT Support', 0, 1, 'C');
+            $this->Cell(0, 10, ORG_NAME . ' IT Support', 0, 1, 'C');
             $this->SetFont('Arial','',10);
             $this->Cell(0, 6, 'Ticket Management Report', 0, 1, 'C');
             $this->Ln(4);
@@ -205,7 +205,7 @@ if ($useFPDF) {
     <a href="<?= APP_URL ?>/staff/reports" style="margin-left:10px;font-size:13px;">Back to Reports</a>
 </div>
 
-<h1>Apollo University — IT Support Ticket Report</h1>
+<h1><?= h(ORG_NAME) ?> — IT Support Ticket Report</h1>
 <p class="subtitle">Report Period: <strong><?= h($periodLabel) ?></strong> | Generated: <?= date('d M Y, h:i A') ?></p>
 
 <h2>Summary</h2>

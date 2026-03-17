@@ -12,11 +12,6 @@ $pdo    = getDB();
 $userId = currentUserId();
 $errors = [];
 
-$stmt = $pdo->prepare("SELECT email FROM users WHERE id = ? LIMIT 1");
-$stmt->execute([$userId]);
-$userEmail = (string)($stmt->fetchColumn() ?: '');
-$isAimsrUser = str_ends_with(strtolower($userEmail), '@' . AIMSR_DOMAIN);
-
 // POST: Create ticket
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
@@ -38,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Please describe your problem in the text box.';
         }
 
-        // Validate assigned_to is real active staff and enforce domain rules
+        // Validate assigned_to is real active staff and enforce role rules
         if ($assignedTo) {
           $stmt = $pdo->prepare("SELECT id, name, role, designation, email FROM it_staff WHERE id = ? AND is_active = 1 LIMIT 1");
             $stmt->execute([$assignedTo]);
@@ -46,17 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$staffRow) { $errors[] = 'Invalid staff selection.'; }
 
           if ($staffRow) {
-            if ($isAimsrUser) {
-              // AIMSR users can raise only to Assistant Manager (Mr Ashok Kumar)
-              if (!($staffRow['role'] === ROLE_ASST_MANAGER && strtolower($staffRow['email']) === 'assistantmanager_it@aimsrchittoor.edu.in')) {
-                // For @aimsrchittoor.edu.in accounts, MUST be to Asst Manager
-                $errors[] = 'For @aimsrchittoor.edu.in accounts, tickets can only be raised to M Ashok Kumar (Assistant Manager).';
-              }
-            } else {
-              // Apollo users can raise to leadership triad
-              if (!in_array($staffRow['role'], [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT], true)) {
-                $errors[] = 'You can assign tickets only to ICT Head, Assistant Manager, or Assistant ICT.';
-              }
+            if (!in_array($staffRow['role'], [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT], true)) {
+              $errors[] = 'You can assign tickets only to ICT Head, Assistant Manager, or Assistant ICT.';
             }
           }
         }
@@ -95,15 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Load categories and staff
 $categories = $pdo->query("SELECT * FROM problem_categories WHERE is_active = 1 ORDER BY id")->fetchAll();
-if ($isAimsrUser) {
-  $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role = ? AND email = ? ORDER BY name");
-  $stmt->execute([ROLE_ASST_MANAGER, 'assistantmanager_it@aimsrchittoor.edu.in']);
-  $staffList = $stmt->fetchAll();
-} else {
-  $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role IN (?, ?, ?) ORDER BY role, name");
-  $stmt->execute([ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT]);
-  $staffList = $stmt->fetchAll();
-}
+$stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role IN (?, ?, ?) ORDER BY role, name");
+$stmt->execute([ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT]);
+$staffList = $stmt->fetchAll();
 
 // Unread notifications count
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE recipient_id=? AND recipient_type='user' AND is_read=0");
@@ -127,7 +107,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?></a>
+    <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
     </button>
@@ -209,12 +189,6 @@ $unreadCount = (int)$stmt->fetchColumn();
         <span class="badge bg-primary me-2">Step 2</span>Select IT Staff to Assign Ticket
       </div>
       <div class="card-body">
-        <?php if ($isAimsrUser): ?>
-        <div class="alert alert-info mt-4" style="font-size:0.85rem;">
-          <i class="bi bi-info-circle me-1"></i>
-          For <strong>@aimsrchittoor.edu.in</strong> accounts, tickets can be raised only to <strong>M Ashok Kumar (Assistant Manager)</strong>.
-        </div>
-        <?php endif; ?>
         <div class="row g-2" id="staff-list">
           <?php foreach ($staffList as $staff):
             $initials = implode('', array_map(fn($w) => strtoupper($w[0]), array_filter(explode(' ', $staff['name']))));

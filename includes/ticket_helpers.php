@@ -56,18 +56,9 @@ function canAssignTo(string $actorRole, string $targetRole): bool {
 }
 
 /**
- * Domain-aware assignment check.
- * For @aimsrchittoor.edu.in tickets, ONLY the Assistant Manager can assign.
- * ICT Head and Assistant ICT can view but NOT assign @aimsrchittoor.edu.in tickets.
+ * Assignment check (role hierarchy only).
  */
 function canAssignForTicket(string $actorRole, string $targetRole, string $userEmail): bool {
-    // Check if user is from AIMSR domain
-    if (str_ends_with(strtolower($userEmail), '@' . AIMSR_DOMAIN)) {
-        // Only Assistant Manager can assign AIMSR tickets
-        if ($actorRole !== ROLE_ASST_MANAGER) {
-            return false;
-        }
-    }
     return canAssignTo($actorRole, $targetRole);
 }
 
@@ -76,10 +67,6 @@ function canAssignForTicket(string $actorRole, string $targetRole, string $userE
  * Used to decide whether to show the assignment UI at all.
  */
 function canAssignForDomain(string $actorRole, string $userEmail): bool {
-    if (str_ends_with(strtolower($userEmail), '@' . AIMSR_DOMAIN)) {
-        return $actorRole === ROLE_ASST_MANAGER;
-    }
-    // For Apollo domain, ICT Head, Asst Manager, Asst ICT, and Sr IT Exec can all assign
     return in_array($actorRole, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC], true);
 }
 

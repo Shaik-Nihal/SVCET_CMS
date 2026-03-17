@@ -1,6 +1,6 @@
-# Apollo University TMS — Complete Setup Guide (Windows)
+# College TMS — Complete Setup Guide (Windows)
 
-> **Ticket Management System** for Apollo University IT Support  
+> **Ticket Management System** for College Name IT Support  
 > Tech Stack: PHP 8.x · MySQL 8.x · Bootstrap 5.3 · XAMPP (Windows)
 
 ---
@@ -28,7 +28,7 @@
 
 ## 1. Project Overview
 
-**Apollo University TMS** is a web-based IT Support Ticket Management System built for Apollo University. It allows:
+**College TMS** is a web-based IT Support Ticket Management System built for College Name. It allows:
 
 - **Students/Faculty** to register, raise IT support tickets, track their status, and submit feedback.
 - **IT Staff** (with role-based hierarchy) to receive, assign, resolve tickets, and generate reports.
@@ -43,7 +43,7 @@
 | **Email Notifications** | Deferred email queue (SMTP or Microsoft Graph API) — ticket creation is instant |
 | **PDF/CSV Reports** | ICT Head & Admin can generate date-ranged reports |
 | **Real-Time Notifications** | AJAX polling (every 30s) for in-app notifications |
-| **Multi-Domain Support** | `@apollouniversity.edu.in` and `@aimsrchittoor.edu.in` email domains |
+| **Single-Domain Support** | `@collegename.edu.in` email domain |
 | **Security** | CSRF protection, bcrypt passwords, DB-backed brute-force lockout, HTTP security headers, CSP, session timeouts, password history |
 
 ---
@@ -140,8 +140,8 @@ TMS/
 │   │   ├── notifications.js     # AJAX notification polling + rendering
 │   │   └── ticket.js            # Ticket form interactions
 │   └── images/
-│       ├── apollo_logo.png      # University logo
-│       └── Apollo_Background.png # Login page background
+│       ├── sample_logo.svg      # Sample logo
+│       └── sample_background.svg # Login page background
 │
 └── vendor/                      # Third-party libraries (not via Composer)
     ├── phpmailer/               # PHPMailer library (SMTP email sending)
@@ -232,9 +232,9 @@ Ensure `mod_rewrite` is enabled (for `.htaccess` files to work):
 
 ### Step 4: Verify the Application Loads
 
-Open your browser and go to: **http://localhost/TMS/**
+Open your browser and go to: **http://localhost/SVCET/**
 
-You should be redirected to the login page at `http://localhost/TMS/auth/login.php`.
+You should be redirected to the login page at `http://localhost/SVCET/auth/login.php`.
 
 > ⚠️ If you see a database error, proceed to Section 5 (Database Setup) first.
 
@@ -256,7 +256,7 @@ Open: **http://localhost/phpmyadmin**
 
 ### Step 2: Import the Schema
 
-This creates the `tms_apollo` database with all 11 tables + performance indexes:
+This creates the `tms_college` database with all 11 tables + performance indexes:
 
 **Via Command Line:**
 
@@ -274,8 +274,8 @@ C:\xampp\mysql\bin\mysql.exe -u root < C:\xampp\htdocs\TMS\sql\schema.sql
 In phpMyAdmin or MySQL command line:
 
 ```sql
-SHOW DATABASES LIKE 'tms_apollo';
-USE tms_apollo;
+SHOW DATABASES LIKE 'tms_college';
+USE tms_college;
 SHOW TABLES;
 ```
 
@@ -300,7 +300,7 @@ You should see these **11 tables**:
 If upgrading from a previous version, apply the performance indexes:
 
 ```cmd
-C:\xampp\mysql\bin\mysql.exe -u root tms_apollo < C:\xampp\htdocs\TMS\sql\migrate_performance.sql
+C:\xampp\mysql\bin\mysql.exe -u root tms_college < C:\xampp\htdocs\TMS\sql\migrate_performance.sql
 ```
 
 ---
@@ -314,7 +314,7 @@ C:\xampp\mysql\bin\mysql.exe -u root tms_apollo < C:\xampp\htdocs\TMS\sql\migrat
 ```php
 $host   = '127.0.0.1';   // Use IP, not 'localhost' (avoids socket issues)
 $port   = 3306;
-$dbName = 'tms_apollo';
+$dbName = 'tms_college';
 $user   = 'root';
 $pass   = '';             // Set your MySQL password here if applicable
 ```
@@ -337,10 +337,10 @@ Key settings you may want to customize:
 
 | Constant | Default | Description |
 |---|---|---|
-| `APP_URL` | `http://localhost/TMS` | Base URL (no trailing slash) |
-| `APP_NAME` | `Apollo University IT Support` | Displayed in navbar & emails |
+| `APP_URL` | `http://localhost/SVCET` | Base URL (no trailing slash) |
+| `APP_NAME` | `College Name IT Support` | Displayed in navbar & emails |
 | `APP_TIMEZONE` | `Asia/Kolkata` | PHP timezone for all date/time ops |
-| `EMAIL_DOMAINS` | `['apollouniversity.edu.in', 'aimsrchittoor.edu.in']` | Allowed registration email domains |
+| `EMAIL_DOMAINS` | `['collegename.edu.in']` | Allowed registration email domains |
 | `SESSION_IDLE_TIMEOUT` | `1800` (30 min) | Session idle timeout in seconds |
 | `SESSION_ABS_TIMEOUT` | `28800` (8 hrs) | Absolute session lifetime |
 | `OTP_EXPIRY_MINUTES` | `15` | OTP expiry for password reset |
@@ -370,7 +370,7 @@ The seeder creates initial IT staff accounts, problem categories, and a test use
 Open in your browser (localhost only):
 
 ```
-http://localhost/TMS/admin_seed/seed.php
+http://localhost/SVCET/admin_seed/seed.php
 ```
 
 ### What Gets Created
@@ -379,16 +379,16 @@ http://localhost/TMS/admin_seed/seed.php
 
 | Name | Email | Role | Default Password |
 |---|---|---|---|
-| **System Admin** | `tms@apollouniversity.edu.in` | **Admin** | `Apollo@2026!` |
-| Dr G B Hima Bindu | `dyd_ict@apollouniversity.edu.in` | ICT Head | `Apollo@2026!` |
-| Dr Pakkairaha | `pakkairaha@apollouniversity.edu.in` | Assistant ICT | `Apollo@2026!` |
-| Mr Ashok Kumar | `ashok.kumar@apollouniversity.edu.in` | Assistant Manager | `Apollo@2026!` |
-| Mr K Prasanna | `k.prasanna@apollouniversity.edu.in` | Sr. IT Executive | `Apollo@2026!` |
-| Mr K Jagadeesh | `k.jagadeesh@apollouniversity.edu.in` | Sr. IT Executive | `Apollo@2026!` |
-| Mr Mohan | `mohan@apollouniversity.edu.in` | Assistant IT | `Apollo@2026!` |
-| Mr Bhargav | `bhargav@apollouniversity.edu.in` | Assistant IT | `Apollo@2026!` |
-| Mr Gopi | `gopi@apollouniversity.edu.in` | Assistant IT | `Apollo@2026!` |
-| Mr Vijay | `vijay@apollouniversity.edu.in` | Assistant IT | `Apollo@2026!` |
+| **System Admin** | `tms@collegename.edu.in` | **Admin** | `ChangeMe@2026!` |
+| ICT Head | `icthead@collegename.edu.in` | ICT Head | `ChangeMe@2026!` |
+| Assistant ICT | `assistantict@collegename.edu.in` | Assistant ICT | `ChangeMe@2026!` |
+| Assistant Manager | `assistantmanager@collegename.edu.in` | Assistant Manager | `ChangeMe@2026!` |
+| Sr IT Executive | `sritexec1@collegename.edu.in` | Sr. IT Executive | `ChangeMe@2026!` |
+| Sr IT Executive | `sritexec2@collegename.edu.in` | Sr. IT Executive | `ChangeMe@2026!` |
+| Assistant IT | `assistantit1@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
+| Assistant IT | `assistantit2@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
+| Assistant IT | `assistantit3@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
+| Assistant IT | `assistantit4@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
 
 #### Problem Categories (10)
 
@@ -398,13 +398,13 @@ WiFi Issues, No Internet, Computer/Laptop, Printer, Email/Login, Software Instal
 
 | Email | Password |
 |---|---|
-| `test@apollouniversity.edu.in` | `Test@2026!` |
+| `test@collegename.edu.in` | `Test@2026!` |
 
 #### System Admin Login
 
 | Email | Password | How to Login |
 |---|---|---|
-| `tms@apollouniversity.edu.in` | `Apollo@2026!` | Use the **IT Staff** tab on the login page |
+| `tms@collegename.edu.in` | `ChangeMe@2026!` | Use the **IT Staff** tab on the login page |
 
 > The admin account is stored in the `it_staff` database table with `role = 'admin'`.
 
@@ -442,7 +442,7 @@ putenv('MAIL_DRIVER=graph');
 putenv('GRAPH_TENANT_ID=your-azure-tenant-id');
 putenv('GRAPH_CLIENT_ID=your-app-client-id');
 putenv('GRAPH_CLIENT_SECRET=your-client-secret');
-putenv('GRAPH_SENDER=tms@apollouniversity.edu.in');
+putenv('GRAPH_SENDER=tms@collegename.edu.in');
 ```
 
 **Azure AD Setup Required:**
@@ -482,10 +482,9 @@ System Admin (admin role in it_staff table)
 | **Sr IT Executive** | ❌ | ❌ | ❌ | ✅ |
 | **Assistant IT** | ❌ | ❌ | ❌ | ❌ |
 
-### Domain-Based Assignment Rules
+### Assignment Rules
 
-- **`@apollouniversity.edu.in` tickets:** ICT Head, Asst Manager, Asst ICT, or Sr IT Executive can assign.
-- **`@aimsrchittoor.edu.in` tickets:** **Only** the Assistant Manager can assign.
+- Single-domain setup: assignment rules are based on role hierarchy only.
 
 ### Ticket Status Transitions (Forward Only)
 
@@ -530,7 +529,7 @@ Each transition is irreversible and logged in `ticket_status_history`.
 
 | Feature | URL | Description |
 |---|---|---|
-| Login | `/auth/login.php` | Use **IT Staff** tab with `tms@apollouniversity.edu.in` |
+| Login | `/auth/login.php` | Use **IT Staff** tab with `tms@collegename.edu.in` |
 | Dashboard | `/admin/dashboard.php` | System-wide overview |
 | Staff Management | `/admin/staff.php` | Add/edit/deactivate IT staff |
 | User Management | `/admin/users.php` | View/manage registered users |
@@ -652,7 +651,7 @@ Database Error: Could not connect to the database.
 
 **Fix:**
 1. Ensure MySQL is running in XAMPP Control Panel (green indicator)
-2. Verify database exists: `SHOW DATABASES LIKE 'tms_apollo';`
+2. Verify database exists: `SHOW DATABASES LIKE 'tms_college';`
 3. Check credentials in `config\database.php` (password, port)
 4. Ensure using `127.0.0.1` not `localhost` (avoids socket path issues on Windows)
 
@@ -729,16 +728,16 @@ DELETE FROM login_attempts WHERE email = 'user@example.com';
 - [ ] Database schema imported (`sql\schema.sql`)
 - [ ] Performance migration applied if upgrading (`sql\migrate_performance.sql`)
 - [ ] Database credentials configured (`config\database.php`)
-- [ ] Seeder run (`http://localhost/TMS/admin_seed/seed.php`)
+- [ ] Seeder run (`http://localhost/SVCET/admin_seed/seed.php`)
 - [ ] `admin_seed\seed.php` **deleted** after seeding
 - [ ] (Optional) Email configured (`config\local.env.php`)
-- [ ] Application accessible at `http://localhost/TMS/`
-- [ ] Login tested: Admin via IT Staff tab (`tms@apollouniversity.edu.in` / `Apollo@2026!`)
+- [ ] Application accessible at `http://localhost/SVCET/`
+- [ ] Login tested: Admin via IT Staff tab (`tms@collegename.edu.in` / `ChangeMe@2026!`)
 - [ ] Security headers verified (F12 → Network → check response headers)
-- [ ] Sensitive files blocked (try `http://localhost/TMS/sql/schema.sql` → should return 403)
+- [ ] Sensitive files blocked (try `http://localhost/SVCET/sql/schema.sql` → should return 403)
 - [ ] (When on HTTPS) Uncomment HSTS header in `includes\security_headers.php`
 
 ---
 
-*Generated for Apollo University TMS — Updated 15 March 2026*  
+*Generated for College TMS — Updated 15 March 2026*  
 *Includes: Security Hardening + Performance Optimization + Admin Profile*

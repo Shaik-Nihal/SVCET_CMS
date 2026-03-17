@@ -10,7 +10,7 @@ function getDB(): PDO
         // Prefer TCP to avoid socket path issues on XAMPP/LAMPP
         $host   = '127.0.0.1';
         $port   = 3306;
-        $dbName = 'tms_apollo';
+        $dbName = DB_NAME;
         $user   = 'root';
 
         // ── No password (current) ──

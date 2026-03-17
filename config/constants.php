@@ -10,17 +10,24 @@ if (is_file($localSecrets)) {
 }
 
 // App Info
-define('APP_NAME', 'Apollo University IT Support');
-define('APP_SHORT', 'Apollo TMS');
-define('APP_URL', 'http://localhost/TMS'); // No trailing slash
+define('ORG_NAME', 'College Name');
+define('APP_NAME', ORG_NAME . ' IT Support');
+define('APP_SHORT', 'College TMS');
+// Auto-detect project folder (e.g. /SVCET) to avoid hardcoded URL mismatches.
+$appFolder = basename(dirname(__DIR__));
+define('APP_URL', getenv('APP_URL') ?: ('http://localhost/' . $appFolder)); // No trailing slash
 define('APP_TIMEZONE', 'Asia/Kolkata');
+define('SUPPORT_PORTAL_NAME', ORG_NAME . ' IT Support Portal');
+define('PRIMARY_DOMAIN', 'collegename.edu.in');
+define('SUPPORT_PHONE', '9876543210');
+define('SUPPORT_EMAIL', 'ict@' . PRIMARY_DOMAIN);
+define('SUPPORT_HOURS', 'Mon–Sat, 9 AM – 6 PM');
 
 // Keep all PHP date/time operations in one timezone for consistent "x min ago" values.
 date_default_timezone_set(APP_TIMEZONE);
 
-define('EMAIL_DOMAINS', ['apollouniversity.edu.in', 'aimsrchittoor.edu.in']); // Allowed registration domains
-define('EMAIL_DOMAIN', 'apollouniversity.edu.in'); // Primary domain (kept for backward compat)
-define('AIMSR_DOMAIN', 'aimsrchittoor.edu.in'); // AIMSR domain - only Assistant Manager can assign
+define('EMAIL_DOMAINS', [PRIMARY_DOMAIN]); // Allowed registration domains
+define('EMAIL_DOMAIN', PRIMARY_DOMAIN); // Primary domain (kept for backward compat)
 
 // Session
 define('SESSION_IDLE_TIMEOUT', 1800); // 30 minutes idle
@@ -35,7 +42,10 @@ define('LOGIN_MAX_FAILURES', 5);
 define('LOGIN_LOCKOUT_SECS', 300); // 5 minutes
 
 // Ticket
-define('TICKET_PREFIX', 'AKC');
+define('TICKET_PREFIX', 'CLG');
+
+// Database
+define('DB_NAME', 'tms_college');
 
 // Roles
 define('ROLE_ADMIN', 'admin');
@@ -62,10 +72,20 @@ define('PRIORITY_HIGH', 'high');
 define('MAIL_DRIVER', getenv('MAIL_DRIVER') ?: 'smtp'); // smtp|graph
 define('MAIL_HOST', getenv('MAIL_HOST') ?: 'smtp.office365.com');
 define('MAIL_PORT', (int)(getenv('MAIL_PORT') ?: 587));
-define('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: 'tms@apollouniversity.edu.in');
+define('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: 'tms@' . PRIMARY_DOMAIN);
 define('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ?: '');
 define('MAIL_FROM', getenv('MAIL_FROM') ?: MAIL_USERNAME);
 define('MAIL_FROM_NAME', APP_NAME);
+
+// Branding assets
+define('APP_LOGO_FILE', 'sample_logo.svg');
+define('APP_LOGO_URL', APP_URL . '/assets/images/' . APP_LOGO_FILE);
+define('APP_LOGO_ALT', ORG_NAME . ' Logo');
+define('APP_BACKGROUND_FILE', 'sample_background.svg');
+define('APP_BACKGROUND_URL', APP_URL . '/assets/images/' . APP_BACKGROUND_FILE);
+
+define('APP_EMBED_EMAIL_LOGO', false);
+define('APP_EMAIL_LOGO_CID', 'app_logo');
 
 // Microsoft Graph Mail (recommended for Microsoft 365)
 define('GRAPH_TENANT_ID', getenv('GRAPH_TENANT_ID') ?: '');

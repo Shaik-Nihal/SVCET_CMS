@@ -15,18 +15,8 @@ if (empty($_SESSION['user_type']) || $_SESSION['user_type'] !== 'user') {
 
 $pdo    = getDB();
 $userId = (int)($_SESSION['user_id'] ?? 0);
-$stmt   = $pdo->prepare("SELECT email FROM users WHERE id = ? LIMIT 1");
-$stmt->execute([$userId]);
-$userEmail = (string)($stmt->fetchColumn() ?: '');
-
-if (str_ends_with(strtolower($userEmail), '@' . AIMSR_DOMAIN)) {
-    $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role = ? AND email = ? ORDER BY name");
-    $stmt->execute([ROLE_ASST_MANAGER, 'assistantmanager_it@aimsrchittoor.edu.in']);
-    $staff = $stmt->fetchAll();
-} else {
-    $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role IN (?, ?, ?) ORDER BY role, name");
-    $stmt->execute([ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT]);
-    $staff = $stmt->fetchAll();
-}
+$stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role IN (?, ?, ?) ORDER BY role, name");
+$stmt->execute([ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT]);
+$staff = $stmt->fetchAll();
 
 echo json_encode($staff);

@@ -98,9 +98,9 @@ $activeTab = $_POST['login_as'] ?? 'user';
 
 <div class="auth-card">
     <div class="auth-header">
-        <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Apollo University Logo">
+        <img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>">
         <h1><?= APP_SHORT ?></h1>
-        <p>The Apollo University · IT Support Portal</p>
+        <p><?= SUPPORT_PORTAL_NAME ?></p>
     </div>
 
     <div class="auth-body">
@@ -142,7 +142,7 @@ $activeTab = $_POST['login_as'] ?? 'user';
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                     <input type="email" name="email" class="form-control"
-                           placeholder="yourname@apollouniversity.edu.in"
+                           placeholder="yourname@<?= EMAIL_DOMAIN ?>"
                            value="<?= h($_POST['email'] ?? '') ?>"
                            required autocomplete="email">
                 </div>

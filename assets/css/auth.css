@@ -2,7 +2,7 @@
 
 /* ============================================================
    Auth Pages (Login / Register / Password Reset)
-   Apollo University Branding
+    College Branding
    ============================================================ */
 
 :root {
@@ -13,7 +13,7 @@
 
 body.auth-page {
     font-family: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: url('../images/Apollo_Background.png') center center / cover no-repeat fixed;
+    background: url('../images/sample_background.svg') center center / cover no-repeat fixed;
     min-height: 100vh;
     display: flex;
     align-items: center;

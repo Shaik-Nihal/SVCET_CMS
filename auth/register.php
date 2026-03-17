@@ -1,6 +1,6 @@
 <?php
 // ============================================================
-// Register - Students/Faculty only (@apollouniversity.edu.in email)
+// Register - Students/Faculty only (college domain email)
 // ============================================================
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
@@ -102,9 +102,9 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
 
 <div class="auth-card" style="max-width:520px;">
     <div class="auth-header">
-        <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Apollo University Logo">
+        <img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>">
         <h1>Create Account</h1>
-        <p>The Apollo University · IT Support Portal</p>
+        <p><?= SUPPORT_PORTAL_NAME ?></p>
     </div>
 
     <div class="auth-body">
@@ -130,10 +130,10 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
                     <div class="input-group">
                         <input type="email" name="email" class="form-control"
                                value="<?= h($input['email'] ?? '') ?>"
-                               placeholder="yourname@apollouniversity.edu.in" required id="emailField" data-domains="<?= h(json_encode(EMAIL_DOMAINS)) ?>">
+                               placeholder="yourname@<?= EMAIL_DOMAIN ?>" required id="emailField" data-domains="<?= h(json_encode(EMAIL_DOMAINS)) ?>">
                         <span class="input-group-text" id="emailCheck"></span>
                     </div>
-                    <small class="text-muted">Must be an @apollouniversity.edu.in or @aimsrchittoor.edu.in email</small>
+                    <small class="text-muted">Must be a @<?= EMAIL_DOMAIN ?> email</small>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-semibold">Phone Number</label>

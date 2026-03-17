@@ -99,7 +99,7 @@ $csrf = generateCSRFToken();
 <body class="auth-page">
 <div class="auth-card">
     <div class="auth-header">
-        <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Apollo University Logo">
+        <img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>">
         <h1>Set New Password</h1>
         <p>Choose a strong password for your account</p>
     </div>

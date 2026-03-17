@@ -115,7 +115,7 @@ if ($role === ROLE_ICT_HEAD) {
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard">
-      <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?>
+      <img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?>
     </a>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications">

@@ -1,10 +1,10 @@
 -- ============================================================
--- Apollo University - Ticket Management System
+-- College Ticket Management System
 -- Database Schema
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS tms_apollo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE tms_apollo;
+CREATE DATABASE IF NOT EXISTS tms_college CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE tms_college;
 
 -- ============================================================
 -- 1. users (students / faculty)

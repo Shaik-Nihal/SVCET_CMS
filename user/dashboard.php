@@ -58,7 +58,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard">
-      <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Logo"><?= APP_SHORT ?>
+      <img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
@@ -99,7 +99,7 @@ $unreadCount = (int)$stmt->fetchColumn();
   <div class="welcome-banner mb-4">
     <div>
       <h5>Welcome back, <?= h(explode(' ', $name)[0]) ?>! 👋</h5>
-      <p>Today is <?= date('l, d F Y') ?> · Apollo University IT Support Portal</p>
+      <p>Today is <?= date('l, d F Y') ?> · <?= SUPPORT_PORTAL_NAME ?></p>
     </div>
     <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-outline-light btn-sm">
       <i class="bi bi-plus-circle me-1"></i>Raise a Ticket
@@ -219,15 +219,15 @@ $unreadCount = (int)$stmt->fetchColumn();
         <div class="card-body" style="font-size:.85rem;">
           <div class="d-flex align-items-center gap-2 mb-2">
             <i class="bi bi-telephone-fill text-apollo"></i>
-            <span><strong>ICT Help Desk:</strong> 9876543210</span>
+            <span><strong>ICT Help Desk:</strong> <?= SUPPORT_PHONE ?></span>
           </div>
           <div class="d-flex align-items-center gap-2 mb-2">
             <i class="bi bi-envelope-fill text-apollo"></i>
-            <span><strong>Email:</strong> ict@apollouniversity.edu.in</span>
+            <span><strong>Email:</strong> <?= SUPPORT_EMAIL ?></span>
           </div>
           <div class="d-flex align-items-center gap-2">
             <i class="bi bi-clock-fill text-apollo"></i>
-            <span><strong>Hours:</strong> Mon–Sat, 9 AM – 6 PM</span>
+            <span><strong>Hours:</strong> <?= SUPPORT_HOURS ?></span>
           </div>
         </div>
       </div>

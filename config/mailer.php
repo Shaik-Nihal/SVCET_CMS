@@ -103,16 +103,16 @@ function sendEmailViaGraph(string $toEmail, string $toName, string $subject, str
     ]];
   }
 
-  $logoPath = BASE_PATH . '/assets/images/apollo_logo.png';
-  if (strpos($htmlBody, 'cid:apollo_logo') !== false && file_exists($logoPath)) {
+    $logoPath = BASE_PATH . '/assets/images/' . APP_LOGO_FILE;
+    if (APP_EMBED_EMAIL_LOGO && strpos($htmlBody, 'cid:' . APP_EMAIL_LOGO_CID) !== false && file_exists($logoPath)) {
       $payload['message']['attachments'] = [
           [
              '@odata.type' => '#microsoft.graph.fileAttachment',
-             'name' => 'apollo_logo.png',
-             'contentType' => 'image/png',
+         'name' => basename($logoPath),
+         'contentType' => 'image/svg+xml',
              'contentBytes' => base64_encode(file_get_contents($logoPath)),
              'isInline' => true,
-             'contentId' => 'apollo_logo'
+         'contentId' => APP_EMAIL_LOGO_CID
           ]
       ];
   }
@@ -185,9 +185,9 @@ function sendEmail(string $toEmail, string $toName, string $subject, string $htm
         $mail->Body    = $htmlBody;
         $mail->AltBody = $plainBody ?: strip_tags($htmlBody);
 
-        $logoPath = BASE_PATH . '/assets/images/apollo_logo.png';
-        if (strpos($htmlBody, 'cid:apollo_logo') !== false && file_exists($logoPath)) {
-            $mail->addEmbeddedImage($logoPath, 'apollo_logo', 'apollo_logo.png');
+        $logoPath = BASE_PATH . '/assets/images/' . APP_LOGO_FILE;
+        if (APP_EMBED_EMAIL_LOGO && strpos($htmlBody, 'cid:' . APP_EMAIL_LOGO_CID) !== false && file_exists($logoPath)) {
+          $mail->addEmbeddedImage($logoPath, APP_EMAIL_LOGO_CID, basename($logoPath));
         }
 
         $mail->send();
@@ -203,7 +203,15 @@ function sendEmail(string $toEmail, string $toName, string $subject, string $htm
  */
 function emailTemplate(string $title, string $content): string {
     $appName = APP_NAME;
-    $logoUrl = 'cid:apollo_logo';
+    $portalName = SUPPORT_PORTAL_NAME;
+    $logoBlock = '';
+    if (APP_EMBED_EMAIL_LOGO) {
+        $logoUrl = 'cid:' . APP_EMAIL_LOGO_CID;
+        $logoAlt = htmlspecialchars(APP_LOGO_ALT, ENT_QUOTES, 'UTF-8');
+        $logoBlock = "<td width=\"60\" valign=\"middle\">" .
+               "<img src=\"{$logoUrl}\" alt=\"{$logoAlt}\" width=\"45\" height=\"45\" style=\"display:block;border-radius:4px;\">" .
+               "</td>";
+    }
     return <<<HTML
 <!DOCTYPE html>
 <html>
@@ -215,12 +223,10 @@ function emailTemplate(string $title, string $content): string {
       <tr><td style="background:#1a3a5c;padding:20px 30px;">
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td width="60" valign="middle">
-              <img src="{$logoUrl}" alt="Logo" width="45" height="45" style="display:block;border-radius:4px;">
-            </td>
+            {$logoBlock}
             <td valign="middle">
               <h1 style="margin:0;color:#fff;font-size:20px;">{$appName}</h1>
-              <p style="margin:4px 0 0;color:#adc8e8;font-size:13px;">IT Support Ticket System</p>
+              <p style="margin:4px 0 0;color:#adc8e8;font-size:13px;">{$portalName}</p>
             </td>
           </tr>
         </table>

@@ -79,7 +79,7 @@ if (!empty($_SESSION['pwd_reset_email'])) {
 <body class="auth-page">
 <div class="auth-card">
     <div class="auth-header">
-        <img src="<?= APP_URL ?>/assets/images/apollo_logo.png" alt="Apollo University Logo">
+        <img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>">
         <h1>Enter OTP</h1>
         <p>We sent a 6-digit code to <strong><?= h($maskedEmail) ?></strong></p>
     </div>
