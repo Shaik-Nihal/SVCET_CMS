@@ -78,15 +78,7 @@ function priorityBadge(string $priority): string {
  * Map role to readable label.
  */
 function roleLabel(string $role): string {
-    $map = [
-        'admin'             => 'System Admin',
-        'ict_head'          => 'ICT Head',
-        'assistant_manager' => 'Assistant Manager',
-        'assistant_ict'     => 'Assistant ICT',
-        'sr_it_executive'   => 'Sr. IT Executive',
-        'assistant_it'      => 'Assistant IT',
-    ];
-    return $map[$role] ?? ucwords(str_replace('_', ' ', $role));
+    return getRoleName($role);
 }
 
 /**

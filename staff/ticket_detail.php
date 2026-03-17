@@ -35,16 +35,16 @@ $baseQuery = "
     WHERE t.id = ?
 ";
 
-if (in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT])) {
+if (currentStaffHasPermission('tickets.view_all')) {
   // Leadership roles can view all tickets regardless of assignment
   $stmt = $pdo->prepare($baseQuery);
   $stmt->execute([$ticketId]);
-} elseif ($role === ROLE_SR_IT_EXEC) {
+} elseif (currentStaffHasPermission('ticket.assign.exec')) {
   // Sr IT can view tickets they are involved in:
   // current assignee, previous assignee, or assigner/reassigner.
   $stmt = $pdo->prepare($baseQuery . " AND (t.assigned_to = ? OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_to = ?) OR EXISTS (SELECT 1 FROM ticket_assignments ta2 WHERE ta2.ticket_id = t.id AND ta2.assigned_by = ?))");
   $stmt->execute([$ticketId, $staffId, $staffId, $staffId]);
-  } elseif ($role === ROLE_ASST_IT) {
+  } elseif (currentStaffHasPermission('tickets.view_involved')) {
     // Assistant IT can still view tickets previously assigned to them (read-only if no longer current assignee).
     $stmt = $pdo->prepare($baseQuery . " AND (t.assigned_to = ? OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_to = ?))");
     $stmt->execute([$ticketId, $staffId, $staffId]);
@@ -97,26 +97,16 @@ $assignments = $assnStmt->fetchAll();
 $eligibleStaff = [];
 $canAssign = canAssignForDomain($role, $ticket['user_email'] ?? '');
 
-if ($canAssign && in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC])) {
-    $eligibleRoles = [];
-    if ($role === ROLE_ICT_HEAD) {
-    $eligibleRoles = [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC];
-    } elseif (in_array($role, [ROLE_ASST_MANAGER, ROLE_ASST_ICT])) {
-    if ($role === ROLE_ASST_MANAGER) {
-      $eligibleRoles = [ROLE_SR_IT_EXEC, ROLE_ASST_IT];
-    } else {
-      $eligibleRoles = [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC];
+if ($canAssign && (currentStaffHasPermission('ticket.assign.lead') || currentStaffHasPermission('ticket.assign.exec'))) {
+  $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND id != ? ORDER BY role, name");
+  $stmt->execute([$staffId]);
+  $candidates = $stmt->fetchAll();
+
+  foreach ($candidates as $candidate) {
+    if (canAssignForTicket($role, (string)$candidate['role'], $ticket['user_email'] ?? '')) {
+      $eligibleStaff[] = $candidate;
     }
-    } elseif ($role === ROLE_SR_IT_EXEC) {
-    $eligibleRoles = [ROLE_ASST_IT];
-    }
-    
-    if (!empty($eligibleRoles)) {
-        $placeholders = implode(',', array_fill(0, count($eligibleRoles), '?'));
-        $stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE role IN ($placeholders) AND is_active=1 AND id != ? ORDER BY role, name");
-        $stmt->execute([...$eligibleRoles, $staffId]);
-        $eligibleStaff = $stmt->fetchAll();
-    }
+  }
 }
 
 $nextStatus    = getNextStatus($ticket['status']);
@@ -183,7 +173,13 @@ if (!empty($ticket['user_email'])) {
     <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
     <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
     <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if ($role === ROLE_ICT_HEAD): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
+    <div class="sidebar-section">Admin Modules</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
+    <?php endif; ?>
     <div class="sidebar-section">Account</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
     <a class="nav-link" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
@@ -247,7 +243,7 @@ if (!empty($ticket['user_email'])) {
       </div>
 
       <!-- ACTION: Update Status (Sr IT Executive) -->
-      <?php if (in_array($role, [ROLE_SR_IT_EXEC, ROLE_ASST_IT], true) && (int)$ticket['assigned_to'] === $staffId && $nextStatus && $ticket['status'] !== 'solved'): ?>
+      <?php if (currentStaffHasPermission('ticket.update_status') && (int)$ticket['assigned_to'] === $staffId && $nextStatus && $ticket['status'] !== 'solved'): ?>
       <div class="card mb-3 border-primary">
         <div class="card-header bg-primary text-white"><i class="bi bi-arrow-up-circle me-2"></i>Update Ticket Status</div>
         <div class="card-body">
@@ -271,7 +267,7 @@ if (!empty($ticket['user_email'])) {
       </div>
       <?php endif; ?>
 
-      <?php if ($role === ROLE_ASST_IT && (int)$ticket['assigned_to'] !== $staffId): ?>
+      <?php if (currentStaffHasPermission('ticket.update_status') && !currentStaffHasPermission('ticket.assign.exec') && (int)$ticket['assigned_to'] !== $staffId): ?>
       <div class="card mb-3 border-secondary">
         <div class="card-header bg-secondary text-white"><i class="bi bi-eye me-2"></i>Read-Only Access</div>
         <div class="card-body">
@@ -281,7 +277,7 @@ if (!empty($ticket['user_email'])) {
       <?php endif; ?>
 
       <!-- ACTION: Assign Ticket -->
-      <?php if (in_array($role, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC]) && $ticket['status'] !== 'solved' && !empty($eligibleStaff)): ?>
+      <?php if ((currentStaffHasPermission('ticket.assign.lead') || currentStaffHasPermission('ticket.assign.exec')) && $ticket['status'] !== 'solved' && !empty($eligibleStaff)): ?>
       <div class="card mb-3 border-warning">
         <div class="card-header bg-warning text-dark"><i class="bi bi-person-fill-gear me-2"></i>Assign / Re-assign Ticket</div>
         <div class="card-body">

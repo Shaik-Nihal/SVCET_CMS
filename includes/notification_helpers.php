@@ -7,6 +7,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/mailer.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/rbac.php';
 
 // ── Deferred Email Queue ───────────────────────────────────
 // Emails are queued in memory during request processing.
@@ -161,10 +162,7 @@ function dispatchNotification(array $params): void
  */
 function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userName, string $category, string $userDesignation = ''): void
 {
-    $pdo = getDB();
-    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager','assistant_ict') AND is_active = 1");
-    $stmt->execute();
-    $leaders = $stmt->fetchAll();
+    $leaders = getStaffByPermission('notify.management');
 
     $raisedByDisplay = h($userName);
     if ($userDesignation !== '') {
@@ -331,10 +329,7 @@ function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber
  */
 function notifyManagementStatusChange(int $ticketId, string $ticketNumber, string $newStatus, int $updatedByStaffId): void
 {
-    $pdo = getDB();
-    $stmt = $pdo->prepare("SELECT id, name, email, contact FROM it_staff WHERE role IN ('ict_head','assistant_manager','assistant_ict') AND is_active = 1 AND id != ?");
-    $stmt->execute([$updatedByStaffId]);
-    $managers = $stmt->fetchAll();
+    $managers = getStaffByPermission('notify.management', $updatedByStaffId);
 
     $statusText = statusLabel($newStatus);
     foreach ($managers as $mgr) {

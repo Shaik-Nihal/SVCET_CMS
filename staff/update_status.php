@@ -7,7 +7,8 @@ require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/ticket_helpers.php';
 require_once __DIR__ . '/../includes/notification_helpers.php';
 
-requireRole([ROLE_SR_IT_EXEC, ROLE_ASST_IT]);
+requireStaff();
+requirePermission('ticket.update_status');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . APP_URL . '/staff/tickets');

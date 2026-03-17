@@ -5,6 +5,7 @@
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/rbac.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 startSecureSession();
@@ -47,8 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['last_activity']  = time();
                 $_SESSION['session_created']= time();
 
-                // Admin role goes to admin dashboard, all others to staff dashboard
-                if ($row['role'] === ROLE_ADMIN) {
+                // Staff with admin access go to admin dashboard, others to staff dashboard.
+                if (roleHasPermission($row['role'], 'admin.access')) {
                     header('Location: ' . APP_URL . '/admin/dashboard');
                 } else {
                     header('Location: ' . APP_URL . '/staff/dashboard');

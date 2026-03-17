@@ -21,7 +21,7 @@ $stmt->execute([$staffId]);
 $unreadCount = (int)$stmt->fetchColumn();
 
 // Role-based stats
-if ($role === ROLE_ICT_HEAD) {
+if (currentStaffHasPermission('tickets.view_all')) {
     $stmt = $pdo->query("SELECT
         COUNT(*) AS total,
         SUM(status != 'solved') AS open_count,
@@ -49,7 +49,7 @@ if ($role === ROLE_ICT_HEAD) {
         ORDER BY t.created_at DESC LIMIT 8
     ");
     $recentTickets = $stmt->fetchAll();
-} elseif ($role === ROLE_ASST_MANAGER) {
+} elseif (currentStaffHasPermission('ticket.assign.exec')) {
     $stmt = $pdo->prepare("SELECT COUNT(*) AS total, SUM(status != 'solved') AS open_count, SUM(status = 'solved') AS solved_count, ROUND(AVG(CASE WHEN solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, created_at, solved_at) END),1) AS avg_hours FROM tickets WHERE assigned_to = ?");
     $stmt->execute([$staffId]);
     $stats = $stmt->fetch();
@@ -158,9 +158,15 @@ if ($role === ROLE_ICT_HEAD) {
     <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications
       <?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?>
     </a>
-    <?php if ($role === ROLE_ICT_HEAD): ?>
+    <?php if (currentStaffHasPermission('reports.view')): ?>
     <div class="sidebar-section">Management</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a>
+    <?php endif; ?>
+    <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
+    <div class="sidebar-section">Admin Modules</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>My Profile</a>
@@ -202,12 +208,12 @@ if ($role === ROLE_ICT_HEAD) {
       </div>
     </div>
     <div class="col-sm-6 col-xl-3">
-      <?php if ($role === ROLE_ICT_HEAD): ?>
+      <?php if (currentStaffHasPermission('tickets.view_all')): ?>
       <div class="stat-card red">
         <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
         <div><div class="stat-num"><?= (int)($stats['today_count'] ?? 0) ?></div><div class="stat-label">Raised Today</div></div>
       </div>
-      <?php elseif (in_array($role, [ROLE_SR_IT_EXEC, ROLE_ASST_IT], true)): ?>
+      <?php elseif (!currentStaffHasPermission('ticket.assign.exec') && currentStaffHasPermission('ticket.update_status')): ?>
       <div class="stat-card green">
         <div class="stat-icon"><i class="bi bi-trophy-fill"></i></div>
         <div><div class="stat-num"><?= (int)($stats['solved_this_week'] ?? 0) ?></div><div class="stat-label">Solved This Week</div></div>
@@ -229,7 +235,7 @@ if ($role === ROLE_ICT_HEAD) {
     </div>
     <div class="card-body p-0">
       <?php if (empty($recentTickets)): ?>
-      <div class="empty-state py-4"><i class="bi bi-inbox d-block"></i><p>No tickets <?= $role !== ROLE_ICT_HEAD ? 'assigned to you' : 'raised' ?> yet.</p></div>
+      <div class="empty-state py-4"><i class="bi bi-inbox d-block"></i><p>No tickets <?= !currentStaffHasPermission('tickets.view_all') ? 'assigned to you' : 'raised' ?> yet.</p></div>
       <?php else: ?>
       <div class="table-responsive">
         <table class="table table-apollo mb-0">

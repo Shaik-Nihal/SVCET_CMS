@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-requireAdmin();
+requirePermission('users.manage');
 
 $pdo = getDB();
 
@@ -73,6 +73,7 @@ $users = $pdo->query("SELECT id, name, email, phone, designation, email_verified
     <a class="nav-link" href="<?= APP_URL ?>/admin/staff"><i class="bi bi-person-badge"></i> IT Staff Management</a>
     <a class="nav-link active" href="<?= APP_URL ?>/admin/users"><i class="bi bi-people"></i> User Management</a>
     <a class="nav-link" href="<?= APP_URL ?>/admin/reports"><i class="bi bi-bar-chart-line-fill"></i> System Reports</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i> Roles & Permissions</a>
   </nav>
   <div class="p-3 text-uppercase text-secondary small fw-bold">Account</div>
   <nav class="nav flex-column">

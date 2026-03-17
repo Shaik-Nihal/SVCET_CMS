@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/ticket_helpers.php';
 require_once __DIR__ . '/../includes/notification_helpers.php';
+require_once __DIR__ . '/../includes/rbac.php';
 
 requireUser();
 
@@ -40,10 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $staffRow = $stmt->fetch();
             if (!$staffRow) { $errors[] = 'Invalid staff selection.'; }
 
-          if ($staffRow) {
-            if (!in_array($staffRow['role'], [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT], true)) {
-              $errors[] = 'You can assign tickets only to ICT Head, Assistant Manager, or Assistant ICT.';
-            }
+          if ($staffRow && !roleHasPermission($staffRow['role'], 'notify.management')) {
+              $errors[] = 'You can assign tickets only to roles configured for ticket intake.';
           }
         }
 
@@ -81,9 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Load categories and staff
 $categories = $pdo->query("SELECT * FROM problem_categories WHERE is_active = 1 ORDER BY id")->fetchAll();
-$stmt = $pdo->prepare("SELECT id, name, role, designation, contact FROM it_staff WHERE is_active = 1 AND role IN (?, ?, ?) ORDER BY role, name");
-$stmt->execute([ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT]);
-$staffList = $stmt->fetchAll();
+$staffList = getStaffByPermission('notify.management');
 
 // Unread notifications count
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE recipient_id=? AND recipient_type='user' AND is_read=0");

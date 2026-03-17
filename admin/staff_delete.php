@@ -4,16 +4,18 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-requireAdmin();
+$returnTo = ($_POST['return_to'] ?? '') === 'staff' ? '/staff/manage_staff' : '/admin/staff';
+
+requirePermission('staff.manage');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . APP_URL . '/admin/staff');
+    header('Location: ' . APP_URL . $returnTo);
     exit;
 }
 
 if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
     setFlash('error', 'Invalid request token.');
-    header('Location: ' . APP_URL . '/admin/staff');
+    header('Location: ' . APP_URL . $returnTo);
     exit;
 }
 
@@ -39,5 +41,5 @@ try {
     setFlash('error', 'Failed to delete staff member. Please try again.');
 }
 
-header('Location: ' . APP_URL . '/admin/staff');
+header('Location: ' . APP_URL . $returnTo);
 exit;

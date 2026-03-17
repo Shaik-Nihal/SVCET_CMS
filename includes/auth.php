@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/rbac.php';
 
 // ── Session Bootstrap ──────────────────────────────────────
 function startSecureSession(): void {
@@ -123,7 +124,7 @@ function requireLogin(): void {
 function requireUser(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'user') {
-        if ($_SESSION['user_type'] === 'staff' && ($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
+        if ($_SESSION['user_type'] === 'staff' && currentStaffHasPermission('admin.access')) {
             header('Location: ' . APP_URL . '/admin/dashboard');
         } elseif ($_SESSION['user_type'] === 'staff') {
             header('Location: ' . APP_URL . '/staff/dashboard');
@@ -142,7 +143,7 @@ function requireStaff(): void {
         exit;
     }
     // Admin is a staff member but shouldn't access regular staff pages — redirect to admin
-    if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
+    if (currentStaffHasPermission('admin.access')) {
         header('Location: ' . APP_URL . '/admin/dashboard');
         exit;
     }
@@ -167,11 +168,44 @@ function requireRole($roles): void {
  */
 function requireAdmin(): void {
     requireLogin();
-    if ($_SESSION['user_type'] !== 'staff' || ($_SESSION['staff_role'] ?? '') !== ROLE_ADMIN) {
+    if ($_SESSION['user_type'] !== 'staff' || !currentStaffHasPermission('admin.access')) {
         setFlash('error', 'Admin access required.');
         header('Location: ' . APP_URL . '/auth/login');
         exit;
     }
+}
+
+/**
+ * Require a specific permission for logged-in staff.
+ */
+function requirePermission(string $permission): void {
+    requireLogin();
+    if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission($permission)) {
+        setFlash('error', 'You do not have permission to access that page.');
+        header('Location: ' . APP_URL . '/auth/login');
+        exit;
+    }
+}
+
+/**
+ * Require at least one permission from a list.
+ * @param string[] $permissions
+ */
+function requireAnyPermission(array $permissions): void {
+    requireLogin();
+    if (($_SESSION['user_type'] ?? '') !== 'staff') {
+        setFlash('error', 'You do not have permission to access that page.');
+        header('Location: ' . APP_URL . '/auth/login');
+        exit;
+    }
+    foreach ($permissions as $permission) {
+        if (currentStaffHasPermission((string)$permission)) {
+            return;
+        }
+    }
+    setFlash('error', 'You do not have permission to access that page.');
+    header('Location: ' . APP_URL . '/auth/login');
+    exit;
 }
 
 // ── Redirect if already logged in ─────────────────────────
@@ -179,7 +213,7 @@ function redirectIfLoggedIn(): void {
     startSecureSession();
     if (!empty($_SESSION['user_type'])) {
         if ($_SESSION['user_type'] === 'staff') {
-            if (($_SESSION['staff_role'] ?? '') === ROLE_ADMIN) {
+            if (currentStaffHasPermission('admin.access')) {
                 header('Location: ' . APP_URL . '/admin/dashboard');
             } else {
                 header('Location: ' . APP_URL . '/staff/dashboard');

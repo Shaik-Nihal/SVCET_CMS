@@ -6,10 +6,10 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
-if ($_SESSION['user_type'] !== 'staff' || ($_SESSION['staff_role'] !== ROLE_ICT_HEAD && $_SESSION['staff_role'] !== ROLE_ADMIN)) {
+if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission('reports.view')) {
     setFlash('error', 'Unauthorized access.');
-    $redir = ($_SESSION['staff_role'] ?? '') === ROLE_ADMIN ? '/admin/dashboard' : '/staff/dashboard';
-    header('Location: ' . APP_URL . $redir);
+    $target = currentStaffHasPermission('admin.access') ? '/admin/dashboard' : '/staff/dashboard';
+    header('Location: ' . APP_URL . $target);
     exit;
 }
 

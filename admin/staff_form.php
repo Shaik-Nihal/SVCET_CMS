@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-requireAdmin();
+requirePermission('staff.manage');
 
 $pdo = getDB();
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
@@ -12,6 +12,7 @@ $staff = [
     'name' => '', 'email' => '', 'password' => '', 'role' => '', 'designation' => '', 'contact' => ''
 ];
 $isEdit = false;
+$roles = getAllRoles(false);
 
 if ($id > 0) {
     $stmt = $pdo->prepare("SELECT * FROM it_staff WHERE id = ?");
@@ -42,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$staff['name']) $errors[] = "Name is required.";
         if (!filter_var($staff['email'], FILTER_VALIDATE_EMAIL)) $errors[] = "Valid email required.";
         if (!$staff['role']) $errors[] = "Role is required.";
+        if ($staff['role'] && !roleExists($staff['role'], !$isEdit)) $errors[] = "Selected role is not available.";
         
         // Ensure email uniqueness
         $stmt = $pdo->prepare("SELECT id FROM it_staff WHERE email = ? AND id != ?");
@@ -118,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <a class="nav-link active" href="<?= APP_URL ?>/admin/staff"><i class="bi bi-person-badge"></i> IT Staff Management</a>
     <a class="nav-link" href="<?= APP_URL ?>/admin/users"><i class="bi bi-people"></i> User Management</a>
     <a class="nav-link" href="<?= APP_URL ?>/admin/reports"><i class="bi bi-bar-chart-line-fill"></i> System Reports</a>
+    <a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i> Roles & Permissions</a>
   </nav>
   <div class="p-3 text-uppercase text-secondary small fw-bold">Account</div>
   <nav class="nav flex-column">
@@ -163,11 +166,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label class="form-label fw-semibold">System Role *</label>
             <select name="role" class="form-select" required>
               <option value="">Select Role</option>
-              <option value="ict_head" <?= $staff['role'] === 'ict_head' ? 'selected' : '' ?>>ICT Head</option>
-              <option value="assistant_manager" <?= $staff['role'] === 'assistant_manager' ? 'selected' : '' ?>>Assistant Manager</option>
-              <option value="assistant_ict" <?= $staff['role'] === 'assistant_ict' ? 'selected' : '' ?>>Assistant ICT</option>
-              <option value="sr_it_executive" <?= $staff['role'] === 'sr_it_executive' ? 'selected' : '' ?>>Sr. IT Executive</option>
-              <option value="assistant_it" <?= $staff['role'] === 'assistant_it' ? 'selected' : '' ?>>Assistant IT</option>
+              <?php foreach ($roles as $roleOpt): ?>
+              <option value="<?= h($roleOpt['slug']) ?>" <?= $staff['role'] === $roleOpt['slug'] ? 'selected' : '' ?>>
+                <?= h($roleOpt['name']) ?><?= !$roleOpt['is_active'] ? ' (Inactive Role)' : '' ?>
+              </option>
+              <?php endforeach; ?>
             </select>
           </div>
           

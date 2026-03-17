@@ -21,7 +21,9 @@ $validPriorities = ['low','medium','high'];
 $where   = "WHERE 1=1";
 $params  = [];
 
-if ($role === ROLE_SR_IT_EXEC) {
+if (currentStaffHasPermission('tickets.view_all')) {
+  // Leadership roles with global visibility.
+} elseif (currentStaffHasPermission('ticket.assign.exec')) {
   // Sr IT can see tickets they are involved in:
   // - currently assigned to self
   // - previously assigned to self
@@ -30,7 +32,7 @@ if ($role === ROLE_SR_IT_EXEC) {
   $params[] = $staffId;
   $params[] = $staffId;
   $params[] = $staffId;
-} elseif ($role === ROLE_ASST_IT) {
+} elseif (currentStaffHasPermission('tickets.view_involved')) {
   // Assistant IT can see currently assigned tickets + tickets previously assigned to them (read-only).
   $where  .= " AND (t.assigned_to = ? OR EXISTS (SELECT 1 FROM ticket_assignments ta WHERE ta.ticket_id = t.id AND ta.assigned_to = ?))";
   $params[] = $staffId;
@@ -85,9 +87,13 @@ $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE recipient_id=? A
 $stmt->execute([$staffId]);
 $unreadCount = (int)$stmt->fetchColumn();
 
-if ($role === ROLE_ICT_HEAD) {
+$showAssignedColumn = currentStaffHasPermission('tickets.view_all')
+  || currentStaffHasPermission('ticket.assign.lead')
+  || currentStaffHasPermission('ticket.assign.exec');
+
+if (currentStaffHasPermission('tickets.view_all')) {
   $pageTitle = 'All Tickets';
-} elseif ($role === ROLE_SR_IT_EXEC) {
+} elseif (currentStaffHasPermission('ticket.assign.exec')) {
   $pageTitle = 'My & Delegated Tickets';
 } else {
   $pageTitle = 'My Assigned Tickets';
@@ -138,7 +144,13 @@ if ($role === ROLE_ICT_HEAD) {
     <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
     <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
     <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if ($role === ROLE_ICT_HEAD): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
+    <div class="sidebar-section">Admin Modules</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
+    <?php endif; ?>
     <div class="sidebar-section">Account</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
     <a class="nav-link" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
@@ -197,7 +209,7 @@ if ($role === ROLE_ICT_HEAD) {
         <table class="table table-apollo mb-0">
           <thead><tr>
             <th>Ticket #</th><th>Raised By</th><th>Category</th>
-            <?php if ($role !== ROLE_ASST_IT): ?><th>Assigned To</th><?php endif; ?>
+            <?php if ($showAssignedColumn): ?><th>Assigned To</th><?php endif; ?>
             <th>Priority</th><th>Status</th><th>Date</th><th>Resolve Time</th><th></th>
           </tr></thead>
           <tbody>
@@ -209,7 +221,7 @@ if ($role === ROLE_ICT_HEAD) {
                 <?php if ($t['category_icon']): ?><i class="bi <?= h($t['category_icon']) ?> me-1 text-muted"></i><?php endif; ?>
                 <?= h($t['category_name']) ?>
               </td>
-              <?php if ($role !== ROLE_ASST_IT): ?>
+              <?php if ($showAssignedColumn): ?>
               <td><?= $t['assigned_name'] ? h($t['assigned_name']) . '<br><small class="text-muted">' . h($t['designation']) . '</small>' : '<span class="text-muted">Unassigned</span>' ?></td>
               <?php endif; ?>
               <td><span class="badge <?= priorityBadge($t['priority']) ?>"><?= ucfirst(h($t['priority'])) ?></span></td>

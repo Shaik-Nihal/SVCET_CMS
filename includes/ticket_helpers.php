@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/constants.php';
+require_once __DIR__ . '/rbac.php';
 
 /**
  * Generate a unique ticket number: AKC-YYYYMMDD-XXXX
@@ -46,13 +47,29 @@ function getNextStatus(string $current): ?string {
  * Check if $actor (role) can assign a ticket TO $targetRole.
  */
 function canAssignTo(string $actorRole, string $targetRole): bool {
+    // Legacy defaults for built-in roles.
     $allowed = [
         ROLE_ICT_HEAD     => [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC],
         ROLE_ASST_MANAGER => [ROLE_SR_IT_EXEC, ROLE_ASST_IT],
         ROLE_ASST_ICT     => [ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC],
         ROLE_SR_IT_EXEC   => [ROLE_ASST_IT],
     ];
-    return in_array($targetRole, $allowed[$actorRole] ?? [], true);
+    if (in_array($targetRole, $allowed[$actorRole] ?? [], true)) {
+        return true;
+    }
+
+    // Dynamic RBAC fallback for custom roles.
+    if (roleHasPermission($actorRole, 'ticket.assign.lead')) {
+        return roleHasPermission($targetRole, 'ticket.assign.exec') || roleHasPermission($targetRole, 'ticket.update_status');
+    }
+
+    if (roleHasPermission($actorRole, 'ticket.assign.exec')) {
+        return roleHasPermission($targetRole, 'ticket.update_status')
+            && !roleHasPermission($targetRole, 'ticket.assign.exec')
+            && !roleHasPermission($targetRole, 'ticket.assign.lead');
+    }
+
+    return false;
 }
 
 /**
@@ -67,7 +84,9 @@ function canAssignForTicket(string $actorRole, string $targetRole, string $userE
  * Used to decide whether to show the assignment UI at all.
  */
 function canAssignForDomain(string $actorRole, string $userEmail): bool {
-    return in_array($actorRole, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC], true);
+    return in_array($actorRole, [ROLE_ICT_HEAD, ROLE_ASST_MANAGER, ROLE_ASST_ICT, ROLE_SR_IT_EXEC], true)
+        || roleHasPermission($actorRole, 'ticket.assign.lead')
+        || roleHasPermission($actorRole, 'ticket.assign.exec');
 }
 
 /**

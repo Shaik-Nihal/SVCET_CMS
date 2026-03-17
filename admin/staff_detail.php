@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-requireAdmin();
+requirePermission('staff.manage');
 
 $pdo     = getDB();
 $staffId = (int)($_GET['staff_id'] ?? 0);
