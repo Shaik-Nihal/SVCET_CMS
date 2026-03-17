@@ -10,20 +10,18 @@ if (is_file($localSecrets)) {
 }
 
 // App Info
-define('ORG_NAME', 'College Name');
-define('APP_NAME', ORG_NAME . ' IT Support');
-define('APP_SHORT', 'College TMS');
+define('ORG_NAME', 'SVCET College');
+define('APP_NAME', ORG_NAME . ' Complaint Management System');
+define('APP_SHORT', 'SVCET CMS');
 // Auto-detect project folder (e.g. /SVCET) to avoid hardcoded URL mismatches.
 $appFolder = basename(dirname(__DIR__));
 define('APP_URL', getenv('APP_URL') ?: ('http://localhost/' . $appFolder)); // No trailing slash
 define('APP_TIMEZONE', 'Asia/Kolkata');
-define('SUPPORT_PORTAL_NAME', ORG_NAME . ' IT Support Portal');
-define('PRIMARY_DOMAIN', 'collegename.edu.in');
+define('SUPPORT_PORTAL_NAME', ORG_NAME . ' Complaint Management Portal');
+define('PRIMARY_DOMAIN', 'svcet.edu.org');
 define('SUPPORT_PHONE', '9876543210');
 define('SUPPORT_EMAIL', 'ict@' . PRIMARY_DOMAIN);
-define('SUPPORT_HOURS', 'Mon–Sat, 9 AM – 6 PM');
-
-// Keep all PHP date/time operations in one timezone for consistent "x min ago" values.
+define('SUPPORT_HOURS', 'Mon-Sat, 9 AM - 6 PM');
 date_default_timezone_set(APP_TIMEZONE);
 
 define('EMAIL_DOMAINS', [PRIMARY_DOMAIN]); // Allowed registration domains
@@ -42,12 +40,8 @@ define('LOGIN_MAX_FAILURES', 5);
 define('LOGIN_LOCKOUT_SECS', 300); // 5 minutes
 
 // Ticket
-define('TICKET_PREFIX', 'CLG');
-
-// Database
-define('DB_NAME', 'tms_college');
-
-// Roles
+define('TICKET_PREFIX', 'SVCET');
+define('DB_NAME', 'svcet_cms');
 define('ROLE_ADMIN', 'admin');
 define('ROLE_ICT_HEAD', 'ict_head');
 define('ROLE_ASST_MANAGER', 'assistant_manager');
@@ -72,13 +66,13 @@ define('PRIORITY_HIGH', 'high');
 define('MAIL_DRIVER', getenv('MAIL_DRIVER') ?: 'smtp'); // smtp|graph
 define('MAIL_HOST', getenv('MAIL_HOST') ?: 'smtp.office365.com');
 define('MAIL_PORT', (int)(getenv('MAIL_PORT') ?: 587));
-define('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: 'tms@' . PRIMARY_DOMAIN);
+define('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: 'cms@' . PRIMARY_DOMAIN);
 define('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ?: '');
 define('MAIL_FROM', getenv('MAIL_FROM') ?: MAIL_USERNAME);
 define('MAIL_FROM_NAME', APP_NAME);
 
 // Branding assets
-define('APP_LOGO_FILE', 'sample_logo.svg');
+define('APP_LOGO_FILE', 'college_logo.png');
 define('APP_LOGO_URL', APP_URL . '/assets/images/' . APP_LOGO_FILE);
 define('APP_LOGO_ALT', ORG_NAME . ' Logo');
 define('APP_BACKGROUND_FILE', 'sample_background.svg');
@@ -86,6 +80,13 @@ define('APP_BACKGROUND_URL', APP_URL . '/assets/images/' . APP_BACKGROUND_FILE);
 
 define('APP_EMBED_EMAIL_LOGO', false);
 define('APP_EMAIL_LOGO_CID', 'app_logo');
+
+// Owner-only admin access (credentials are environment-based, not DB-based)
+define('OWNER_ADMIN_NAME', getenv('OWNER_ADMIN_NAME') ?: 'Portal Owner');
+define('OWNER_ADMIN_EMAIL', strtolower(trim(getenv('OWNER_ADMIN_EMAIL') ?: MAIL_USERNAME)));
+define('OWNER_ADMIN_PASSWORD', getenv('OWNER_ADMIN_PASSWORD') ?: '');
+define('OWNER_ADMIN_PASSWORD_HASH', getenv('OWNER_ADMIN_PASSWORD_HASH') ?: '');
+define('OWNER_ADMIN_ALLOW_DB_ADMIN', false);
 
 // Microsoft Graph Mail (recommended for Microsoft 365)
 define('GRAPH_TENANT_ID', getenv('GRAPH_TENANT_ID') ?: '');
@@ -96,7 +97,7 @@ define('GRAPH_SENDER', getenv('GRAPH_SENDER') ?: MAIL_FROM); // mailbox UPN
 // ============================================================
 // Paths
 // ============================================================
-define('BASE_PATH', dirname(__DIR__)); // n:\TMS
+define('BASE_PATH', dirname(__DIR__));
 define('VENDOR_PATH', BASE_PATH . '/vendor');
 
 // ============================================================

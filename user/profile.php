@@ -104,7 +104,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
 </head>
 <body data-user-type="user">
 
-<nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
+<nav class="navbar navbar-expand-lg navbar-svcet fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -190,7 +190,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
               <label class="form-label fw-semibold">Roll / Emp Number</label>
               <input type="text" name="roll_no" class="form-control" value="<?= h($user['roll_no'] ?? '') ?>">
             </div>
-            <button type="submit" class="btn btn-apollo"><i class="bi bi-check2 me-2"></i>Save Changes</button>
+            <button type="submit" class="btn btn-svcet"><i class="bi bi-check2 me-2"></i>Save Changes</button>
           </form>
         </div>
       </div>
@@ -224,7 +224,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
             <div class="alert alert-info" style="font-size:.8rem;">
               <i class="bi bi-info-circle me-1"></i>Cannot reuse last <?= PASSWORD_HISTORY_DEPTH ?> passwords.
             </div>
-            <button type="submit" class="btn btn-apollo"><i class="bi bi-lock me-2"></i>Update Password</button>
+            <button type="submit" class="btn btn-svcet"><i class="bi bi-lock me-2"></i>Update Password</button>
           </form>
         </div>
       </div>

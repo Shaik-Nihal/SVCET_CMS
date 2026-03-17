@@ -85,7 +85,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 </head>
 <body data-user-type="staff">
 
-<nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
+<nav class="navbar navbar-svcet fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
@@ -148,7 +148,7 @@ $unreadCount = (int)$stmt->fetchColumn();
               <label class="form-label fw-semibold">Contact Number</label>
               <input type="tel" name="contact" class="form-control" value="<?= h($staff['contact'] ?? '') ?>" placeholder="10-digit mobile">
             </div>
-            <button type="submit" class="btn btn-apollo"><i class="bi bi-check2 me-2"></i>Save</button>
+            <button type="submit" class="btn btn-svcet"><i class="bi bi-check2 me-2"></i>Save</button>
           </form>
         </div>
       </div>
@@ -176,7 +176,7 @@ $unreadCount = (int)$stmt->fetchColumn();
               <small id="pwdMatch"></small>
             </div>
             <div class="alert alert-info" style="font-size:.8rem;"><i class="bi bi-info-circle me-1"></i>Cannot reuse last <?= PASSWORD_HISTORY_DEPTH ?> passwords.</div>
-            <button type="submit" class="btn btn-apollo"><i class="bi bi-lock me-2"></i>Update Password</button>
+            <button type="submit" class="btn btn-svcet"><i class="bi bi-lock me-2"></i>Update Password</button>
           </form>
         </div>
       </div>

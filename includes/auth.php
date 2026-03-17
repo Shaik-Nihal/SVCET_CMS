@@ -124,7 +124,7 @@ function requireLogin(): void {
 function requireUser(): void {
     requireLogin();
     if ($_SESSION['user_type'] !== 'user') {
-        if ($_SESSION['user_type'] === 'staff' && currentStaffHasPermission('admin.access')) {
+        if (isOwnerAdminSession()) {
             header('Location: ' . APP_URL . '/admin/dashboard');
         } elseif ($_SESSION['user_type'] === 'staff') {
             header('Location: ' . APP_URL . '/staff/dashboard');
@@ -143,7 +143,7 @@ function requireStaff(): void {
         exit;
     }
     // Admin is a staff member but shouldn't access regular staff pages — redirect to admin
-    if (currentStaffHasPermission('admin.access')) {
+    if (isOwnerAdminSession()) {
         header('Location: ' . APP_URL . '/admin/dashboard');
         exit;
     }
@@ -168,7 +168,7 @@ function requireRole($roles): void {
  */
 function requireAdmin(): void {
     requireLogin();
-    if ($_SESSION['user_type'] !== 'staff' || !currentStaffHasPermission('admin.access')) {
+    if (!isOwnerAdminSession()) {
         setFlash('error', 'Admin access required.');
         header('Location: ' . APP_URL . '/auth/login');
         exit;
@@ -213,7 +213,7 @@ function redirectIfLoggedIn(): void {
     startSecureSession();
     if (!empty($_SESSION['user_type'])) {
         if ($_SESSION['user_type'] === 'staff') {
-            if (currentStaffHasPermission('admin.access')) {
+            if (isOwnerAdminSession()) {
                 header('Location: ' . APP_URL . '/admin/dashboard');
             } else {
                 header('Location: ' . APP_URL . '/staff/dashboard');
@@ -236,6 +236,14 @@ function currentStaffId(): int {
 
 function currentRole(): string {
     return $_SESSION['staff_role'] ?? '';
+}
+
+function isOwnerAdminSession(): bool {
+    $sessionEmail = strtolower((string)($_SESSION['staff_email'] ?? ''));
+    return (($_SESSION['user_type'] ?? '') === 'staff')
+        && !empty($_SESSION['is_owner_admin'])
+        && OWNER_ADMIN_EMAIL !== ''
+        && hash_equals(OWNER_ADMIN_EMAIL, $sessionEmail);
 }
 
 // ── Client IP Helper ──────────────────────────────────────

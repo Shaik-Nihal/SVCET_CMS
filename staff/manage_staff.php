@@ -61,7 +61,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 </head>
 <body data-user-type="staff">
 
-<nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
+<nav class="navbar navbar-svcet fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
@@ -96,7 +96,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <div class="main-content">
   <div class="page-title-bar">
     <h4><i class="bi bi-person-badge me-2"></i>Manage Staff</h4>
-    <a href="<?= APP_URL ?>/admin/staff_form" class="btn btn-sm btn-apollo"><i class="bi bi-plus-lg me-1"></i>Add Staff</a>
+    <a href="<?= APP_URL ?>/admin/staff_form" class="btn btn-sm btn-svcet"><i class="bi bi-plus-lg me-1"></i>Add Staff</a>
   </div>
 
   <?php renderFlash(); ?>
@@ -107,7 +107,7 @@ $unreadCount = (int)$stmt->fetchColumn();
       <div class="empty-state"><i class="bi bi-inbox d-block"></i><p>No staff found.</p></div>
       <?php else: ?>
       <div class="table-responsive">
-        <table class="table table-apollo mb-0">
+        <table class="table table-svcet mb-0">
           <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Designation</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
           <tbody>
           <?php foreach ($staff as $s): ?>

@@ -77,15 +77,19 @@ $assnStmt = $pdo->prepare("
 $assnStmt->execute([$ticketId]);
 $assignments = $assnStmt->fetchAll();
 
-    // Metric: count reassignment hops between executive-level assignees.
-    $executiveRoles = [ROLE_SR_IT_EXEC, ROLE_ASST_IT];
+    // Metric: count reassignment hops between execution-level assignees.
+    // Use permissions instead of fixed slugs so renamed/custom roles still work.
     $executiveReassignCount = 0;
     $prevExecAssigneeId = 0;
     foreach ($assignments as $a) {
       $assigneeId = (int)($a['assignee_id'] ?? 0);
       $assigneeRole = (string)($a['assignee_role'] ?? '');
 
-      if ($assigneeId > 0 && in_array($assigneeRole, $executiveRoles, true)) {
+      $isExecutionRole = roleHasPermission($assigneeRole, 'ticket.update_status')
+        && !roleHasPermission($assigneeRole, 'ticket.assign.exec')
+        && !roleHasPermission($assigneeRole, 'ticket.assign.lead');
+
+      if ($assigneeId > 0 && $isExecutionRole) {
         if ($prevExecAssigneeId > 0 && $assigneeId !== $prevExecAssigneeId) {
           $executiveReassignCount++;
         }
@@ -144,7 +148,7 @@ if (!empty($ticket['user_email'])) {
 </head>
 <body data-user-type="staff">
 
-<nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
+<nav class="navbar navbar-svcet fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>

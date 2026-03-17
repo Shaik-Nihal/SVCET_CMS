@@ -10,7 +10,7 @@ require_once __DIR__ . '/../includes/functions.php';
 requireLogin();
 if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission('reports.view')) {
     setFlash('error', 'Unauthorized access.');
-    $target = currentStaffHasPermission('admin.access') ? '/admin/dashboard' : '/staff/dashboard';
+    $target = isOwnerAdminSession() ? '/admin/dashboard' : '/staff/dashboard';
     header('Location: ' . APP_URL . $target);
     exit;
 }
@@ -80,12 +80,12 @@ if ($useFPDF) {
     // ── Native FPDF PDF generation ──────────────────────────
     require_once $fpdfPath;
 
-    class TMS_PDF extends FPDF {
+    class SVCET_PDF extends FPDF {
         function Header() {
             $this->SetFont('Arial','B',16);
-            $this->Cell(0, 10, ORG_NAME . ' IT Support', 0, 1, 'C');
+            $this->Cell(0, 10, ORG_NAME . ' Complaint Management', 0, 1, 'C');
             $this->SetFont('Arial','',10);
-            $this->Cell(0, 6, 'Ticket Management Report', 0, 1, 'C');
+            $this->Cell(0, 6, 'Complaint Management Report', 0, 1, 'C');
             $this->Ln(4);
             $this->Line(10, $this->GetY(), $this->GetPageWidth()-10, $this->GetY());
             $this->Ln(4);
@@ -97,7 +97,7 @@ if ($useFPDF) {
         }
     }
 
-    $pdf = new TMS_PDF('L','mm','A4');
+    $pdf = new SVCET_PDF('L','mm','A4');
     $pdf->AliasNbPages();
     $pdf->AddPage();
 
@@ -172,7 +172,7 @@ if ($useFPDF) {
         $fill = !$fill;
     }
 
-    $pdf->Output('D', 'TMS_Report_' . date('Ymd') . '.pdf');
+    $pdf->Output('D', 'SVCET_Complaint_Report_' . date('Ymd') . '.pdf');
     exit;
 
 } else {
@@ -182,7 +182,7 @@ if ($useFPDF) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>TMS Report — <?= h($periodLabel) ?></title>
+<title>SVCET Complaint Report — <?= h($periodLabel) ?></title>
 <style>
     @media print { @page { size: landscape; margin: 10mm; } .no-print { display:none !important; } }
     body { font-family: Arial, sans-serif; font-size: 12px; color: #333; margin: 20px; }
@@ -205,7 +205,7 @@ if ($useFPDF) {
     <a href="<?= APP_URL ?>/staff/reports" style="margin-left:10px;font-size:13px;">Back to Reports</a>
 </div>
 
-<h1><?= h(ORG_NAME) ?> — IT Support Ticket Report</h1>
+<h1><?= h(ORG_NAME) ?> — Complaint Management Report</h1>
 <p class="subtitle">Report Period: <strong><?= h($periodLabel) ?></strong> | Generated: <?= date('d M Y, h:i A') ?></p>
 
 <h2>Summary</h2>

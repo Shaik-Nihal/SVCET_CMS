@@ -8,6 +8,9 @@ requirePermission('roles.manage');
 
 $pdo = getDB();
 
+// Keep roles aligned with current IT staff role slugs.
+syncMissingRolesFromStaff();
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token'], $_POST['action'], $_POST['slug'])) {
     if (!validateCSRFToken($_POST['csrf_token'])) {
         setFlash('error', 'Invalid request token.');
@@ -19,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token'], $_POST[
     $action = trim((string)$_POST['action']);
 
     try {
-        $stmt = $pdo->prepare("SELECT id, slug, is_system, is_active FROM roles WHERE slug = ? LIMIT 1");
+        $stmt = $pdo->prepare("SELECT id, slug, is_active FROM roles WHERE slug = ? LIMIT 1");
         $stmt->execute([$slug]);
         $role = $stmt->fetch();
 
@@ -28,17 +31,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token'], $_POST[
         }
 
         if ($action === 'toggle_active') {
-            if ($slug === 'admin') {
+            if ($slug === ROLE_ADMIN) {
                 throw new RuntimeException('Admin role cannot be disabled.');
             }
 
             $newState = ((int)$role['is_active'] === 1) ? 0 : 1;
-            $stmt = $pdo->prepare("UPDATE roles SET is_active = ? WHERE id = ?");
-            $stmt->execute([$newState, (int)$role['id']]);
+            $pdo->prepare("UPDATE roles SET is_active = ? WHERE id = ?")
+                ->execute([$newState, (int)$role['id']]);
 
             if ($newState === 0) {
-                // Keep data safe: deactivate staff tied to disabled role.
-                $pdo->prepare("UPDATE it_staff SET is_active = 0 WHERE role = ?")->execute([$slug]);
+                // Keep data consistent: staff under disabled role are also inactive.
+                $pdo->prepare("UPDATE it_staff SET is_active = 0 WHERE LOWER(TRIM(role)) = LOWER(?)")
+                    ->execute([$slug]);
             }
 
             setFlash('success', 'Role status updated.');
@@ -51,7 +55,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['csrf_token'], $_POST[
     exit;
 }
 
-$roles = $pdo->query("\n    SELECT r.id, r.slug, r.name, r.is_system, r.is_active,\n           (SELECT COUNT(*) FROM role_permissions rp WHERE rp.role_id = r.id) AS permission_count,\n           (SELECT COUNT(*) FROM it_staff s WHERE s.role = r.slug) AS staff_count\n    FROM roles r\n    ORDER BY r.is_system DESC, r.display_order ASC, r.name ASC\n")->fetchAll();
+$roles = $pdo->query("\n    SELECT r.id, r.slug, r.name, r.is_system, r.is_active,\n           (SELECT COUNT(*) FROM role_permissions rp WHERE rp.role_id = r.id) AS permission_count,\n           (SELECT COUNT(*) FROM it_staff s WHERE LOWER(TRIM(s.role)) = LOWER(r.slug)) AS staff_count_total,\n           (SELECT COUNT(*) FROM it_staff s WHERE LOWER(TRIM(s.role)) = LOWER(r.slug) AND s.is_active = 1) AS staff_count_active\n    FROM roles r\n    ORDER BY r.is_system DESC, r.display_order ASC, r.name ASC\n")->fetchAll();
+
+// Show only owner admin and roles that exist in IT Staff Management.
+$roles = array_values(array_filter($roles, static function (array $r): bool {
+    return $r['slug'] === ROLE_ADMIN || (int)$r['staff_count_total'] > 0;
+}));
+
+$staffRows = $pdo->query("\n    SELECT id, name, role, is_active\n    FROM it_staff\n    WHERE role IS NOT NULL AND TRIM(role) <> ''\n    ORDER BY is_active DESC, name ASC\n")->fetchAll();
+
+$staffByRole = [];
+foreach ($staffRows as $staffRow) {
+    $roleKey = strtolower(trim((string)$staffRow['role']));
+    if ($roleKey === '') {
+        continue;
+    }
+    if (!isset($staffByRole[$roleKey])) {
+        $staffByRole[$roleKey] = [];
+    }
+    $staffByRole[$roleKey][] = $staffRow;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +94,7 @@ $roles = $pdo->query("\n    SELECT r.id, r.slug, r.name, r.is_system, r.is_activ
     <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
       <i class="bi bi-list fs-4"></i>
     </button>
-    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
+    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
@@ -122,7 +145,30 @@ $roles = $pdo->query("\n    SELECT r.id, r.slug, r.name, r.is_system, r.is_activ
             <td class="fw-semibold"><?= h($role['name']) ?></td>
             <td><span class="badge bg-light text-dark border"><?= h($role['slug']) ?></span></td>
             <td><?= (int)$role['permission_count'] ?></td>
-            <td><?= (int)$role['staff_count'] ?></td>
+            <td>
+              <?php
+                $roleKey = strtolower(trim((string)$role['slug']));
+                $staffTotal = (int)$role['staff_count_total'];
+                $staffActive = (int)$role['staff_count_active'];
+                $roleStaff = $staffByRole[$roleKey] ?? [];
+              ?>
+              <?php if ($role['slug'] === ROLE_ADMIN && OWNER_ADMIN_EMAIL !== ''): ?>
+                <span class="badge bg-primary-subtle text-primary-emphasis border">Owner (env)</span>
+                <?php if ($staffTotal > 0): ?>
+                  <div class="small text-muted mt-1">DB staff: <?= $staffActive ?>/<?= $staffTotal ?></div>
+                <?php endif; ?>
+              <?php else: ?>
+                <div><?= $staffActive ?><?php if ($staffTotal !== $staffActive): ?> <span class="small text-muted">/ <?= $staffTotal ?></span><?php endif; ?></div>
+                <?php if (!empty($roleStaff)): ?>
+                  <div class="small text-muted mt-1" style="max-width:260px;white-space:normal;">
+                    <?php foreach ($roleStaff as $idx => $member): ?>
+                      <?php if ($idx > 0): ?>, <?php endif; ?>
+                      <span class="<?= ((int)$member['is_active'] === 1) ? 'text-success' : 'text-danger' ?>"><?= h($member['name']) ?></span>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              <?php endif; ?>
+            </td>
             <td>
               <?php if ((int)$role['is_system'] === 1): ?>
                 <span class="badge bg-secondary">System</span>
@@ -141,7 +187,7 @@ $roles = $pdo->query("\n    SELECT r.id, r.slug, r.name, r.is_system, r.is_activ
               <a href="<?= APP_URL ?>/admin/role_form?slug=<?= urlencode($role['slug']) ?>" class="btn btn-sm btn-outline-primary">
                 <i class="bi bi-pencil-square"></i>
               </a>
-              <?php if ($role['slug'] !== 'admin'): ?>
+              <?php if ($role['slug'] !== ROLE_ADMIN): ?>
               <form method="post" class="d-inline" onsubmit="return confirm('Change active state for this role?')">
                 <input type="hidden" name="csrf_token" value="<?= h(generateCSRFToken()) ?>">
                 <input type="hidden" name="slug" value="<?= h($role['slug']) ?>">
@@ -155,7 +201,7 @@ $roles = $pdo->query("\n    SELECT r.id, r.slug, r.name, r.is_system, r.is_activ
           </tr>
           <?php endforeach; ?>
           <?php if (empty($roles)): ?>
-          <tr><td colspan="7" class="text-center text-muted py-4">No roles found.</td></tr>
+          <tr><td colspan="7" class="text-center text-muted py-4">No staff-linked roles found.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>

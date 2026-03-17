@@ -30,7 +30,7 @@ $recentTickets = $pdo->query("
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Admin Dashboard — <?= APP_NAME ?></title>
+<title>Maintenance Dashboard — <?= APP_NAME ?></title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/style.css">
@@ -44,7 +44,7 @@ $recentTickets = $pdo->query("
     <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
       <i class="bi bi-list fs-4"></i>
     </button>
-    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
+    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
@@ -71,7 +71,7 @@ $recentTickets = $pdo->query("
 <!-- Main Content -->
 <div class="admin-main">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0 fw-bold">System Overview</h4>
+    <h4 class="mb-0 fw-bold">Maintenance Overview</h4>
   </div>
 
   <?php renderFlash(); ?>
@@ -79,8 +79,8 @@ $recentTickets = $pdo->query("
   <!-- Stats Row -->
   <div class="row g-4 mb-4">
     <div class="col-sm-6 col-lg-3">
-      <div class="admin-stat-card" style="border-top-color: #8b5cf6;">
-        <div class="admin-stat-icon" style="background: #ede9fe; color: #7c3aed;">
+      <div class="admin-stat-card" style="border-top-color: #2d3e50;">
+        <div class="admin-stat-icon" style="background: #dce5ee; color: #2d3e50;">
           <i class="bi bi-person-badge-fill"></i>
         </div>
         <div class="admin-stat-info">
@@ -90,8 +90,8 @@ $recentTickets = $pdo->query("
       </div>
     </div>
     <div class="col-sm-6 col-lg-3">
-      <div class="admin-stat-card" style="border-top-color: #10b981;">
-        <div class="admin-stat-icon" style="background: #d1fae5; color: #059669;">
+      <div class="admin-stat-card" style="border-top-color: #86bc42;">
+        <div class="admin-stat-icon" style="background: #edf6e2; color: #5e8f28;">
           <i class="bi bi-people-fill"></i>
         </div>
         <div class="admin-stat-info">
@@ -101,8 +101,8 @@ $recentTickets = $pdo->query("
       </div>
     </div>
     <div class="col-sm-6 col-lg-3">
-      <div class="admin-stat-card" style="border-top-color: #f59e0b;">
-        <div class="admin-stat-icon" style="background: #fef3c7; color: #d97706;">
+      <div class="admin-stat-card" style="border-top-color: #ffc107;">
+        <div class="admin-stat-icon" style="background: #fff5cf; color: #d09b00;">
           <i class="bi bi-ticket-detailed-fill"></i>
         </div>
         <div class="admin-stat-info">
@@ -117,7 +117,7 @@ $recentTickets = $pdo->query("
           <i class="bi bi-exclamation-octagon-fill"></i>
         </div>
         <div class="admin-stat-info">
-          <p>Pending Issues</p>
+          <p>Open Complaints</p>
           <h3><?= number_format($stats['pending']) ?></h3>
         </div>
       </div>
@@ -127,7 +127,7 @@ $recentTickets = $pdo->query("
   <!-- Recent Tickets Preview -->
   <div class="card border-0 shadow-sm mt-4">
     <div class="card-header bg-white py-3 border-0">
-      <h5 class="mb-0 fw-bold text-secondary"><i class="bi bi-clock-history me-2"></i>Recent Ticket Activity</h5>
+      <h5 class="mb-0 fw-bold text-secondary"><i class="bi bi-clock-history me-2"></i>Recent Complaint Activity</h5>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">

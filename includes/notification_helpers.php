@@ -171,9 +171,9 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
 
     foreach ($leaders as $leader) {
         $msg = "New ticket {$ticketNumber} raised by {$userName}. Problem: {$category}. Please review and assign.";
-        $body = emailTemplate("New IT Support Ticket — {$ticketNumber}", "
+        $body = emailTemplate("New Complaint — {$ticketNumber}", "
             <p>Dear {$leader['name']},</p>
-            <p>A new support ticket has been raised by <strong>{$raisedByDisplay}</strong>.</p>
+            <p>A new complaint has been raised by <strong>{$raisedByDisplay}</strong>.</p>
             <table style='width:100%;border-collapse:collapse;'>
               <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
               <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
@@ -212,9 +212,9 @@ function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumbe
         return;
 
     $msg = "Your ticket {$ticketNumber} has been raised successfully and assigned to {$staffName}. We will get back to you shortly.";
-    $body = emailTemplate("Ticket {$ticketNumber} Received", "
+    $body = emailTemplate("Complaint {$ticketNumber} Received", "
         <p>Dear {$user['name']},</p>
-        <p>Your support ticket has been received and assigned to our IT team.</p>
+        <p>Your complaint has been received and assigned to our support team.</p>
         <table style='width:100%;border-collapse:collapse;'>
           <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
           <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Assigned To</td><td style='padding:8px;'>{$staffName}</td></tr>

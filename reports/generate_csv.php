@@ -8,7 +8,7 @@ require_once __DIR__ . '/../includes/functions.php';
 requireLogin();
 if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission('reports.view')) {
     setFlash('error', 'Unauthorized access.');
-    $target = currentStaffHasPermission('admin.access') ? '/admin/dashboard' : '/staff/dashboard';
+    $target = isOwnerAdminSession() ? '/admin/dashboard' : '/staff/dashboard';
     header('Location: ' . APP_URL . $target);
     exit;
 }
@@ -48,7 +48,7 @@ $rows = $stmt->fetchAll();
 // Stream CSV — sanitize filename to prevent header injection
 $safeDateFrom = preg_replace('/[^0-9]/', '', $dateFrom);
 $safeDateTo   = preg_replace('/[^0-9]/', '', $dateTo);
-$filename = 'TMS_Report_' . $safeDateFrom . '_to_' . $safeDateTo . '.csv';
+$filename = 'SVCET_Complaint_Report_' . $safeDateFrom . '_to_' . $safeDateTo . '.csv';
 
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');

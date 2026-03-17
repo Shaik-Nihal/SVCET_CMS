@@ -1,6 +1,6 @@
-# College TMS — Complete Setup Guide (Windows)
+# SVCET Complaint Management System — Complete Setup Guide (Windows)
 
-> **Ticket Management System** for College Name IT Support  
+> **Complaint Management System** for SVCET College Complaint Management  
 > Tech Stack: PHP 8.x · MySQL 8.x · Bootstrap 5.3 · XAMPP (Windows)
 
 ---
@@ -28,11 +28,11 @@
 
 ## 1. Project Overview
 
-**College TMS** is a web-based IT Support Ticket Management System built for College Name. It allows:
+**SVCET Complaint Management System** is a web-based complaint portal built for SVCET College. It allows:
 
-- **Students/Faculty** to register, raise IT support tickets, track their status, and submit feedback.
+- **Students/Faculty** to register, raise complaints, track complaint status, and submit feedback.
 - **IT Staff** (with role-based hierarchy) to receive, assign, resolve tickets, and generate reports.
-- **System Admin** to manage staff accounts, users, view system-wide dashboards, and change their own password.
+- **Owner Admin** (environment-based login) to manage staff accounts, users, view system-wide dashboards, and change credentials.
 
 ### Key Capabilities
 
@@ -43,7 +43,7 @@
 | **Email Notifications** | Deferred email queue (SMTP or Microsoft Graph API) — ticket creation is instant |
 | **PDF/CSV Reports** | ICT Head & Admin can generate date-ranged reports |
 | **Real-Time Notifications** | AJAX polling (every 30s) for in-app notifications |
-| **Single-Domain Support** | `@collegename.edu.in` email domain |
+| **Single-Domain Support** | `@svcet.edu.org` email domain |
 | **Security** | CSRF protection, bcrypt passwords, DB-backed brute-force lockout, HTTP security headers, CSP, session timeouts, password history |
 
 ---
@@ -51,7 +51,7 @@
 ## 2. Architecture & Directory Structure
 
 ```
-TMS/
+SVCET/
 ├── index.php                    # Entry point — redirects to login or dashboard
 ├── .htaccess                    # Root security rules (directory listing, file blocking)
 ├── SETUP_GUIDE.md               # This file
@@ -122,7 +122,6 @@ TMS/
 │
 ├── sql/                         # Database scripts (protected by .htaccess)
 │   ├── schema.sql               # Full database schema (11 tables with performance indexes)
-│   ├── migrate_performance.sql  # Performance indexes for existing databases
 │   └── .htaccess                # Blocks direct access
 │
 ├── admin_seed/                  # One-time database seeder (protected by .htaccess)
@@ -140,7 +139,7 @@ TMS/
 │   │   ├── notifications.js     # AJAX notification polling + rendering
 │   │   └── ticket.js            # Ticket form interactions
 │   └── images/
-│       ├── sample_logo.svg      # Sample logo
+│       ├── college_logo.png     # SVCET logo
 │       └── sample_background.svg # Login page background
 │
 └── vendor/                      # Third-party libraries (not via Composer)
@@ -198,7 +197,7 @@ Both should show green indicators.
 Place the project in XAMPP's document root:
 
 ```
-C:\xampp\htdocs\TMS\
+C:\xampp\htdocs\SVCET\
 ```
 
 **If cloning from Git:**
@@ -207,10 +206,10 @@ Open Command Prompt:
 
 ```cmd
 cd C:\xampp\htdocs
-git clone https://github.com/Shaik-Nihal/TMS.git TMS
+git clone https://github.com/Shaik-Nihal/Ticket_Management_System.git SVCET
 ```
 
-**If copying manually:** Extract or copy the TMS folder into `C:\xampp\htdocs\`.
+**If copying manually:** Extract or copy the SVCET folder into `C:\xampp\htdocs\`.
 
 ### Step 3: Verify Apache Configuration
 
@@ -256,17 +255,17 @@ Open: **http://localhost/phpmyadmin**
 
 ### Step 2: Import the Schema
 
-This creates the `tms_college` database with all 11 tables + performance indexes:
+This creates the `svcet_cms` database with all 11 tables + performance indexes:
 
 **Via Command Line:**
 
 ```cmd
-C:\xampp\mysql\bin\mysql.exe -u root < C:\xampp\htdocs\TMS\sql\schema.sql
+C:\xampp\mysql\bin\mysql.exe -u root < C:\xampp\htdocs\SVCET\sql\schema.sql
 ```
 
 **Via phpMyAdmin:**
 1. Click the **Import** tab at the top
-2. Click **Choose File** → select `C:\xampp\htdocs\TMS\sql\schema.sql`
+2. Click **Choose File** → select `C:\xampp\htdocs\SVCET\sql\schema.sql`
 3. Click **Go**
 
 ### Step 3: Verify Database Creation
@@ -274,8 +273,8 @@ C:\xampp\mysql\bin\mysql.exe -u root < C:\xampp\htdocs\TMS\sql\schema.sql
 In phpMyAdmin or MySQL command line:
 
 ```sql
-SHOW DATABASES LIKE 'tms_college';
-USE tms_college;
+SHOW DATABASES LIKE 'svcet_cms';
+USE svcet_cms;
 SHOW TABLES;
 ```
 
@@ -295,13 +294,9 @@ You should see these **11 tables**:
 | 10 | `password_history` | Prevents password reuse (last 5) |
 | 11 | `login_attempts` | DB-backed brute-force protection |
 
-### Step 4: (Existing Databases) Apply Performance Migration
+### Step 4: Performance Indexes
 
-If upgrading from a previous version, apply the performance indexes:
-
-```cmd
-C:\xampp\mysql\bin\mysql.exe -u root tms_college < C:\xampp\htdocs\TMS\sql\migrate_performance.sql
-```
+No separate migration is required. `sql/schema.sql` already includes the performance indexes.
 
 ---
 
@@ -314,7 +309,7 @@ C:\xampp\mysql\bin\mysql.exe -u root tms_college < C:\xampp\htdocs\TMS\sql\migra
 ```php
 $host   = '127.0.0.1';   // Use IP, not 'localhost' (avoids socket issues)
 $port   = 3306;
-$dbName = 'tms_college';
+$dbName = 'svcet_cms';
 $user   = 'root';
 $pass   = '';             // Set your MySQL password here if applicable
 ```
@@ -338,7 +333,7 @@ Key settings you may want to customize:
 | Constant | Default | Description |
 |---|---|---|
 | `APP_URL` | `http://localhost/SVCET` | Base URL (no trailing slash) |
-| `APP_NAME` | `College Name IT Support` | Displayed in navbar & emails |
+| `APP_NAME` | `SVCET College Complaint Management` | Displayed in navbar & emails |
 | `APP_TIMEZONE` | `Asia/Kolkata` | PHP timezone for all date/time ops |
 | `EMAIL_DOMAINS` | `['collegename.edu.in']` | Allowed registration email domains |
 | `SESSION_IDLE_TIMEOUT` | `1800` (30 min) | Session idle timeout in seconds |
@@ -375,11 +370,10 @@ http://localhost/SVCET/admin_seed/seed.php
 
 ### What Gets Created
 
-#### IT Staff Accounts (10 members, including System Admin)
+#### IT Staff Accounts (9 members)
 
 | Name | Email | Role | Default Password |
 |---|---|---|---|
-| **System Admin** | `tms@collegename.edu.in` | **Admin** | `ChangeMe@2026!` |
 | ICT Head | `icthead@collegename.edu.in` | ICT Head | `ChangeMe@2026!` |
 | Assistant ICT | `assistantict@collegename.edu.in` | Assistant ICT | `ChangeMe@2026!` |
 | Assistant Manager | `assistantmanager@collegename.edu.in` | Assistant Manager | `ChangeMe@2026!` |
@@ -400,18 +394,18 @@ WiFi Issues, No Internet, Computer/Laptop, Printer, Email/Login, Software Instal
 |---|---|
 | `test@collegename.edu.in` | `Test@2026!` |
 
-#### System Admin Login
+#### Owner Admin Login
 
 | Email | Password | How to Login |
 |---|---|---|
-| `tms@collegename.edu.in` | `ChangeMe@2026!` | Use the **IT Staff** tab on the login page |
+| `ni78ha34l8@gmail.com` | `OWNER_ADMIN_PASSWORD` or `OWNER_ADMIN_PASSWORD_HASH` from `config/local.env.php` | Use the **IT Staff** tab on the login page |
 
-> The admin account is stored in the `it_staff` database table with `role = 'admin'`.
+> Owner admin credentials are read from environment values in `config/local.env.php` and are not stored in the `it_staff` table.
 
 > ⚠️ **CRITICAL SECURITY:** Delete `admin_seed\seed.php` immediately after seeding!
 
 ```cmd
-del C:\xampp\htdocs\TMS\admin_seed\seed.php
+del C:\xampp\htdocs\SVCET\admin_seed\seed.php
 ```
 
 ---
@@ -442,7 +436,7 @@ putenv('MAIL_DRIVER=graph');
 putenv('GRAPH_TENANT_ID=your-azure-tenant-id');
 putenv('GRAPH_CLIENT_ID=your-app-client-id');
 putenv('GRAPH_CLIENT_SECRET=your-client-secret');
-putenv('GRAPH_SENDER=tms@collegename.edu.in');
+putenv('GRAPH_SENDER=ni78ha34l8@gmail.com');
 ```
 
 **Azure AD Setup Required:**
@@ -464,7 +458,7 @@ If you don't need emails during development, leave `MAIL_PASSWORD` empty. Emails
 ### Role Hierarchy
 
 ```
-System Admin (admin role in it_staff table)
+Owner Admin (environment-based, not stored in it_staff)
     └── ICT Head (ict_head)
         ├── Assistant ICT (assistant_ict)
         └── Assistant Manager (assistant_manager)
@@ -525,11 +519,11 @@ Each transition is irreversible and logged in `ticket_status_history`.
 | Profile | `/staff/profile.php` | Edit profile + change password |
 | Notifications | `/staff/notifications.php` | Staff notification history |
 
-### For System Admin
+### For Owner Admin
 
 | Feature | URL | Description |
 |---|---|---|
-| Login | `/auth/login.php` | Use **IT Staff** tab with `tms@collegename.edu.in` |
+| Login | `/auth/login.php` | Use **IT Staff** tab with `ni78ha34l8@gmail.com` |
 | Dashboard | `/admin/dashboard.php` | System-wide overview |
 | Staff Management | `/admin/staff.php` | Add/edit/deactivate IT staff |
 | User Management | `/admin/users.php` | View/manage registered users |
@@ -651,7 +645,7 @@ Database Error: Could not connect to the database.
 
 **Fix:**
 1. Ensure MySQL is running in XAMPP Control Panel (green indicator)
-2. Verify database exists: `SHOW DATABASES LIKE 'tms_college';`
+2. Verify database exists: `SHOW DATABASES LIKE 'svcet_cms';`
 3. Check credentials in `config\database.php` (password, port)
 4. Ensure using `127.0.0.1` not `localhost` (avoids socket path issues on Windows)
 
@@ -706,7 +700,7 @@ DELETE FROM login_attempts WHERE email = 'user@example.com';
 1. Open XAMPP Control Panel → Click **Config** next to Apache → `httpd.conf`
 2. Change `Listen 80` to `Listen 8080` (or another free port)
 3. Also change `ServerName localhost:80` to `ServerName localhost:8080`
-4. Update `APP_URL` in `config\constants.php` to `http://localhost:8080/TMS`
+4. Update `APP_URL` in `config\constants.php` to `http://localhost:8080/SVCET`
 5. Restart Apache
 
 ### MySQL Won't Start (Port 3306 in Use)
@@ -722,22 +716,22 @@ DELETE FROM login_attempts WHERE email = 'user@example.com';
 ## Quick Start Checklist
 
 - [ ] XAMPP installed and running (Apache + MySQL green in Control Panel)
-- [ ] Project placed in `C:\xampp\htdocs\TMS\`
+- [ ] Project placed in `C:\xampp\htdocs\SVCET\`
 - [ ] PHP 8.0+ verified (`C:\xampp\php\php.exe -v`)
 - [ ] `mod_rewrite` enabled and `AllowOverride All` set in `httpd.conf`
 - [ ] Database schema imported (`sql\schema.sql`)
-- [ ] Performance migration applied if upgrading (`sql\migrate_performance.sql`)
+- [ ] Schema imported from `sql\schema.sql`
 - [ ] Database credentials configured (`config\database.php`)
 - [ ] Seeder run (`http://localhost/SVCET/admin_seed/seed.php`)
 - [ ] `admin_seed\seed.php` **deleted** after seeding
 - [ ] (Optional) Email configured (`config\local.env.php`)
 - [ ] Application accessible at `http://localhost/SVCET/`
-- [ ] Login tested: Admin via IT Staff tab (`tms@collegename.edu.in` / `ChangeMe@2026!`)
+- [ ] Login tested: Owner via IT Staff tab (OWNER_ADMIN_EMAIL / configured owner password)
 - [ ] Security headers verified (F12 → Network → check response headers)
 - [ ] Sensitive files blocked (try `http://localhost/SVCET/sql/schema.sql` → should return 403)
 - [ ] (When on HTTPS) Uncomment HSTS header in `includes\security_headers.php`
 
 ---
 
-*Generated for College TMS — Updated 15 March 2026*  
+*Generated for SVCET Complaint Management System — Updated 15 March 2026*  
 *Includes: Security Hardening + Performance Optimization + Admin Profile*

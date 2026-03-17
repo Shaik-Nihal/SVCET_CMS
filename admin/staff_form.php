@@ -13,6 +13,15 @@ $staff = [
 ];
 $isEdit = false;
 $roles = getAllRoles(false);
+$returnToStaffForm = $id > 0 ? ('/admin/staff_form?id=' . $id) : '/admin/staff_form';
+$createRoleUrl = APP_URL . '/admin/role_form?return=' . urlencode($returnToStaffForm);
+
+$roleSlugFromQuery = strtolower(trim((string)($_GET['role_slug'] ?? '')));
+$roleWasCreated = isset($_GET['role_created']) && $_GET['role_created'] === '1';
+
+if ($roleWasCreated && $roleSlugFromQuery !== '') {
+  setFlash('success', 'Custom role created. You can now assign it to this staff member.');
+}
 
 if ($id > 0) {
     $stmt = $pdo->prepare("SELECT * FROM it_staff WHERE id = ?");
@@ -26,6 +35,10 @@ if ($id > 0) {
         header('Location: ' . APP_URL . '/admin/staff');
         exit;
     }
+}
+
+if (!$isEdit && $roleSlugFromQuery !== '' && roleExists($roleSlugFromQuery, false)) {
+  $staff['role'] = $roleSlugFromQuery;
 }
 
 $errors = [];
@@ -43,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$staff['name']) $errors[] = "Name is required.";
         if (!filter_var($staff['email'], FILTER_VALIDATE_EMAIL)) $errors[] = "Valid email required.";
         if (!$staff['role']) $errors[] = "Role is required.";
+        if ($staff['role'] === ROLE_ADMIN) $errors[] = "Admin role is reserved for owner environment access and cannot be assigned here.";
         if ($staff['role'] && !roleExists($staff['role'], !$isEdit)) $errors[] = "Selected role is not available.";
         
         // Ensure email uniqueness
@@ -104,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
       <i class="bi bi-list fs-4"></i>
     </button>
-    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
+    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
@@ -163,10 +177,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="text" name="designation" class="form-control" value="<?= h($staff['designation']) ?>" placeholder="e.g. Assistant Director of ICT">
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-semibold">System Role *</label>
+            <div class="d-flex justify-content-between align-items-center">
+              <label class="form-label fw-semibold mb-1">System Role *</label>
+              <a href="<?= h($createRoleUrl) ?>" class="small text-decoration-none">
+                <i class="bi bi-plus-circle me-1"></i>Create Custom Role
+              </a>
+            </div>
             <select name="role" class="form-select" required>
               <option value="">Select Role</option>
               <?php foreach ($roles as $roleOpt): ?>
+              <?php if ($roleOpt['slug'] === ROLE_ADMIN) continue; ?>
               <option value="<?= h($roleOpt['slug']) ?>" <?= $staff['role'] === $roleOpt['slug'] ? 'selected' : '' ?>>
                 <?= h($roleOpt['name']) ?><?= !$roleOpt['is_active'] ? ' (Inactive Role)' : '' ?>
               </option>

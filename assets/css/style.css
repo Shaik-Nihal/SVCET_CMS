@@ -1,23 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Raleway:wght@500;600;700&display=swap');
 
 /* ============================================================
-    College TMS - Global Styles
+    SVCET Complaint Management - Global Styles
    ============================================================ */
 
 :root {
-    --apollo-navy: #1a3a5c;
-    --apollo-blue: #2563a8;
-    --apollo-teal: #1a7a8a;
-    --apollo-amber: #e5a832;
-    --apollo-light: #e8f0fa;
-    --apollo-accent: #e5a832;
+    --svcet-navy: #2d3e50;
+    --svcet-blue: #3a556f;
+    --svcet-teal: #86bc42;
+    --svcet-amber: #ffc107;
+    --svcet-light: #eef4ea;
+    --svcet-accent: #86bc42;
     --sidebar-width: 250px;
 }
 
 /* ── Base ────────────────────────────────────────────────── */
 body {
-    font-family: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: #f0f4f8;
+    font-family: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: radial-gradient(circle at top left, #f8fbf6 0%, #eff4f8 35%, #eef3ed 100%);
     color: #2d3748;
     min-height: 100vh;
 }
@@ -31,12 +31,12 @@ a:hover {
 }
 
 /* ── Navbar ──────────────────────────────────────────────── */
-.navbar-apollo {
-    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 100%);
+.navbar-svcet {
+    background: linear-gradient(120deg, #1f2d3b 0%, var(--svcet-navy) 40%, var(--svcet-teal) 100%);
     box-shadow: 0 4px 15px rgba(0, 0, 0, .2);
 }
 
-.navbar-apollo .navbar-brand {
+.navbar-svcet .navbar-brand {
     font-weight: 700;
     font-size: 1.1rem;
     color: #fff !important;
@@ -45,24 +45,24 @@ a:hover {
     align-items: center;
 }
 
-.navbar-apollo .navbar-brand img {
+.navbar-svcet .navbar-brand img {
     height: 48px;
     width: auto;
     margin-right: 12px;
     border-radius: 6px;
 }
 
-.navbar-apollo .nav-link {
+.navbar-svcet .nav-link {
     color: rgba(255, 255, 255, .85) !important;
     transition: color .15s;
 }
 
-.navbar-apollo .nav-link:hover,
-.navbar-apollo .nav-link.active {
+.navbar-svcet .nav-link:hover,
+.navbar-svcet .nav-link.active {
     color: #fff !important;
 }
 
-.navbar-apollo .navbar-text {
+.navbar-svcet .navbar-text {
     color: rgba(255, 255, 255, .7);
 }
 
@@ -87,7 +87,7 @@ a:hover {
 .sidebar {
     width: var(--sidebar-width);
     min-height: calc(100vh - 56px);
-    background: var(--apollo-navy);
+    background: linear-gradient(180deg, #233344 0%, #2d3e50 55%, #33495e 100%);
     position: fixed;
     top: 56px;
     left: 0;
@@ -177,15 +177,15 @@ a:hover {
 }
 
 .stat-card.blue {
-    border-color: #2563a8;
+    border-color: #2d3e50;
 }
 
 .stat-card.green {
-    border-color: #16a34a;
+    border-color: #86bc42;
 }
 
 .stat-card.amber {
-    border-color: #d97706;
+    border-color: #ffc107;
 }
 
 .stat-card.red {
@@ -209,18 +209,18 @@ a:hover {
 }
 
 .stat-card.blue .stat-icon {
-    background: #dbeafe;
-    color: #2563a8;
+    background: #dce5ee;
+    color: #2d3e50;
 }
 
 .stat-card.green .stat-icon {
-    background: #dcfce7;
-    color: #16a34a;
+    background: #edf6e2;
+    color: #69992d;
 }
 
 .stat-card.amber .stat-icon {
-    background: #fef3c7;
-    color: #d97706;
+    background: #fff5cf;
+    color: #d09b00;
 }
 
 .stat-card.red .stat-icon {
@@ -321,14 +321,14 @@ a:hover {
 
 .category-card:hover,
 .category-card.selected {
-    border-color: var(--apollo-blue);
-    background: var(--apollo-light);
+    border-color: var(--svcet-blue);
+    background: var(--svcet-light);
     box-shadow: 0 2px 8px rgba(37, 99, 168, .15);
 }
 
 .category-card i {
     font-size: 1.8rem;
-    color: var(--apollo-blue);
+    color: var(--svcet-blue);
     margin-bottom: .4rem;
 }
 
@@ -350,15 +350,15 @@ a:hover {
 
 .staff-card:hover,
 .staff-card.selected {
-    border-color: var(--apollo-blue);
-    background: var(--apollo-light);
+    border-color: var(--svcet-blue);
+    background: var(--svcet-light);
 }
 
 .staff-card .staff-avatar {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--apollo-navy);
+    background: var(--svcet-navy);
     color: #fff;
     display: flex;
     align-items: center;
@@ -422,8 +422,8 @@ a:hover {
 }
 
 .status-step.active::before {
-    border-color: var(--apollo-blue);
-    background: var(--apollo-blue);
+    border-color: var(--svcet-blue);
+    background: var(--svcet-blue);
 }
 
 .status-step.done::before {
@@ -453,9 +453,9 @@ a:hover {
 }
 
 /* ── Tables ──────────────────────────────────────────────── */
-.table-apollo th {
-    background: var(--apollo-light);
-    color: var(--apollo-navy);
+.table-svcet th {
+    background: var(--svcet-light);
+    color: var(--svcet-navy);
     font-size: .8rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -463,12 +463,12 @@ a:hover {
     border-top: none;
 }
 
-.table-apollo td {
+.table-svcet td {
     vertical-align: middle;
     font-size: .88rem;
 }
 
-.table-apollo tbody tr:hover {
+.table-svcet tbody tr:hover {
     background: #f8faff;
 }
 
@@ -480,23 +480,23 @@ a:hover {
 }
 
 /* ── Utilities ───────────────────────────────────────────── */
-.text-apollo {
-    color: var(--apollo-navy);
+.text-svcet {
+    color: var(--svcet-navy);
 }
 
-.bg-apollo {
-    background: var(--apollo-navy);
+.bg-svcet {
+    background: var(--svcet-navy);
 }
 
-.btn-apollo {
-    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 100%);
+.btn-svcet {
+    background: linear-gradient(135deg, var(--svcet-navy) 0%, var(--svcet-blue) 100%);
     color: #fff;
     border: none;
     transition: all 0.3s ease;
 }
 
-.btn-apollo:hover {
-    background: linear-gradient(135deg, var(--apollo-blue) 0%, #1a7a8a 100%);
+.btn-svcet:hover {
+    background: linear-gradient(135deg, var(--svcet-blue) 0%, #1a7a8a 100%);
     color: #fff;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(37, 99, 168, 0.3);
@@ -506,7 +506,7 @@ a:hover {
     font-family: 'Consolas', monospace;
     font-size: .85rem;
     font-weight: 600;
-    color: var(--apollo-blue);
+    color: var(--svcet-blue);
 }
 
 /* page title bar */
@@ -524,7 +524,7 @@ a:hover {
 .page-title-bar h4 {
     margin: 0;
     font-weight: 700;
-    color: var(--apollo-navy);
+    color: var(--svcet-navy);
     font-size: 1rem;
 }
 

@@ -75,7 +75,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 </head>
 <body data-user-type="user">
 
-<nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
+<nav class="navbar navbar-expand-lg navbar-svcet fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <div class="collapse navbar-collapse">
@@ -127,7 +127,7 @@ $unreadCount = (int)$stmt->fetchColumn();
     <div class="card">
       <div class="card-header"><i class="bi bi-star-fill text-warning me-2"></i>Rate Your Experience</div>
       <div class="card-body">
-        <p class="text-muted mb-4" style="font-size:.9rem;">Your feedback helps us improve our IT support service. How was your experience?</p>
+        <p class="text-muted mb-4" style="font-size:.9rem;">Your feedback helps us improve our complaint resolution service. How was your experience?</p>
 
         <form method="POST" action="feedback?ticket_id=<?= $ticketId ?>">
           <?= csrfField() ?>
@@ -153,7 +153,7 @@ $unreadCount = (int)$stmt->fetchColumn();
           </div>
 
           <div class="d-grid">
-            <button type="submit" class="btn btn-apollo btn-lg">
+            <button type="submit" class="btn btn-svcet btn-lg">
               <i class="bi bi-send me-2"></i>Submit Feedback
             </button>
           </div>

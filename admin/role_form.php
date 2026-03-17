@@ -9,6 +9,10 @@ requirePermission('roles.manage');
 $pdo = getDB();
 $originalSlug = trim((string)($_GET['slug'] ?? ''));
 $isEdit = $originalSlug !== '';
+$returnTo = trim((string)($_GET['return'] ?? ($_POST['return_to'] ?? '')));
+if ($returnTo === '' || $returnTo[0] !== '/') {
+  $returnTo = '/admin/roles';
+}
 
 $form = [
     'slug' => '',
@@ -58,7 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 saveRoleWithPermissions($isEdit ? $originalSlug : '', $form['slug'], $form['name'], (bool)$form['is_active'], $form['permissions']);
                 setFlash('success', $isEdit ? 'Role updated successfully.' : 'Role created successfully.');
-                header('Location: ' . APP_URL . '/admin/roles');
+                $joiner = (strpos($returnTo, '?') === false) ? '?' : '&';
+                header('Location: ' . APP_URL . $returnTo . $joiner . 'role_slug=' . urlencode($form['slug']) . '&role_created=1');
                 exit;
             } catch (Throwable $e) {
                 $errors[] = $e->getMessage();
@@ -98,7 +103,7 @@ foreach ($permissions as $perm) {
     <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
       <i class="bi bi-list fs-4"></i>
     </button>
-    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
+    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
@@ -137,6 +142,7 @@ foreach ($permissions as $perm) {
     <div class="card-body p-4">
       <form method="post">
         <input type="hidden" name="csrf_token" value="<?= h(generateCSRFToken()) ?>">
+        <input type="hidden" name="return_to" value="<?= h($returnTo) ?>">
 
         <div class="row g-3">
           <div class="col-md-6">
@@ -145,7 +151,7 @@ foreach ($permissions as $perm) {
           </div>
           <div class="col-md-6">
             <label class="form-label fw-semibold">Role Slug *</label>
-            <input type="text" name="slug" class="form-control" value="<?= h($form['slug']) ?>" maxlength="64" <?= $form['is_system'] ? 'readonly' : '' ?> required>
+            <input type="text" name="slug" class="form-control" value="<?= h($form['slug']) ?>" maxlength="64" required>
             <small class="text-muted">Example: campus_support_lead</small>
           </div>
           <div class="col-12">

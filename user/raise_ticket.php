@@ -102,7 +102,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <body data-user-type="user">
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
+<nav class="navbar navbar-expand-lg navbar-svcet fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -234,7 +234,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 
     <div class="text-end">
       <a href="<?= APP_URL ?>/user/dashboard" class="btn btn-outline-secondary me-2">Cancel</a>
-      <button type="submit" class="btn btn-apollo px-4">
+      <button type="submit" class="btn btn-svcet px-4">
         <i class="bi bi-send me-2"></i>Submit Ticket
       </button>
     </div>

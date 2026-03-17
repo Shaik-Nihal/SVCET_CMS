@@ -111,7 +111,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
 <body data-user-type="staff">
 
 <!-- Top Navbar -->
-<nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
+<nav class="navbar navbar-svcet fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard">
@@ -231,14 +231,14 @@ if (currentStaffHasPermission('tickets.view_all')) {
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <span><i class="bi bi-clock-history me-2"></i>Recent Tickets</span>
-      <a href="<?= APP_URL ?>/staff/tickets" class="btn btn-sm btn-apollo">View All</a>
+      <a href="<?= APP_URL ?>/staff/tickets" class="btn btn-sm btn-svcet">View All</a>
     </div>
     <div class="card-body p-0">
       <?php if (empty($recentTickets)): ?>
       <div class="empty-state py-4"><i class="bi bi-inbox d-block"></i><p>No tickets <?= !currentStaffHasPermission('tickets.view_all') ? 'assigned to you' : 'raised' ?> yet.</p></div>
       <?php else: ?>
       <div class="table-responsive">
-        <table class="table table-apollo mb-0">
+        <table class="table table-svcet mb-0">
           <thead><tr>
             <th>Ticket #</th><th>Raised By</th><th>Category</th>
             <th>Priority</th><th>Status</th><th>Date</th><th></th>

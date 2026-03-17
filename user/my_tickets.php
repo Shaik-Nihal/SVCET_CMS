@@ -69,7 +69,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 </head>
 <body data-user-type="user">
 
-<nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
+<nav class="navbar navbar-expand-lg navbar-svcet fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
@@ -105,7 +105,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <div class="container-fluid px-4 py-3">
   <div class="page-title-bar">
     <h4><i class="bi bi-ticket-perforated me-2"></i>My Tickets <span class="badge bg-secondary ms-2"><?= $total ?></span></h4>
-    <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-sm btn-apollo"><i class="bi bi-plus me-1"></i>New Ticket</a>
+    <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-sm btn-svcet"><i class="bi bi-plus me-1"></i>New Ticket</a>
   </div>
 
   <?php renderFlash(); ?>
@@ -120,7 +120,7 @@ $unreadCount = (int)$stmt->fetchColumn();
         <?php foreach (array_merge([''=>'All'], array_combine($validStatuses, ['Notified','Processing','Solving','Solved'])) as $val => $label): ?>
         <div class="col-auto">
           <a href="?status=<?= $val ?>&q=<?= urlencode($filterSearch) ?>"
-             class="btn btn-sm <?= $filterStatus === $val ? 'btn-apollo' : 'btn-outline-secondary' ?>">
+             class="btn btn-sm <?= $filterStatus === $val ? 'btn-svcet' : 'btn-outline-secondary' ?>">
             <?= $label ?>
           </a>
         </div>
@@ -144,14 +144,14 @@ $unreadCount = (int)$stmt->fetchColumn();
         <i class="bi bi-inbox"></i>
         <p><?= $filterStatus || $filterSearch ? 'No tickets match your filter.' : 'You have not raised any tickets yet.' ?></p>
         <?php if (!$filterStatus && !$filterSearch): ?>
-        <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-apollo">Raise Your First Ticket</a>
+        <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-svcet">Raise Your First Ticket</a>
         <?php else: ?>
         <a href="my_tickets" class="btn btn-outline-secondary btn-sm">Clear Filter</a>
         <?php endif; ?>
       </div>
       <?php else: ?>
       <div class="table-responsive">
-        <table class="table table-apollo mb-0">
+        <table class="table table-svcet mb-0">
           <thead>
             <tr>
               <th>Ticket #</th>

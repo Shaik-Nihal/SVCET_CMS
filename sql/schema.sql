@@ -1,10 +1,10 @@
 -- ============================================================
--- College Ticket Management System
+-- SVCET Complaint Management System
 -- Database Schema
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS tms_college CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE tms_college;
+CREATE DATABASE IF NOT EXISTS svcet_cms CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE svcet_cms;
 
 -- ============================================================
 -- 1. users (students / faculty)

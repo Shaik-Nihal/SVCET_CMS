@@ -45,7 +45,7 @@ $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
 </head>
 <body data-user-type="user">
 
-<nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
+<nav class="navbar navbar-expand-lg navbar-svcet fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">

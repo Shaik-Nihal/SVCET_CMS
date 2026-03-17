@@ -57,7 +57,7 @@ $users = $pdo->query("SELECT id, name, email, phone, designation, email_verified
     <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
       <i class="bi bi-list fs-4"></i>
     </button>
-    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
+    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
@@ -136,7 +136,7 @@ $users = $pdo->query("SELECT id, name, email, phone, designation, email_verified
           </tr>
           <?php endforeach; ?>
           <?php if (empty($users)): ?>
-          <tr><td colspan="6" class="text-center text-muted py-4">No users found.</td></tr>
+          <tr><td colspan="7" class="text-center text-muted py-4">No users found.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>

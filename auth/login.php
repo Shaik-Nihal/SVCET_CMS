@@ -32,30 +32,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $remaining = (int) ceil($lockRemaining / 60);
             $error = "Too many failed attempts. Please wait {$remaining} minute(s) before trying again.";
         } elseif ($loginAs === 'staff') {
-            // All staff (including admin) authenticate from the it_staff table
-            $stmt = $pdo->prepare("SELECT id, name, password_hash, role FROM it_staff WHERE email = ? AND is_active = 1 LIMIT 1");
-            $stmt->execute([$email]);
-            $row = $stmt->fetch();
+            $isOwnerEmail = OWNER_ADMIN_EMAIL !== '' && hash_equals(OWNER_ADMIN_EMAIL, $email);
 
-            if ($row && password_verify($password, $row['password_hash'])) {
+            // Owner admin auth is env-backed and never read from DB.
+            if ($isOwnerEmail) {
+                $ownerPassConfigured = OWNER_ADMIN_PASSWORD_HASH !== '' || OWNER_ADMIN_PASSWORD !== '';
+                $ownerPassOk =
+                    (OWNER_ADMIN_PASSWORD_HASH !== '' && password_verify($password, OWNER_ADMIN_PASSWORD_HASH))
+                    || (OWNER_ADMIN_PASSWORD !== '' && hash_equals(OWNER_ADMIN_PASSWORD, $password));
+
+                if ($ownerPassOk) {
+                    session_regenerate_id(true);
+                    clearLoginFailuresDB($email);
+                    rotateCSRFToken();
+                    $_SESSION['staff_id']        = 0;
+                    $_SESSION['staff_name']      = OWNER_ADMIN_NAME;
+                    $_SESSION['staff_role']      = ROLE_ADMIN;
+                    $_SESSION['staff_email']     = OWNER_ADMIN_EMAIL;
+                    $_SESSION['is_owner_admin']  = 1;
+                    $_SESSION['user_type']       = 'staff';
+                    $_SESSION['last_activity']   = time();
+                    $_SESSION['session_created'] = time();
+
+                    header('Location: ' . APP_URL . '/admin/dashboard');
+                    exit;
+                }
+
+                recordLoginFailureDB($email);
+                $error = $ownerPassConfigured
+                    ? 'Invalid email or password.'
+                    : 'Owner admin credentials are not configured. Please set OWNER_ADMIN_PASSWORD_HASH or OWNER_ADMIN_PASSWORD in local.env.php.';
+            } else {
+                // Regular staff authenticate from DB; DB-based admin accounts are blocked from login.
+                $stmt = $pdo->prepare("SELECT id, name, email, password_hash, role FROM it_staff WHERE email = ? AND is_active = 1 AND role != 'admin' LIMIT 1");
+                $stmt->execute([$email]);
+                $row = $stmt->fetch();
+
+                if ($row && password_verify($password, $row['password_hash'])) {
                 session_regenerate_id(true);
                 clearLoginFailuresDB($email);
                 rotateCSRFToken();
                 $_SESSION['staff_id']       = $row['id'];
                 $_SESSION['staff_name']     = $row['name'];
                 $_SESSION['staff_role']     = $row['role'];
+                $_SESSION['staff_email']    = $row['email'];
+                $_SESSION['is_owner_admin'] = 0;
                 $_SESSION['user_type']      = 'staff';
                 $_SESSION['last_activity']  = time();
                 $_SESSION['session_created']= time();
 
-                // Staff with admin access go to admin dashboard, others to staff dashboard.
-                if (roleHasPermission($row['role'], 'admin.access')) {
-                    header('Location: ' . APP_URL . '/admin/dashboard');
-                } else {
                     header('Location: ' . APP_URL . '/staff/dashboard');
+                    exit;
                 }
-                exit;
-            } else {
+
                 recordLoginFailureDB($email);
                 $error = 'Invalid email or password.';
             }

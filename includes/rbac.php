@@ -82,6 +82,40 @@ function getAllRoles(bool $includeInactive = true): array {
     return $pdo->query($sql)->fetchAll() ?: [];
 }
 
+/**
+ * Ensure every role slug currently used by staff exists in roles table.
+ * This keeps the roles UI in sync when staff are seeded/imported directly.
+ */
+function syncMissingRolesFromStaff(): void {
+    if (!rbacTablesReady()) {
+        return;
+    }
+
+    $pdo = getDB();
+
+    $staffRoleRows = $pdo->query("\n        SELECT DISTINCT LOWER(TRIM(role)) AS slug\n        FROM it_staff\n        WHERE role IS NOT NULL AND TRIM(role) <> ''\n    ")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+
+    if (empty($staffRoleRows)) {
+        return;
+    }
+
+    $existingRoleRows = $pdo->query("SELECT LOWER(slug) AS slug FROM roles")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    $existingMap = array_fill_keys(array_map('strval', $existingRoleRows), true);
+
+    $insert = $pdo->prepare("\n        INSERT INTO roles (slug, name, is_system, is_active, display_order)\n        VALUES (?, ?, 0, 1, 900)\n    ");
+
+    foreach ($staffRoleRows as $slugRaw) {
+        $slug = strtolower(trim((string)$slugRaw));
+        if ($slug === '' || isset($existingMap[$slug])) {
+            continue;
+        }
+
+        $label = ucwords(str_replace(['_', '-'], ' ', $slug));
+        $insert->execute([$slug, $label]);
+        $existingMap[$slug] = true;
+    }
+}
+
 function getRoleBySlug(string $slug): ?array {
     if (!rbacTablesReady()) {
         foreach (getAllRoles() as $role) {
@@ -245,7 +279,7 @@ function getStaffByPermission(string $permissionSlug, ?int $excludeStaffId = nul
 
 function saveRoleWithPermissions(string $originalSlug, string $newSlug, string $name, bool $isActive, array $permissionSlugs): void {
     if (!rbacTablesReady()) {
-        throw new RuntimeException('RBAC tables are not initialized. Run sql/migrate_rbac.sql first.');
+        throw new RuntimeException('RBAC tables are not initialized. Import sql/schema.sql first.');
     }
 
     $pdo = getDB();
@@ -262,8 +296,11 @@ function saveRoleWithPermissions(string $originalSlug, string $newSlug, string $
                 throw new RuntimeException('Role not found.');
             }
 
-            if ((int)$current['is_system'] === 1 && $originalSlug !== $newSlug) {
-                throw new RuntimeException('System role slug cannot be changed.');
+            if ($originalSlug === 'admin' && $originalSlug !== $newSlug) {
+                throw new RuntimeException('Admin role slug cannot be changed.');
+            }
+            if ($newSlug === 'admin' && $originalSlug !== 'admin') {
+                throw new RuntimeException('Reserved slug: admin.');
             }
             if ($originalSlug === 'admin' && !$isActive) {
                 throw new RuntimeException('Admin role cannot be disabled.');

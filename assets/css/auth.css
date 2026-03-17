@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Raleway:wght@600;700&display=swap');
 
 /* ============================================================
    Auth Pages (Login / Register / Password Reset)
@@ -6,13 +6,13 @@
    ============================================================ */
 
 :root {
-    --apollo-navy: #3387e1;
-    --apollo-blue: #4b90de;
-    --apollo-teal: #4dc0d5;
+    --svcet-navy: #2d3e50;
+    --svcet-blue: #3a556f;
+    --svcet-teal: #86bc42;
 }
 
 body.auth-page {
-    font-family: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: url('../images/sample_background.svg') center center / cover no-repeat fixed;
     min-height: 100vh;
     display: flex;
@@ -60,7 +60,7 @@ body.auth-page::before {
 }
 
 .auth-header {
-    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 50%, #1a7a8a 100%);
+    background: linear-gradient(130deg, #223245 0%, var(--svcet-navy) 50%, var(--svcet-teal) 100%);
     padding: 2.5rem 2rem 2rem;
     text-align: center;
     color: #fff;
@@ -123,7 +123,7 @@ body.auth-page::before {
 }
 
 .auth-tabs .nav-link.active {
-    color: var(--apollo-navy);
+    color: var(--svcet-navy);
     background: #fff;
     border: 1px solid #e2e8f0;
     border-bottom-color: #fff;
@@ -133,12 +133,12 @@ body.auth-page::before {
 /* Inputs */
 .form-control:focus,
 .form-select:focus {
-    border-color: var(--apollo-blue);
+    border-color: var(--svcet-blue);
     box-shadow: 0 0 0 3px rgba(37, 99, 168, .15);
 }
 
 .btn-login {
-    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 100%);
+    background: linear-gradient(135deg, #2b3d4f 0%, var(--svcet-navy) 60%, var(--svcet-teal) 100%);
     color: #fff;
     border: none;
     padding: .75rem;
@@ -151,7 +151,7 @@ body.auth-page::before {
 }
 
 .btn-login:hover {
-    background: linear-gradient(135deg, var(--apollo-blue) 0%, #1a7a8a 100%);
+    background: linear-gradient(135deg, #2f445a 0%, var(--svcet-blue) 60%, #6ea733 100%);
     color: #fff;
     box-shadow: 0 8px 20px rgba(37, 99, 168, .35);
     transform: translateY(-2px);
@@ -170,7 +170,7 @@ body.auth-page::before {
 }
 
 .otp-input:focus {
-    border-color: var(--apollo-blue);
+    border-color: var(--svcet-blue);
     box-shadow: 0 0 0 3px rgba(37, 99, 168, .15);
     outline: none;
 }
@@ -211,9 +211,9 @@ body.auth-page::before {
 
 /* Footer text links */
 .auth-body a.text-primary {
-    color: var(--apollo-blue) !important;
+    color: var(--svcet-blue) !important;
 }
 
 .auth-body a.text-primary:hover {
-    color: var(--apollo-navy) !important;
+    color: var(--svcet-navy) !important;
 }

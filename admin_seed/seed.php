@@ -19,19 +19,15 @@ $hash = password_hash($defaultPassword, PASSWORD_BCRYPT, ['cost' => 12]);
 
 $pdo = getDB();
 
-echo "<h2>College TMS — Database Seeder</h2><pre>";
+echo "<h2>SVCET Complaint Management — Database Seeder</h2><pre>";
 
 // ── Seed IT Staff ───────────────────────────────────────────
 $staffData = [
-    ['System Admin',          'tms@' . EMAIL_DOMAIN,           'admin',             'System Administrator',        '9000000001'],
     ['ICT Head',              'icthead@' . EMAIL_DOMAIN,       'ict_head',          'ICT Head',                    '9000000002'],
     ['Assistant ICT',          'assistantict@' . EMAIL_DOMAIN, 'assistant_ict',     'Assistant ICT',               '9000000003'],
-    ['Assistant Manager',      'assistantmanager@' . EMAIL_DOMAIN, 'assistant_manager', 'Assistant Manager',         '9000000004'],
-    ['Sr IT Executive',        'sritexec1@' . EMAIL_DOMAIN,    'sr_it_executive',   'Sr. IT Executive',            '9000000005'],
-    ['Sr IT Executive',        'sritexec2@' . EMAIL_DOMAIN,    'sr_it_executive',   'Sr. IT Executive',            '9000000006'],
-    ['Assistant IT',           'assistantit1@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000007'],
-    ['Assistant IT',           'assistantit2@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000008'],
-    ['Assistant IT',           'assistantit3@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000009'],
+    ['Technician',           'assistantit1@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000007'],
+    ['Technician',           'assistantit2@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000008'],
+    ['Technician',           'assistantit3@' . EMAIL_DOMAIN, 'assistant_it',      'Assistant IT',                '9000000009'],
 ];
 
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM it_staff");
@@ -65,7 +61,6 @@ $categories = [
     ['Printer Issue',                    'bi-printer',            'Printing errors, paper jams, driver issues'],
     ['Email / Account Login Problem',    'bi-envelope-slash',     'Cannot log in to email or university accounts'],
     ['Software Installation Required',   'bi-box-arrow-in-down',  'Need new or updated software installed'],
-    ['Power / Electricity Issue',        'bi-plug',               'Power socket, UPS, or surge issues'],
     ['Projector / Display Problem',      'bi-projector',          'Projector not working, display errors'],
     ['Network / LAN Issue',              'bi-hdd-network',        'Wired network / LAN connectivity problems'],
     ['Other',                            'bi-question-circle',    'Any other issue not listed above'],
@@ -111,14 +106,10 @@ echo "\n";
 echo "Login credentials:\n";
 echo "─────────────────────────────────────────────\n";
 echo "Test User:           test@" . EMAIL_DOMAIN . " / Test@2026!\n";
-echo "System Admin:        tms@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
 echo "ICT Head:            icthead@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
 echo "Assistant ICT:       assistantict@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
-echo "Asst Manager IT:     assistantmanager@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
-echo "Sr IT Executive:     sritexec1@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
-echo "Sr IT Executive:     sritexec2@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
-echo "IT Assistant:        assistantit1@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
-echo "IT Assistant:        assistantit2@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "Technician:          technician1@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
+echo "Technician:          technician2@" . EMAIL_DOMAIN . " / {$defaultPassword}\n";
 echo "\n";
 echo "⚠ DELETE THIS FILE (admin_seed/seed.php) IMMEDIATELY!\n";
 echo "</pre>";

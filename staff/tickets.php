@@ -113,7 +113,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
 </head>
 <body data-user-type="staff">
 
-<nav class="navbar navbar-apollo fixed-top" style="z-index:200;">
+<nav class="navbar navbar-svcet fixed-top" style="z-index:200;">
   <div class="container-fluid">
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
@@ -206,7 +206,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
       </div>
       <?php else: ?>
       <div class="table-responsive">
-        <table class="table table-apollo mb-0">
+        <table class="table table-svcet mb-0">
           <thead><tr>
             <th>Ticket #</th><th>Raised By</th><th>Category</th>
             <?php if ($showAssignedColumn): ?><th>Assigned To</th><?php endif; ?>

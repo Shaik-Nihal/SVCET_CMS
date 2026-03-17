@@ -4,7 +4,7 @@
 
 /* Welcome banner */
 .welcome-banner {
-    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 50%, #1a7a8a 100%);
+    background: linear-gradient(135deg, #223245 0%, var(--svcet-navy) 55%, var(--svcet-teal) 100%);
     color: #fff;
     border-radius: 16px;
     padding: 2rem 2.5rem;
@@ -57,7 +57,7 @@
 
 .welcome-banner .btn-outline-light:hover {
     background: #fff;
-    color: var(--apollo-navy);
+    color: var(--svcet-navy);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
 }
@@ -77,7 +77,7 @@
     border-radius: 12px;
     background: #fff;
     border: 1px solid #e2e8f0;
-    color: var(--apollo-navy);
+    color: var(--svcet-navy);
     font-size: .85rem;
     font-weight: 600;
     min-width: 95px;
@@ -89,12 +89,12 @@
 .btn-quick i {
     font-size: 1.6rem;
     margin-bottom: .4rem;
-    color: var(--apollo-blue);
+    color: var(--svcet-teal);
     transition: transform 0.3s ease;
 }
 
 .btn-quick:hover {
-    background: linear-gradient(135deg, var(--apollo-navy) 0%, var(--apollo-blue) 100%);
+    background: linear-gradient(135deg, #2a3d50 0%, var(--svcet-blue) 50%, var(--svcet-teal) 100%);
     color: #fff;
     border-color: transparent;
     transform: translateY(-4px);
@@ -150,14 +150,14 @@
 
 .report-card:hover,
 .report-card.selected {
-    border-color: #1a3a5c;
-    background: #e8f0fa;
+    border-color: #2d3e50;
+    background: #eef4ea;
 }
 
 .report-card i {
     font-size: 2rem;
     margin-bottom: .5rem;
-    color: #1a3a5c;
+    color: #2d3e50;
     display: block;
 }
 

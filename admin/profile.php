@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
       <i class="bi bi-list fs-4"></i>
     </button>
-    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
+    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
             <label class="form-label fw-semibold">Contact Number</label>
             <input type="tel" name="contact" class="form-control" value="<?= h($staff['contact'] ?? '') ?>" placeholder="10-digit mobile">
           </div>
-          <button type="submit" class="btn btn-apollo"><i class="bi bi-check2 me-2"></i>Save</button>
+          <button type="submit" class="btn btn-svcet"><i class="bi bi-check2 me-2"></i>Save</button>
         </form>
       </div>
     </div>
@@ -171,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
             <small id="pwdMatch"></small>
           </div>
           <div class="alert alert-info" style="font-size:.8rem;"><i class="bi bi-info-circle me-1"></i>Cannot reuse last <?= PASSWORD_HISTORY_DEPTH ?> passwords.</div>
-          <button type="submit" class="btn btn-apollo"><i class="bi bi-lock me-2"></i>Update Password</button>
+          <button type="submit" class="btn btn-svcet"><i class="bi bi-lock me-2"></i>Update Password</button>
         </form>
       </div>
     </div>

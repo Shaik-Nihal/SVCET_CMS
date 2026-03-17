@@ -55,7 +55,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <body data-user-type="user">
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-apollo fixed-top">
+<nav class="navbar navbar-expand-lg navbar-svcet fixed-top">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= APP_URL ?>/user/dashboard">
       <img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?>
@@ -152,18 +152,18 @@ $unreadCount = (int)$stmt->fetchColumn();
       <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
           <span><i class="bi bi-clock-history me-2"></i>Recent Tickets</span>
-          <a href="<?= APP_URL ?>/user/my_tickets" class="btn btn-sm btn-apollo">View All</a>
+          <a href="<?= APP_URL ?>/user/my_tickets" class="btn btn-sm btn-svcet">View All</a>
         </div>
         <div class="card-body p-0">
           <?php if (empty($recentTickets)): ?>
           <div class="empty-state py-4">
             <i class="bi bi-inbox d-block"></i>
             <p class="mb-2">No tickets raised yet.</p>
-            <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-sm btn-apollo">Raise First Ticket</a>
+            <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-sm btn-svcet">Raise First Ticket</a>
           </div>
           <?php else: ?>
           <div class="table-responsive">
-            <table class="table table-apollo mb-0">
+            <table class="table table-svcet mb-0">
               <thead>
                 <tr>
                   <th>Ticket #</th>
@@ -199,7 +199,7 @@ $unreadCount = (int)$stmt->fetchColumn();
         <div class="card-header"><i class="bi bi-lightning-charge me-2"></i>Quick Actions</div>
         <div class="card-body">
           <div class="d-grid gap-2">
-            <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-apollo">
+            <a href="<?= APP_URL ?>/user/raise_ticket" class="btn btn-svcet">
               <i class="bi bi-plus-circle me-2"></i>Raise New Ticket
             </a>
             <a href="<?= APP_URL ?>/user/my_tickets" class="btn btn-outline-secondary">
@@ -215,18 +215,18 @@ $unreadCount = (int)$stmt->fetchColumn();
 
       <!-- IT Contact Info Card -->
       <div class="card">
-        <div class="card-header"><i class="bi bi-headset me-2"></i>IT Support Helpline</div>
+        <div class="card-header"><i class="bi bi-headset me-2"></i>Complaint Support Helpline</div>
         <div class="card-body" style="font-size:.85rem;">
           <div class="d-flex align-items-center gap-2 mb-2">
-            <i class="bi bi-telephone-fill text-apollo"></i>
+            <i class="bi bi-telephone-fill text-svcet"></i>
             <span><strong>ICT Help Desk:</strong> <?= SUPPORT_PHONE ?></span>
           </div>
           <div class="d-flex align-items-center gap-2 mb-2">
-            <i class="bi bi-envelope-fill text-apollo"></i>
+            <i class="bi bi-envelope-fill text-svcet"></i>
             <span><strong>Email:</strong> <?= SUPPORT_EMAIL ?></span>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-clock-fill text-apollo"></i>
+            <i class="bi bi-clock-fill text-svcet"></i>
             <span><strong>Hours:</strong> <?= SUPPORT_HOURS ?></span>
           </div>
         </div>

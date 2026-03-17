@@ -112,7 +112,7 @@ $periodLabel = ($reportType === 'monthly')
     <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
       <i class="bi bi-list fs-4"></i>
     </button>
-    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>TMS Admin Panel</a>
+    <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
     <div class="ms-auto">
       <span class="text-white me-3 d-none d-sm-inline"><i class="bi bi-person-circle me-1"></i><?= h($_SESSION['staff_name'] ?? 'Admin') ?></span>
       <a href="<?= APP_URL ?>/auth/logout" class="btn btn-sm btn-outline-light"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
@@ -189,7 +189,7 @@ $periodLabel = ($reportType === 'monthly')
           </select>
         </div>
         <div class="col-auto">
-          <button type="submit" class="btn btn-sm btn-apollo"><i class="bi bi-funnel me-1"></i>Generate</button>
+          <button type="submit" class="btn btn-sm btn-svcet"><i class="bi bi-funnel me-1"></i>Generate</button>
         </div>
       </form>
     </div>
@@ -233,7 +233,7 @@ $periodLabel = ($reportType === 'monthly')
         <div class="card-header"><i class="bi bi-people me-2"></i>Staff Performance</div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-apollo mb-0">
+            <table class="table table-svcet mb-0">
               <thead><tr><th>Staff</th><th>Role</th><th>Assigned</th><th>Solved</th><th>Avg Hrs</th></tr></thead>
               <tbody>
                 <?php foreach ($staffPerf as $sp): ?>
@@ -292,7 +292,7 @@ $periodLabel = ($reportType === 'monthly')
       <div class="empty-state"><i class="bi bi-inbox d-block"></i><p>No tickets in this period.</p></div>
       <?php else: ?>
       <div class="table-responsive">
-        <table class="table table-apollo table-sm mb-0" style="font-size:.8rem;">
+        <table class="table table-svcet table-sm mb-0" style="font-size:.8rem;">
           <thead><tr>
             <th>Ticket #</th><th>User</th><th>Dept</th><th>Category</th>
             <th>Priority</th><th>Status</th><th>Assigned To</th>

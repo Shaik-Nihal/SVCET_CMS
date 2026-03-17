@@ -6,7 +6,7 @@ startSecureSession();
 // Redirect to appropriate dashboard if logged in, else to login
 if (!empty($_SESSION['user_type'])) {
     if ($_SESSION['user_type'] === 'staff') {
-        if (currentStaffHasPermission('admin.access')) {
+        if (isOwnerAdminSession()) {
             header('Location: ' . APP_URL . '/admin/dashboard');
         } else {
             header('Location: ' . APP_URL . '/staff/dashboard');
