@@ -153,13 +153,13 @@ if (!empty($ticket['user_email'])) {
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications">
+      <a class="staff-nav-icon" href="<?= APP_URL ?>/staff/notifications" aria-label="Notifications">
         <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
         <span class="badge rounded-pill bg-danger position-absolute <?= $unreadCount ? '' : 'd-none' ?>"
               id="notif-badge" style="top:-6px;right:-8px;font-size:.6rem;"><?= $unreadCount ?: '' ?></span>
       </a>
       <div class="dropdown">
-        <a class="text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i></a>
+        <a class="staff-user-toggle dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i><span class="d-none d-md-inline"><?= h($_SESSION['staff_name'] ?? 'Staff') ?></span></a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
           <li><hr class="dropdown-divider"></li>
@@ -174,23 +174,31 @@ if (!empty($ticket['user_email'])) {
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Control Center</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Work Queue</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Alerts<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Insights Lab</a><?php endif; ?>
     <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
-    <div class="sidebar-section">Admin Modules</div>
-    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
-    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <div class="sidebar-section">Admin Studio</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a><?php endif; ?>
     <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>My Profile</a>
     <a class="nav-link" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
   </nav>
 </div>
 
 <div class="main-content">
+  <div class="staff-headline">
+    <div>
+      <h3><i class="bi bi-file-earmark-text me-2"></i>Case View</h3>
+      <p>Inspect ticket lifecycle, timeline updates, and assignment history.</p>
+    </div>
+    <span class="pill"><?= h($ticket['ticket_number']) ?></span>
+  </div>
+
   <div class="page-title-bar">
     <h4>
       <a href="<?= APP_URL ?>/staff/tickets" class="text-decoration-none text-muted me-2"><i class="bi bi-arrow-left"></i></a>

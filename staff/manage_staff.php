@@ -89,13 +89,13 @@ $unreadCount = (int)$stmt->fetchColumn();
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
-    <div class="sidebar-section">Admin Modules</div>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a>
-    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Control Center</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Work Queue</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Alerts<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Insights Lab</a><?php endif; ?>
+    <div class="sidebar-section">Admin Studio</div>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a><?php endif; ?>
     <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <div class="sidebar-section">Account</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
@@ -104,9 +104,17 @@ $unreadCount = (int)$stmt->fetchColumn();
 </div>
 
 <div class="main-content">
+  <div class="staff-headline">
+    <div>
+      <h3><i class="bi bi-people-fill me-2"></i>Team Hub</h3>
+      <p>Manage technicians, role coverage, and account activation from this panel.</p>
+    </div>
+    <span class="pill"><?= count($staff) ?> staff member(s)</span>
+  </div>
+
   <div class="page-title-bar">
-    <h4><i class="bi bi-person-badge me-2"></i>Manage Staff</h4>
-    <a href="<?= APP_URL ?>/admin/staff_form" class="btn btn-sm btn-svcet"><i class="bi bi-plus-lg me-1"></i>Add Staff</a>
+    <h4><i class="bi bi-person-badge me-2"></i>Team Directory</h4>
+    <a href="<?= APP_URL ?>/admin/staff_form" class="btn btn-sm btn-svcet"><i class="bi bi-plus-lg me-1"></i>Invite Staff</a>
   </div>
 
   <?php renderFlash(); ?>
@@ -114,11 +122,11 @@ $unreadCount = (int)$stmt->fetchColumn();
   <div class="card">
     <div class="card-body p-0">
       <?php if (empty($staff)): ?>
-      <div class="empty-state"><i class="bi bi-inbox d-block"></i><p>No staff found.</p></div>
+      <div class="empty-state"><i class="bi bi-inbox d-block"></i><p>No team members found.</p></div>
       <?php else: ?>
       <div class="table-responsive">
         <table class="table table-svcet mb-0">
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Designation</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+          <thead><tr><th>Team Member</th><th>Work Email</th><th>Access Role</th><th>Function</th><th>Account State</th><th class="text-end">Controls</th></tr></thead>
           <tbody>
           <?php foreach ($staff as $s): ?>
             <tr class="<?= $s['is_active'] ? '' : 'table-secondary opacity-75' ?>">

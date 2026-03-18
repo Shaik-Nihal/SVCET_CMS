@@ -131,14 +131,14 @@ $periodLabel = ($reportType === 'monthly')
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line-fill"></i>Reports</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Control Center</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Work Queue</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Alerts<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line-fill"></i>Insights Lab</a>
     <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
-    <div class="sidebar-section">Admin Modules</div>
-    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
-    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <div class="sidebar-section">Admin Studio</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a><?php endif; ?>
     <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
@@ -148,8 +148,16 @@ $periodLabel = ($reportType === 'monthly')
 </div>
 
 <div class="main-content">
+  <div class="staff-headline">
+    <div>
+      <h3><i class="bi bi-graph-up-arrow me-2"></i>Insights Studio</h3>
+      <p>Generate performance snapshots, workload trends, and closure analytics.</p>
+    </div>
+    <span class="pill"><?= h($periodLabel) ?></span>
+  </div>
+
   <div class="page-title-bar">
-    <h4><i class="bi bi-bar-chart-line me-2"></i>Reports & Analytics</h4>
+    <h4><i class="bi bi-bar-chart-line me-2"></i>Performance Insights</h4>
     <div>
       <a href="<?= APP_URL ?>/reports/generate_csv?from=<?= h($dateFrom) ?>&to=<?= h($dateTo) ?>" class="btn btn-sm btn-success me-1">
         <i class="bi bi-filetype-csv me-1"></i>Download CSV
@@ -167,10 +175,10 @@ $periodLabel = ($reportType === 'monthly')
     <div class="card-body py-2">
       <form method="GET" class="row g-2 align-items-end">
         <div class="col-auto">
-          <label class="form-label small fw-semibold mb-0">Report Type</label>
+          <label class="form-label small fw-semibold mb-0">View Mode</label>
           <select name="type" class="form-select form-select-sm" onchange="toggleDateFields(this.value)">
-            <option value="weekly" <?= $reportType === 'weekly' ? 'selected' : '' ?>>Weekly / Custom Range</option>
-            <option value="monthly" <?= $reportType === 'monthly' ? 'selected' : '' ?>>Monthly</option>
+            <option value="weekly" <?= $reportType === 'weekly' ? 'selected' : '' ?>>Rolling Window / Custom</option>
+            <option value="monthly" <?= $reportType === 'monthly' ? 'selected' : '' ?>>Calendar Month</option>
           </select>
         </div>
         <div class="col-auto date-range" <?= $reportType === 'monthly' ? 'style="display:none;"' : '' ?>>
@@ -200,39 +208,39 @@ $periodLabel = ($reportType === 'monthly')
           </select>
         </div>
         <div class="col-auto">
-          <button type="submit" class="btn btn-sm btn-svcet"><i class="bi bi-funnel me-1"></i>Generate</button>
+          <button type="submit" class="btn btn-sm btn-svcet"><i class="bi bi-funnel me-1"></i>Run Analysis</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- Period Label -->
-  <div class="alert alert-info py-2" style="font-size:.85rem;"><i class="bi bi-calendar3 me-2"></i>Report Period: <strong><?= h($periodLabel) ?></strong> — <?= (int)$summary['total'] ?> ticket(s)</div>
+  <div class="alert alert-info py-2" style="font-size:.85rem;"><i class="bi bi-calendar3 me-2"></i>Window: <strong><?= h($periodLabel) ?></strong> — <?= (int)$summary['total'] ?> ticket(s)</div>
 
   <!-- Summary Stats -->
   <div class="row g-3 mb-4">
     <div class="col-sm-6 col-xl-3">
       <div class="stat-card blue">
         <div class="stat-icon"><i class="bi bi-ticket-perforated-fill"></i></div>
-        <div><div class="stat-num"><?= (int)$summary['total'] ?></div><div class="stat-label">Total Tickets</div></div>
+        <div><div class="stat-num"><?= (int)$summary['total'] ?></div><div class="stat-label">Cases Total</div></div>
       </div>
     </div>
     <div class="col-sm-6 col-xl-3">
       <div class="stat-card green">
         <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
-        <div><div class="stat-num"><?= (int)$summary['solved'] ?></div><div class="stat-label">Solved</div></div>
+        <div><div class="stat-num"><?= (int)$summary['solved'] ?></div><div class="stat-label">Resolved</div></div>
       </div>
     </div>
     <div class="col-sm-6 col-xl-3">
       <div class="stat-card amber">
         <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
-        <div><div class="stat-num"><?= (int)$summary['open_count'] ?></div><div class="stat-label">Open / Pending</div></div>
+        <div><div class="stat-num"><?= (int)$summary['open_count'] ?></div><div class="stat-label">In Progress</div></div>
       </div>
     </div>
     <div class="col-sm-6 col-xl-3">
       <div class="stat-card red">
         <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
-        <div><div class="stat-num"><?= $summary['avg_hours'] ?? '—' ?></div><div class="stat-label">Avg Hours to Solve</div></div>
+        <div><div class="stat-num"><?= $summary['avg_hours'] ?? '—' ?></div><div class="stat-label">Avg Turnaround (hrs)</div></div>
       </div>
     </div>
   </div>
@@ -241,7 +249,7 @@ $periodLabel = ($reportType === 'monthly')
     <!-- Staff Performance -->
     <div class="col-lg-7">
       <div class="card">
-        <div class="card-header"><i class="bi bi-people me-2"></i>Staff Performance</div>
+        <div class="card-header"><i class="bi bi-people me-2"></i>Technician Performance</div>
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-svcet mb-0">
@@ -266,7 +274,7 @@ $periodLabel = ($reportType === 'monthly')
     <!-- Category Breakdown -->
     <div class="col-lg-5">
       <div class="card">
-        <div class="card-header"><i class="bi bi-pie-chart me-2"></i>Category Breakdown</div>
+        <div class="card-header"><i class="bi bi-pie-chart me-2"></i>Issue Mix</div>
         <div class="card-body p-0">
           <?php if (empty($catBreakdown)): ?>
           <div class="text-center text-muted py-3">No data</div>
@@ -296,7 +304,7 @@ $periodLabel = ($reportType === 'monthly')
   <!-- Ticket Detail Table -->
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <span><i class="bi bi-table me-2"></i>Ticket Details (<?= count($ticketRows) ?>)</span>
+      <span><i class="bi bi-table me-2"></i>Case Ledger (<?= count($ticketRows) ?>)</span>
     </div>
     <div class="card-body p-0">
       <?php if (empty($ticketRows)): ?>

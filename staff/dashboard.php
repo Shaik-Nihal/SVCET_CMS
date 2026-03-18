@@ -149,23 +149,23 @@ if (currentStaffHasPermission('tickets.view_all')) {
   </div>
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Control Center</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Work Queue
       <?php if (!empty($stats['open_count']) && $stats['open_count'] > 0): ?>
       <span class="badge bg-warning text-dark ms-auto"><?= (int)$stats['open_count'] ?></span>
       <?php endif; ?>
     </a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Alerts
       <?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?>
     </a>
     <?php if (currentStaffHasPermission('reports.view')): ?>
     <div class="sidebar-section">Management</div>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Insights Lab</a>
     <?php endif; ?>
     <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
-    <div class="sidebar-section">Admin Modules</div>
-    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
-    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <div class="sidebar-section">Admin Studio</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a><?php endif; ?>
     <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
@@ -178,10 +178,18 @@ if (currentStaffHasPermission('tickets.view_all')) {
 <div class="main-content">
   <?php renderFlash(); ?>
 
+  <div class="staff-headline">
+    <div>
+      <h3><i class="bi bi-activity me-2"></i>Operations Pulse</h3>
+      <p>Track complaint flow, response workload, and closure performance from one workspace.</p>
+    </div>
+    <span class="pill"><?= strtoupper(date('D')) ?> · <?= date('d M Y') ?></span>
+  </div>
+
   <!-- Welcome Banner -->
   <div class="welcome-banner mb-4">
     <div>
-      <h5>Welcome, <?= h(explode(' ', $staffInfo['name'])[0]) ?>!</h5>
+      <h5>Hello, <?= h(explode(' ', $staffInfo['name'])[0]) ?>.</h5>
       <p><?= h($staffInfo['designation']) ?> · <?= date('l, d F Y') ?></p>
     </div>
     <span class="badge bg-light text-dark p-2" style="font-size:.85rem;"><?= roleLabel($role) ?></span>
@@ -192,36 +200,36 @@ if (currentStaffHasPermission('tickets.view_all')) {
     <div class="col-sm-6 col-xl-3">
       <div class="stat-card blue">
         <div class="stat-icon"><i class="bi bi-ticket-perforated-fill"></i></div>
-        <div><div class="stat-num"><?= (int)($stats['total'] ?? 0) ?></div><div class="stat-label">Total Tickets</div></div>
+        <div><div class="stat-num"><?= (int)($stats['total'] ?? 0) ?></div><div class="stat-label">Total Cases</div></div>
       </div>
     </div>
     <div class="col-sm-6 col-xl-3">
       <div class="stat-card amber">
         <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
-        <div><div class="stat-num"><?= (int)($stats['open_count'] ?? 0) ?></div><div class="stat-label">Open / Pending</div></div>
+        <div><div class="stat-num"><?= (int)($stats['open_count'] ?? 0) ?></div><div class="stat-label">Awaiting Action</div></div>
       </div>
     </div>
     <div class="col-sm-6 col-xl-3">
       <div class="stat-card green">
         <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
-        <div><div class="stat-num"><?= (int)($stats['solved_count'] ?? 0) ?></div><div class="stat-label">Solved</div></div>
+        <div><div class="stat-num"><?= (int)($stats['solved_count'] ?? 0) ?></div><div class="stat-label">Closed</div></div>
       </div>
     </div>
     <div class="col-sm-6 col-xl-3">
       <?php if (currentStaffHasPermission('tickets.view_all')): ?>
       <div class="stat-card red">
         <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
-        <div><div class="stat-num"><?= (int)($stats['today_count'] ?? 0) ?></div><div class="stat-label">Raised Today</div></div>
+        <div><div class="stat-num"><?= (int)($stats['today_count'] ?? 0) ?></div><div class="stat-label">New Today</div></div>
       </div>
       <?php elseif (!currentStaffHasPermission('ticket.assign.exec') && currentStaffHasPermission('ticket.update_status')): ?>
       <div class="stat-card green">
         <div class="stat-icon"><i class="bi bi-trophy-fill"></i></div>
-        <div><div class="stat-num"><?= (int)($stats['solved_this_week'] ?? 0) ?></div><div class="stat-label">Solved This Week</div></div>
+        <div><div class="stat-num"><?= (int)($stats['solved_this_week'] ?? 0) ?></div><div class="stat-label">Closed This Week</div></div>
       </div>
       <?php else: ?>
       <div class="stat-card blue">
         <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
-        <div><div class="stat-num"><?= $stats['avg_hours'] ?? '—' ?></div><div class="stat-label">Avg Hrs to Solve</div></div>
+        <div><div class="stat-num"><?= $stats['avg_hours'] ?? '—' ?></div><div class="stat-label">Avg Resolution (hrs)</div></div>
       </div>
       <?php endif; ?>
     </div>
@@ -230,8 +238,8 @@ if (currentStaffHasPermission('tickets.view_all')) {
   <!-- Recent Tickets -->
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-      <span><i class="bi bi-clock-history me-2"></i>Recent Tickets</span>
-      <a href="<?= APP_URL ?>/staff/tickets" class="btn btn-sm btn-svcet">View All</a>
+      <span><i class="bi bi-clock-history me-2"></i>Live Complaint Queue</span>
+      <a href="<?= APP_URL ?>/staff/tickets" class="btn btn-sm btn-svcet">Open Queue</a>
     </div>
     <div class="card-body p-0">
       <?php if (empty($recentTickets)): ?>

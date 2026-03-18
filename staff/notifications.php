@@ -68,25 +68,33 @@ $unreadCount = count(array_filter($notifications, fn($n) => !$n['is_read']));
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell-fill"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Control Center</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Work Queue</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell-fill"></i>Alerts<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Insights Lab</a><?php endif; ?>
     <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
-    <div class="sidebar-section">Admin Modules</div>
-    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
-    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <div class="sidebar-section">Admin Studio</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a><?php endif; ?>
     <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>My Profile</a>
     <a class="nav-link" href="<?= APP_URL ?>/auth/logout"><i class="bi bi-box-arrow-right"></i>Logout</a>
   </nav>
 </div>
 
 <div class="main-content">
+  <div class="staff-headline">
+    <div>
+      <h3><i class="bi bi-bell me-2"></i>Alerts Inbox</h3>
+      <p>Monitor fresh complaint updates, assignment changes, and status activity.</p>
+    </div>
+    <span class="pill"><?= (int)$total ?> alert(s)</span>
+  </div>
+
   <div class="page-title-bar">
-    <h4><i class="bi bi-bell me-2"></i>Notifications <span class="badge bg-secondary ms-1"><?= $total ?></span></h4>
+    <h4><i class="bi bi-bell me-2"></i>Alerts <span class="badge bg-secondary ms-1"><?= $total ?></span></h4>
     <?php if ($unreadCount > 0): ?>
     <form method="POST" class="d-inline">
       <?= csrfField() ?>

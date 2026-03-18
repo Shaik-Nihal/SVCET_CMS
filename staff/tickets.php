@@ -92,11 +92,11 @@ $showAssignedColumn = currentStaffHasPermission('tickets.view_all')
   || currentStaffHasPermission('ticket.assign.exec');
 
 if (currentStaffHasPermission('tickets.view_all')) {
-  $pageTitle = 'All Tickets';
+  $pageTitle = 'Complaint Backlog';
 } elseif (currentStaffHasPermission('ticket.assign.exec')) {
-  $pageTitle = 'My & Delegated Tickets';
+  $pageTitle = 'My + Delegated Queue';
 } else {
-  $pageTitle = 'My Assigned Tickets';
+  $pageTitle = 'Assigned Work Queue';
 }
 ?>
 <!DOCTYPE html>
@@ -118,14 +118,15 @@ if (currentStaffHasPermission('tickets.view_all')) {
     <button class="btn btn-sm text-white me-2 d-lg-none" id="sidebarToggle"><i class="bi bi-list" style="font-size:1.3rem;"></i></button>
     <a class="navbar-brand" href="<?= APP_URL ?>/staff/dashboard"><img src="<?= APP_LOGO_URL ?>" alt="<?= APP_LOGO_ALT ?>"><?= APP_SHORT ?></a>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a class="text-white position-relative" href="<?= APP_URL ?>/staff/notifications">
+      <a class="staff-nav-icon" href="<?= APP_URL ?>/staff/notifications" aria-label="Notifications">
         <i class="bi bi-bell-fill" style="font-size:1.1rem;"></i>
         <span class="badge rounded-pill bg-danger position-absolute <?= $unreadCount ? '' : 'd-none' ?>"
               id="notif-badge" style="top:-6px;right:-8px;font-size:.6rem;"><?= $unreadCount ?: '' ?></span>
       </a>
       <div class="dropdown">
-        <a class="text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown">
+        <a class="staff-user-toggle dropdown-toggle" href="#" data-bs-toggle="dropdown">
           <i class="bi bi-person-circle me-1"></i>
+          <span class="d-none d-md-inline"><?= h($_SESSION['staff_name'] ?? 'Staff') ?></span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -141,14 +142,14 @@ if (currentStaffHasPermission('tickets.view_all')) {
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Control Center</a>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Work Queue</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Alerts<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Insights Lab</a><?php endif; ?>
     <?php if (currentStaffHasPermission('staff.manage') || currentStaffHasPermission('users.manage') || currentStaffHasPermission('roles.manage')): ?>
-    <div class="sidebar-section">Admin Modules</div>
-    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
-    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a><?php endif; ?>
+    <div class="sidebar-section">Admin Studio</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a><?php endif; ?>
     <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
@@ -158,6 +159,14 @@ if (currentStaffHasPermission('tickets.view_all')) {
 </div>
 
 <div class="main-content">
+  <div class="staff-headline">
+    <div>
+      <h3><i class="bi bi-kanban me-2"></i>Queue Monitor</h3>
+      <p>Filter, triage, and inspect complaints from a single operating panel.</p>
+    </div>
+    <span class="pill"><?= (int)$total ?> item(s)</span>
+  </div>
+
   <div class="page-title-bar">
     <h4><i class="bi bi-ticket-perforated me-2"></i><?= $pageTitle ?> <span class="badge bg-secondary ms-1"><?= $total ?></span></h4>
   </div>
@@ -170,7 +179,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
       <form method="GET" action="tickets" class="row g-2 align-items-center">
         <div class="col-auto">
           <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="">All Statuses</option>
+            <option value="">Any Status</option>
             <?php foreach ($validStatuses as $s): ?>
             <option value="<?= $s ?>" <?= $filterStatus === $s ? 'selected' : '' ?>><?= statusLabel($s) ?></option>
             <?php endforeach; ?>
@@ -178,7 +187,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
         </div>
         <div class="col-auto">
           <select name="priority" class="form-select form-select-sm" onchange="this.form.submit()">
-            <option value="">All Priorities</option>
+            <option value="">Any Priority</option>
             <?php foreach ($validPriorities as $p): ?>
             <option value="<?= $p ?>" <?= $filterPriority === $p ? 'selected' : '' ?>><?= ucfirst($p) ?></option>
             <?php endforeach; ?>
@@ -186,7 +195,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
         </div>
         <div class="col-auto ms-auto">
           <div class="input-group input-group-sm">
-            <input type="search" name="q" class="form-control" placeholder="Search ticket # or name..."
+            <input type="search" name="q" class="form-control" placeholder="Search ticket # or complainant..."
                    value="<?= h($filterSearch) ?>">
             <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
           </div>

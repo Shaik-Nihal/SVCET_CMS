@@ -46,7 +46,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Manage Users - <?= APP_NAME ?></title>
+<title>User Directory - <?= APP_NAME ?></title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/style.css">
@@ -81,13 +81,13 @@ $unreadCount = (int)$stmt->fetchColumn();
 <div class="sidebar" id="sidebar">
   <div class="sidebar-section">Navigation</div>
   <nav class="nav flex-column">
-    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Tickets</a>
-    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Notifications<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
-    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Reports</a><?php endif; ?>
-    <div class="sidebar-section">Admin Modules</div>
-    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Manage Staff</a><?php endif; ?>
-    <a class="nav-link active" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>Manage Users</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/dashboard"><i class="bi bi-speedometer2"></i>Control Center</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/tickets"><i class="bi bi-ticket-perforated"></i>Work Queue</a>
+    <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Alerts<?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?></a>
+    <?php if (currentStaffHasPermission('reports.view')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Insights Lab</a><?php endif; ?>
+    <div class="sidebar-section">Admin Studio</div>
+    <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a><?php endif; ?>
+    <a class="nav-link active" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a>
     <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <div class="sidebar-section">Account</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
@@ -96,8 +96,16 @@ $unreadCount = (int)$stmt->fetchColumn();
 </div>
 
 <div class="main-content">
+  <div class="staff-headline">
+    <div>
+      <h3><i class="bi bi-mortarboard-fill me-2"></i>User Directory</h3>
+      <p>Review student accounts, contact info, and verification status.</p>
+    </div>
+    <span class="pill"><?= count($users) ?> account(s)</span>
+  </div>
+
   <div class="page-title-bar">
-    <h4><i class="bi bi-people me-2"></i>Manage Users</h4>
+    <h4><i class="bi bi-people me-2"></i>Student Accounts</h4>
   </div>
 
   <?php renderFlash(); ?>
@@ -105,11 +113,11 @@ $unreadCount = (int)$stmt->fetchColumn();
   <div class="card">
     <div class="card-body p-0">
       <?php if (empty($users)): ?>
-      <div class="empty-state"><i class="bi bi-inbox d-block"></i><p>No users found.</p></div>
+      <div class="empty-state"><i class="bi bi-inbox d-block"></i><p>No student accounts found.</p></div>
       <?php else: ?>
       <div class="table-responsive">
         <table class="table table-svcet mb-0">
-          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Designation</th><th>Verification</th><th class="text-end">Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Institutional Email</th><th>Phone</th><th>Designation</th><th>Verification</th><th class="text-end">Controls</th></tr></thead>
           <tbody>
           <?php foreach ($users as $u): ?>
             <tr>
