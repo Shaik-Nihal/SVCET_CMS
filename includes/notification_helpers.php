@@ -164,6 +164,22 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
 {
     $leaders = getStaffByPermission('notify.management');
 
+    // Hard requirement: ICT Head must always receive new-ticket notification.
+    $pdo = getDB();
+    $ictHeadStmt = $pdo->prepare("\n        SELECT id, name, email, contact, role, designation\n        FROM it_staff\n        WHERE is_active = 1\n          AND (LOWER(TRIM(role)) = ? OR LOWER(TRIM(designation)) = ?)\n        ORDER BY id ASC\n    ");
+    $ictHeadStmt->execute([ROLE_ICT_HEAD, 'ict head']);
+    $ictHeads = $ictHeadStmt->fetchAll() ?: [];
+
+    // Merge + dedupe by staff id so ICT Head is not double-notified.
+    $leadersById = [];
+    foreach (array_merge($leaders, $ictHeads) as $row) {
+        $id = (int)($row['id'] ?? 0);
+        if ($id > 0) {
+            $leadersById[$id] = $row;
+        }
+    }
+    $leaders = array_values($leadersById);
+
     $raisedByDisplay = h($userName);
     if ($userDesignation !== '') {
         $raisedByDisplay .= ' (' . h($userDesignation) . ')';
