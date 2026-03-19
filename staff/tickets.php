@@ -13,7 +13,8 @@ $role    = currentRole();
 // Filters
 $filterStatus   = $_GET['status'] ?? '';
 $filterPriority = $_GET['priority'] ?? '';
-$filterSearch   = trim($_GET['q'] ?? '');
+$filterSearchRaw = trim((string)($_GET['q'] ?? ''));
+$filterSearch = preg_replace('/\s+/', ' ', $filterSearchRaw);
 $validStatuses  = ['notified','processing','solving','solved'];
 $validPriorities = ['low','medium','high'];
 
@@ -48,9 +49,20 @@ if ($filterPriority && in_array($filterPriority, $validPriorities)) {
     $params[] = $filterPriority;
 }
 if ($filterSearch) {
-    $where  .= " AND (t.ticket_number LIKE ? OR u.name LIKE ?)";
-    $params[] = "%{$filterSearch}%";
-    $params[] = "%{$filterSearch}%";
+  $searchPattern = "%{$filterSearch}%";
+  $where  .= " AND (
+    t.ticket_number LIKE ?
+    OR u.name LIKE ?
+    OR u.email LIKE ?
+    OR COALESCE(u.department, '') LIKE ?
+    OR COALESCE(pc.name, '') LIKE ?
+    OR COALESCE(s.name, '') LIKE ?
+    OR t.status LIKE ?
+    OR t.priority LIKE ?
+  )";
+  for ($i = 0; $i < 8; $i++) {
+    $params[] = $searchPattern;
+  }
 }
 
 // Count
@@ -59,6 +71,7 @@ $countStmt = $pdo->prepare("
     FROM tickets t
     LEFT JOIN users u ON t.user_id = u.id
     LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id
+    LEFT JOIN it_staff s ON t.assigned_to = s.id
     $where
 ");
 $countStmt->execute($params);
@@ -150,7 +163,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
     <div class="sidebar-section">Admin Studio</div>
     <?php if (currentStaffHasPermission('staff.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_staff"><i class="bi bi-person-badge"></i>Team Hub</a><?php endif; ?>
     <?php if (currentStaffHasPermission('users.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/manage_users"><i class="bi bi-people"></i>User Directory</a><?php endif; ?>
-    <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/admin/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
+    <?php if (currentStaffHasPermission('roles.manage')): ?><a class="nav-link" href="<?= APP_URL ?>/staff/roles"><i class="bi bi-diagram-3"></i>Roles & Permissions</a><?php endif; ?>
     <?php endif; ?>
     <div class="sidebar-section">Account</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/profile"><i class="bi bi-person-gear"></i>Profile</a>
@@ -195,7 +208,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
         </div>
         <div class="col-auto ms-auto">
           <div class="input-group input-group-sm">
-            <input type="search" name="q" class="form-control" placeholder="Search ticket # or complainant..."
+                 <input type="search" name="q" class="form-control" placeholder="Search by ticket, user, email, category, assignee..."
                    value="<?= h($filterSearch) ?>">
             <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
           </div>

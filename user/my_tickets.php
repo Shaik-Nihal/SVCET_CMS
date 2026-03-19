@@ -11,7 +11,8 @@ $userId = currentUserId();
 
 // Filters
 $filterStatus = $_GET['status'] ?? '';
-$filterSearch = trim($_GET['q'] ?? '');
+$filterSearchRaw = trim((string)($_GET['q'] ?? ''));
+$filterSearch = preg_replace('/\s+/', ' ', $filterSearchRaw);
 $validStatuses = ['notified','processing','solving','solved'];
 
 // Count for pagination
@@ -22,12 +23,20 @@ if ($filterStatus && in_array($filterStatus, $validStatuses)) {
     $params[] = $filterStatus;
 }
 if ($filterSearch) {
-    $where .= " AND (t.ticket_number LIKE ? OR pc.name LIKE ?)";
-    $params[] = "%{$filterSearch}%";
-    $params[] = "%{$filterSearch}%";
+  $searchPattern = "%{$filterSearch}%";
+  $where .= " AND (
+    t.ticket_number LIKE ?
+    OR COALESCE(pc.name, '') LIKE ?
+    OR COALESCE(s.name, '') LIKE ?
+    OR t.status LIKE ?
+    OR t.priority LIKE ?
+  )";
+  for ($i = 0; $i < 5; $i++) {
+    $params[] = $searchPattern;
+  }
 }
 
-$countStmt = $pdo->prepare("SELECT COUNT(*) FROM tickets t LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id $where");
+$countStmt = $pdo->prepare("SELECT COUNT(*) FROM tickets t LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id LEFT JOIN it_staff s ON t.assigned_to = s.id $where");
 $countStmt->execute($params);
 $total = (int)$countStmt->fetchColumn();
 
@@ -142,7 +151,7 @@ $unreadCount = (int)$stmt->fetchColumn();
         <?php endforeach; ?>
         <div class="col-auto ms-auto">
           <div class="input-group input-group-sm">
-            <input type="search" name="q" class="form-control" placeholder="Search ticket #..."
+                 <input type="search" name="q" class="form-control" placeholder="Search by ticket, category, staff, status..."
                    value="<?= h($filterSearch) ?>">
             <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
           </div>
