@@ -41,9 +41,9 @@
 | **Ticket Lifecycle** | Notified → Processing → Solving → Solved |
 | **Role-Based Access** | 5 staff roles + Admin + User with permission matrix |
 | **Email Notifications** | Deferred email queue (SMTP or Microsoft Graph API) — ticket creation is instant |
-| **PDF/CSV Reports** | ICT Head & Admin can generate date-ranged reports |
+| **PDF/CSV Reports** | Scope-aware exports via RBAC (`Organization Reports` or `My Reports`) |
 | **Real-Time Notifications** | AJAX polling (every 30s) for in-app notifications |
-| **Single-Domain Support** | `@svcet.edu.org` email domain |
+| **Single-Domain Support** | Allowed domains from `EMAIL_DOMAINS` (default: `@svcet.edu.org`) |
 | **Security** | CSRF protection, bcrypt passwords, DB-backed brute-force lockout, HTTP security headers, CSP, session timeouts, password history |
 
 ---
@@ -332,10 +332,10 @@ Key settings you may want to customize:
 
 | Constant | Default | Description |
 |---|---|---|
-| `APP_URL` | `http://localhost/SVCET` | Base URL (no trailing slash) |
+| `APP_URL` | Auto-detected (`http://localhost/<project-folder>`) | Base URL (no trailing slash) |
 | `APP_NAME` | `SVCET College Complaint Management` | Displayed in navbar & emails |
 | `APP_TIMEZONE` | `Asia/Kolkata` | PHP timezone for all date/time ops |
-| `EMAIL_DOMAINS` | `['collegename.edu.in']` | Allowed registration email domains |
+| `EMAIL_DOMAINS` | `['svcet.edu.org']` | Allowed registration + forgot-password email domains |
 | `SESSION_IDLE_TIMEOUT` | `1800` (30 min) | Session idle timeout in seconds |
 | `SESSION_ABS_TIMEOUT` | `28800` (8 hrs) | Absolute session lifetime |
 | `OTP_EXPIRY_MINUTES` | `15` | OTP expiry for password reset |
@@ -370,29 +370,25 @@ http://localhost/SVCET/admin_seed/seed.php
 
 ### What Gets Created
 
-#### IT Staff Accounts (9 members)
+#### IT Staff Accounts (current seed)
 
 | Name | Email | Role | Default Password |
 |---|---|---|---|
-| ICT Head | `icthead@collegename.edu.in` | ICT Head | `ChangeMe@2026!` |
-| Assistant ICT | `assistantict@collegename.edu.in` | Assistant ICT | `ChangeMe@2026!` |
-| Assistant Manager | `assistantmanager@collegename.edu.in` | Assistant Manager | `ChangeMe@2026!` |
-| Sr IT Executive | `sritexec1@collegename.edu.in` | Sr. IT Executive | `ChangeMe@2026!` |
-| Sr IT Executive | `sritexec2@collegename.edu.in` | Sr. IT Executive | `ChangeMe@2026!` |
-| Assistant IT | `assistantit1@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
-| Assistant IT | `assistantit2@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
-| Assistant IT | `assistantit3@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
-| Assistant IT | `assistantit4@collegename.edu.in` | Assistant IT | `ChangeMe@2026!` |
+| ICT Head | `icthead@svcet.edu.org` | ICT Head | `ChangeMe@2026!` |
+| Assistant ICT | `assistantict@svcet.edu.org` | Assistant ICT | `ChangeMe@2026!` |
+| Technician | `assistantit1@svcet.edu.org` | Assistant IT | `ChangeMe@2026!` |
+| Technician | `assistantit2@svcet.edu.org` | Assistant IT | `ChangeMe@2026!` |
+| Technician | `assistantit3@svcet.edu.org` | Assistant IT | `ChangeMe@2026!` |
 
-#### Problem Categories (10)
+#### Problem Categories (9)
 
-WiFi Issues, No Internet, Computer/Laptop, Printer, Email/Login, Software Installation, Power/Electricity, Projector/Display, Network/LAN, Other.
+WiFi Signal Weak / Slow, No Internet Connectivity, Computer/Laptop Not Working, Printer Issue, Email/Login Problem, Software Installation Required, Projector/Display Problem, Network/LAN Issue, Other.
 
 #### Test User
 
 | Email | Password |
 |---|---|
-| `test@collegename.edu.in` | `Test@2026!` |
+| `test@svcet.edu.org` | `Test@2026!` |
 
 #### Owner Admin Login
 
@@ -480,6 +476,14 @@ Owner Admin (environment-based, not stored in it_staff)
 
 - Single-domain setup: assignment rules are based on role hierarchy only.
 
+### Report Permissions (RBAC)
+
+- `Organization Reports` (`reports.view_all`): View/export organization-wide reports.
+- `My Reports` (`reports.view_own`): View/export only tickets assigned to the logged-in staff member.
+- `View Reports (Legacy)` (`reports.view`): Backward-compatible legacy permission, treated as organization scope.
+
+Assign these permissions from Roles & Permissions in the staff/admin role management screens.
+
 ### Ticket Status Transitions (Forward Only)
 
 ```
@@ -515,7 +519,7 @@ Each transition is irreversible and logged in `ticket_status_history`.
 | All Tickets | `/staff/tickets.php` | Browse all tickets with filters |
 | Ticket Detail | `/staff/ticket_detail.php?id=X` | View + assign + update status |
 | Assign Ticket | `/staff/assign_ticket.php?id=X` | Delegate to subordinate |
-| Reports | `/staff/reports.php` | Analytics (ICT Head only) |
+| Reports | `/staff/reports.php` | Analytics with RBAC report scope (`Organization Reports` or `My Reports`) |
 | Profile | `/staff/profile.php` | Edit profile + change password |
 | Notifications | `/staff/notifications.php` | Staff notification history |
 
@@ -593,9 +597,9 @@ All API endpoints return JSON and are located in `/api/`:
 | File | Key Functions |
 |---|---|
 | `includes\auth.php` | `startSecureSession()`, `requireLogin()`, `requireUser()`, `requireStaff()`, `requireRole()`, `requireAdmin()`, CSRF token management + rotation, DB-backed brute-force lockout, flash messages. |
-| `includes\functions.php` | `h()` (XSS-safe output), `redirect()`, `statusBadge()`, `roleLabel()`, `timeAgo()`, `paginate()`, `isValidPhone()`, `isValidPassword()`, `generateOTP()`. |
+| `includes\functions.php` | `h()` (XSS-safe output), `redirect()`, `statusBadge()`, `roleLabel()`, `timeAgo()`, `paginate()`, `isValidPhone()`, `isValidPassword()`, `isAllowedEmailDomain()`, `generateOTP()`. |
 | `includes\ticket_helpers.php` | `generateTicketNumber()` (MAX-based), `createTicket()` (returns id + ticket_number), `assignTicket()`, `updateTicketStatus()`, `getTicketById()`, `canAssignTo()`. |
-| `includes\notification_helpers.php` | `dispatchNotification()` (DB + queued email), `queueEmail()`, `flushEmailQueue()`, `registerEmailFlush()`, `notifyAllLeadership()`, `notifyUserTicketCreated()`, `notifyStaffAssigned()`, `notifyUserStatusChange()`. |
+| `includes\notification_helpers.php` | `dispatchNotification()` (DB + queued email), `queueEmail()`, `flushEmailQueue()`, `sendResponseAndFlushEmails()`, `notifyAllLeadership()`, `notifyUserTicketCreated()`, `notifyStaffAssigned()`, `notifyUserStatusChange()`. |
 | `includes\security_headers.php` | HTTP security headers: CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cache-Control, CDN preconnect. |
 
 ---
@@ -626,7 +630,7 @@ All API endpoints return JSON and are located in `/api/`:
 
 | Optimization | Impact | Details |
 |---|---|---|
-| **Deferred Email Queue** | Ticket creation: 5-20s → <1s | Emails queued in memory, sent via `register_shutdown_function()` after HTTP response |
+| **Deferred Email Queue** | Ticket creation: 5-20s → <1s | Emails queued in memory, sent after response close via `sendResponseAndFlushEmails()` |
 | **Persistent DB Connections** | ~10-20ms saved per request | `PDO::ATTR_PERSISTENT => true` reuses TCP connections |
 | **Composite DB Indexes** | Faster dashboards & notifications | `idx_user_status`, `idx_assigned_status`, `idx_recipient_unread`, `idx_feedback_user` |
 | **Ticket Number (MAX-based)** | Race-condition safe | Uses `MAX(ticket_number)` + retry loop instead of `COUNT(*)` |
@@ -676,6 +680,14 @@ Database Error: Could not connect to the database.
 3. For Graph: Verify tenant/client IDs, ensure `Mail.Send` permission is admin-consented
 4. Verify `curl` extension is enabled in `C:\xampp\php\php.ini` (uncomment `extension=curl`)
 5. Email failures are **non-blocking** — tickets still get created instantly
+
+### Forgot Password OTP Not Received
+
+1. Confirm the email is under allowed domains in `config\constants.php` (`EMAIL_DOMAINS`).
+2. Forgot password now validates domain first; non-allowed domains are rejected.
+3. OTP success message is shown only when email delivery succeeds.
+4. If delivery fails, verify SMTP/Graph settings in `config\local.env.php`.
+5. Check `php_error_log` for `Mailer error` / Graph token/send errors.
 
 ### Session Expiring Too Quickly
 
@@ -733,5 +745,5 @@ DELETE FROM login_attempts WHERE email = 'user@example.com';
 
 ---
 
-*Generated for SVCET Complaint Management System — Updated 15 March 2026*  
-*Includes: Security Hardening + Performance Optimization + Admin Profile*
+*Generated for SVCET Complaint Management System — Updated 19 March 2026*  
+*Includes: RBAC Report Scope + Staff Route Split + Domain-Strict Forgot Password + Mail/OTP Reliability*
