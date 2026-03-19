@@ -158,7 +158,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
     <a class="nav-link" href="<?= APP_URL ?>/staff/notifications"><i class="bi bi-bell"></i>Alerts
       <?php if ($unreadCount): ?><span class="badge bg-danger ms-auto"><?= $unreadCount ?></span><?php endif; ?>
     </a>
-    <?php if (currentStaffHasPermission('reports.view')): ?>
+    <?php if (currentStaffCanAccessReports()): ?>
     <div class="sidebar-section">Management</div>
     <a class="nav-link" href="<?= APP_URL ?>/staff/reports"><i class="bi bi-bar-chart-line"></i>Insights Lab</a>
     <?php endif; ?>

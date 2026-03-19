@@ -1,12 +1,19 @@
 <?php
-// CSV Report Download - ICT Head only
+// CSV report download (scope-aware)
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
-if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission('reports.view')) {
+if (
+    ($_SESSION['user_type'] ?? '') !== 'staff' ||
+    !(
+        currentStaffHasPermission('reports.view_all') ||
+        currentStaffHasPermission('reports.view_own') ||
+        currentStaffHasPermission('reports.view')
+    )
+) {
     setFlash('error', 'Unauthorized access.');
     $target = isOwnerAdminSession() ? '/admin/dashboard' : '/staff/dashboard';
     header('Location: ' . APP_URL . $target);
@@ -14,11 +21,13 @@ if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission('re
 }
 
 $pdo      = getDB();
+$staffId  = currentStaffId();
+$canViewAllReports = currentStaffCanViewOrganizationReports();
 // Sanitize date inputs
 $dateFrom = preg_replace('/[^0-9\-]/', '', $_GET['from'] ?? date('Y-m-d', strtotime('-7 days')));
 $dateTo   = preg_replace('/[^0-9\-]/', '', $_GET['to']   ?? date('Y-m-d'));
 
-$stmt = $pdo->prepare("
+$sql = "
     SELECT
         t.ticket_number   AS 'Ticket No',
         u.name            AS 'Raised By',
@@ -40,15 +49,23 @@ $stmt = $pdo->prepare("
     LEFT JOIN it_staff s ON t.assigned_to = s.id
     LEFT JOIN feedback f ON f.ticket_id = t.id
     WHERE t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    ORDER BY t.created_at DESC
-");
-$stmt->execute([$dateFrom, $dateTo]);
+";
+$params = [$dateFrom, $dateTo];
+if (!$canViewAllReports) {
+    $sql .= " AND t.assigned_to = ?";
+    $params[] = $staffId;
+}
+$sql .= " ORDER BY t.created_at DESC";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
 $rows = $stmt->fetchAll();
 
 // Stream CSV — sanitize filename to prevent header injection
 $safeDateFrom = preg_replace('/[^0-9]/', '', $dateFrom);
 $safeDateTo   = preg_replace('/[^0-9]/', '', $dateTo);
-$filename = 'SVCET_Complaint_Report_' . $safeDateFrom . '_to_' . $safeDateTo . '.csv';
+$filenamePrefix = $canViewAllReports ? 'SVCET_Complaint_Report' : 'SVCET_My_Complaint_Report';
+$filename = $filenamePrefix . '_' . $safeDateFrom . '_to_' . $safeDateTo . '.csv';
 
 header('Content-Type: text/csv; charset=utf-8');
 header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -77,6 +94,7 @@ foreach ($rows as $row) {
 fputcsv($output, []);
 fputcsv($output, ['--- SUMMARY ---']);
 fputcsv($output, ['Report Period', $dateFrom . ' to ' . $dateTo]);
+fputcsv($output, ['Scope', $canViewAllReports ? 'Organization Scope' : 'My Scope']);
 fputcsv($output, ['Total Tickets', count($rows)]);
 $solved = count(array_filter($rows, fn($r) => $r['Status'] === 'solved'));
 fputcsv($output, ['Solved', $solved]);

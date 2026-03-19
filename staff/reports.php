@@ -5,11 +5,12 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 requireStaff();
-requirePermission('reports.view');
+requireAnyPermission(['reports.view_all', 'reports.view_own', 'reports.view']);
 
 $pdo     = getDB();
 $staffId = currentStaffId();
 $role    = currentRole();
+$canViewAllReports = currentStaffCanViewOrganizationReports();
 
 // Report parameters
 $reportType = $_GET['type'] ?? 'weekly';
@@ -24,63 +25,95 @@ if ($reportType === 'monthly') {
 }
 
 // Summary stats
-$stmt = $pdo->prepare("
-    SELECT
-        COUNT(*) AS total,
-        SUM(status = 'solved') AS solved,
-        SUM(status != 'solved') AS open_count,
-        ROUND(AVG(CASE WHEN solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, created_at, solved_at) END),1) AS avg_hours
-    FROM tickets
-    WHERE created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-");
-$stmt->execute([$dateFrom, $dateTo]);
+$summarySql = "
+  SELECT
+    COUNT(*) AS total,
+    SUM(status = 'solved') AS solved,
+    SUM(status != 'solved') AS open_count,
+    ROUND(AVG(CASE WHEN solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, created_at, solved_at) END),1) AS avg_hours
+  FROM tickets
+  WHERE created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
+";
+$summaryParams = [$dateFrom, $dateTo];
+if (!$canViewAllReports) {
+  $summarySql .= " AND assigned_to = ?";
+  $summaryParams[] = $staffId;
+}
+$stmt = $pdo->prepare($summarySql);
+$stmt->execute($summaryParams);
 $summary = $stmt->fetch();
 
 // Staff performance
-$stmt = $pdo->prepare("
+if ($canViewAllReports) {
+  $stmt = $pdo->prepare("
     SELECT s.name, s.designation, s.role,
-           COUNT(t.id) AS assigned_count,
-           SUM(t.status = 'solved') AS solved_count,
-           ROUND(AVG(CASE WHEN t.solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) END),1) AS avg_hours
+         COUNT(t.id) AS assigned_count,
+         SUM(t.status = 'solved') AS solved_count,
+         ROUND(AVG(CASE WHEN t.solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) END),1) AS avg_hours
     FROM it_staff s
     LEFT JOIN tickets t ON t.assigned_to = s.id
-        AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
+      AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
     WHERE s.is_active = 1 AND s.role != 'admin'
     GROUP BY s.id
     ORDER BY solved_count DESC
-");
-$stmt->execute([$dateFrom, $dateTo]);
+  ");
+  $stmt->execute([$dateFrom, $dateTo]);
+} else {
+  $stmt = $pdo->prepare("
+    SELECT s.name, s.designation, s.role,
+         COUNT(t.id) AS assigned_count,
+         SUM(t.status = 'solved') AS solved_count,
+         ROUND(AVG(CASE WHEN t.solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) END),1) AS avg_hours
+    FROM it_staff s
+    LEFT JOIN tickets t ON t.assigned_to = s.id
+      AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
+    WHERE s.id = ?
+    GROUP BY s.id
+  ");
+  $stmt->execute([$dateFrom, $dateTo, $staffId]);
+}
 $staffPerf = $stmt->fetchAll();
 
 // Category breakdown
-$stmt = $pdo->prepare("
-    SELECT COALESCE(pc.name,'Other') AS category, COUNT(*) AS cnt
-    FROM tickets t
-    LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id
-    WHERE t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    GROUP BY pc.id
-    ORDER BY cnt DESC
-");
-$stmt->execute([$dateFrom, $dateTo]);
+$categorySql = "
+  SELECT COALESCE(pc.name,'Other') AS category, COUNT(*) AS cnt
+  FROM tickets t
+  LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id
+  WHERE t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
+";
+$categoryParams = [$dateFrom, $dateTo];
+if (!$canViewAllReports) {
+  $categorySql .= " AND t.assigned_to = ?";
+  $categoryParams[] = $staffId;
+}
+$categorySql .= " GROUP BY pc.id ORDER BY cnt DESC";
+$stmt = $pdo->prepare($categorySql);
+$stmt->execute($categoryParams);
 $catBreakdown = $stmt->fetchAll();
 
 // Ticket detail rows (for preview)
-$stmt = $pdo->prepare("
-    SELECT t.ticket_number, u.name AS user_name, u.department,
-           COALESCE(pc.name,'Custom') AS category, t.custom_description,
-           t.priority, t.status, s.name AS assigned_to,
-           t.created_at, t.solved_at,
-           TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) AS hours,
-           f.rating
-    FROM tickets t
-    LEFT JOIN users u ON t.user_id = u.id
-    LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id
-    LEFT JOIN it_staff s ON t.assigned_to = s.id
-    LEFT JOIN feedback f ON f.ticket_id = t.id
-    WHERE t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    ORDER BY t.created_at DESC
-");
-$stmt->execute([$dateFrom, $dateTo]);
+$ticketSql = "
+  SELECT t.ticket_number, u.name AS user_name, u.department,
+       COALESCE(pc.name,'Custom') AS category, t.custom_description,
+       t.priority, t.status, s.name AS assigned_to,
+       t.created_at, t.solved_at,
+       TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) AS hours,
+       f.rating
+  FROM tickets t
+  LEFT JOIN users u ON t.user_id = u.id
+  LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id
+  LEFT JOIN it_staff s ON t.assigned_to = s.id
+  LEFT JOIN feedback f ON f.ticket_id = t.id
+  WHERE t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
+";
+$ticketParams = [$dateFrom, $dateTo];
+if (!$canViewAllReports) {
+  $ticketSql .= " AND t.assigned_to = ?";
+  $ticketParams[] = $staffId;
+}
+$ticketSql .= " ORDER BY t.created_at DESC";
+$stmt = $pdo->prepare($ticketSql);
+$stmt->execute($ticketParams);
 $ticketRows = $stmt->fetchAll();
 
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE recipient_id=? AND recipient_type='staff' AND is_read=0");
@@ -90,6 +123,7 @@ $unreadCount = (int)$stmt->fetchColumn();
 $periodLabel = ($reportType === 'monthly')
     ? date('F Y', strtotime($dateFrom))
     : formatDate($dateFrom, 'd M Y') . ' — ' . formatDate($dateTo, 'd M Y');
+$scopeLabel = $canViewAllReports ? 'Organization Scope' : 'My Scope';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -153,12 +187,15 @@ $periodLabel = ($reportType === 'monthly')
       <h3><i class="bi bi-graph-up-arrow me-2"></i>Insights Studio</h3>
       <p>Generate performance snapshots, workload trends, and closure analytics.</p>
     </div>
-    <span class="pill"><?= h($periodLabel) ?></span>
+    <span class="pill"><?= h($periodLabel) ?> · <?= h($scopeLabel) ?></span>
   </div>
 
   <div class="page-title-bar">
-    <h4><i class="bi bi-bar-chart-line me-2"></i>Performance Insights</h4>
-    <div>
+    <h4><i class="bi bi-bar-chart-line me-2"></i><?= $canViewAllReports ? 'Performance Insights' : 'My Performance Insights' ?></h4>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge <?= $canViewAllReports ? 'bg-primary-subtle text-primary-emphasis border border-primary-subtle' : 'bg-success-subtle text-success-emphasis border border-success-subtle' ?>">
+        <i class="bi <?= $canViewAllReports ? 'bi-diagram-3' : 'bi-person-badge' ?> me-1"></i><?= $canViewAllReports ? 'Organization Report' : 'My Report' ?>
+      </span>
       <a href="<?= APP_URL ?>/reports/generate_csv?from=<?= h($dateFrom) ?>&to=<?= h($dateTo) ?>" class="btn btn-sm btn-success me-1">
         <i class="bi bi-filetype-csv me-1"></i>Download CSV
       </a>
@@ -215,7 +252,7 @@ $periodLabel = ($reportType === 'monthly')
   </div>
 
   <!-- Period Label -->
-  <div class="alert alert-info py-2" style="font-size:.85rem;"><i class="bi bi-calendar3 me-2"></i>Window: <strong><?= h($periodLabel) ?></strong> — <?= (int)$summary['total'] ?> ticket(s)</div>
+  <div class="alert alert-info py-2" style="font-size:.85rem;"><i class="bi bi-calendar3 me-2"></i>Window: <strong><?= h($periodLabel) ?></strong> — <?= h($scopeLabel) ?> — <?= (int)$summary['total'] ?> ticket(s)</div>
 
   <!-- Summary Stats -->
   <div class="row g-3 mb-4">
@@ -249,7 +286,7 @@ $periodLabel = ($reportType === 'monthly')
     <!-- Staff Performance -->
     <div class="col-lg-7">
       <div class="card">
-        <div class="card-header"><i class="bi bi-people me-2"></i>Technician Performance</div>
+        <div class="card-header"><i class="bi bi-people me-2"></i><?= $canViewAllReports ? 'Technician Performance' : 'My Performance' ?></div>
         <div class="card-body p-0">
           <div class="table-responsive">
             <table class="table table-svcet mb-0">

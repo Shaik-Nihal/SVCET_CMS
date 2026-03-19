@@ -225,7 +225,9 @@ INSERT INTO permissions (slug, name, description, group_name) VALUES
 ('roles.manage', 'Manage Roles & Permissions', 'Create roles and assign permissions', 'admin'),
 ('staff.manage', 'Manage Staff', 'Create, edit, activate/deactivate staff accounts', 'admin'),
 ('users.manage', 'Manage Users', 'View and manage user accounts', 'admin'),
-('reports.view', 'View Reports', 'View report screens and export CSV/PDF', 'reports'),
+('reports.view_all', 'Organization Reports', 'View and export all staff reports (organization scope)', 'reports'),
+('reports.view_own', 'My Reports', 'View and export only the logged-in staff member report scope', 'reports'),
+('reports.view', 'View Reports (Legacy)', 'Legacy permission mapped to organization reports for backward compatibility', 'reports'),
 ('ticket.assign.lead', 'Assign Tickets (Leadership)', 'Assign/reassign tickets as a leadership role', 'tickets'),
 ('ticket.assign.exec', 'Assign Tickets (Executive)', 'Delegate tickets to execution team', 'tickets'),
 ('ticket.update_status', 'Update Ticket Status', 'Move ticket through processing states', 'tickets'),
@@ -255,11 +257,11 @@ SELECT r.id, p.id
 FROM roles r
 JOIN permissions p ON (
   (r.slug = 'admin' AND p.slug IN (
-      'admin.access','roles.manage','staff.manage','users.manage','reports.view',
+      'admin.access','roles.manage','staff.manage','users.manage','reports.view_all','reports.view_own','reports.view',
       'ticket.assign.lead','ticket.assign.exec','ticket.update_status','tickets.view_all','tickets.view_involved','notify.management'
   )) OR
   (r.slug = 'ict_head' AND p.slug IN (
-      'reports.view','ticket.assign.lead','tickets.view_all','tickets.view_involved','notify.management'
+      'reports.view_all','reports.view_own','reports.view','ticket.assign.lead','tickets.view_all','tickets.view_involved','notify.management'
   )) OR
   (r.slug = 'assistant_manager' AND p.slug IN (
       'ticket.assign.lead','tickets.view_all','tickets.view_involved','notify.management'

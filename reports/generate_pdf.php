@@ -1,5 +1,5 @@
 <?php
-// PDF Report Download - ICT Head only
+// PDF report download (scope-aware)
 // Uses simple HTML-to-PDF via browser print (no FPDF dependency needed initially)
 // If FPDF is installed in vendor/fpdf/, the native PDF generation will be used.
 require_once __DIR__ . '/../config/constants.php';
@@ -8,7 +8,14 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
-if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission('reports.view')) {
+if (
+    ($_SESSION['user_type'] ?? '') !== 'staff' ||
+    !(
+        currentStaffHasPermission('reports.view_all') ||
+        currentStaffHasPermission('reports.view_own') ||
+        currentStaffHasPermission('reports.view')
+    )
+) {
     setFlash('error', 'Unauthorized access.');
     $target = isOwnerAdminSession() ? '/admin/dashboard' : '/staff/dashboard';
     header('Location: ' . APP_URL . $target);
@@ -16,45 +23,72 @@ if (($_SESSION['user_type'] ?? '') !== 'staff' || !currentStaffHasPermission('re
 }
 
 $pdo      = getDB();
+$staffId  = currentStaffId();
+$canViewAllReports = currentStaffCanViewOrganizationReports();
 $dateFrom = $_GET['from'] ?? date('Y-m-d', strtotime('-7 days'));
 $dateTo   = $_GET['to']   ?? date('Y-m-d');
 
 // Summary stats
-$stmt = $pdo->prepare("
+$summarySql = "
     SELECT COUNT(*) AS total,
            SUM(status = 'solved') AS solved,
            SUM(status != 'solved') AS open_count,
            ROUND(AVG(CASE WHEN solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, created_at, solved_at) END),1) AS avg_hours
     FROM tickets WHERE created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-");
-$stmt->execute([$dateFrom, $dateTo]);
+";
+$summaryParams = [$dateFrom, $dateTo];
+if (!$canViewAllReports) {
+    $summarySql .= " AND assigned_to = ?";
+    $summaryParams[] = $staffId;
+}
+$stmt = $pdo->prepare($summarySql);
+$stmt->execute($summaryParams);
 $summary = $stmt->fetch();
 
 // Staff performance
-$stmt = $pdo->prepare("
-    SELECT s.name, s.designation, s.role,
-           COUNT(t.id) AS assigned_count,
-           SUM(t.status = 'solved') AS solved_count,
-           ROUND(AVG(CASE WHEN t.solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) END),1) AS avg_hours
-    FROM it_staff s
-    LEFT JOIN tickets t ON t.assigned_to = s.id AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    WHERE s.is_active = 1 AND s.role != 'admin' GROUP BY s.id ORDER BY solved_count DESC
-");
-$stmt->execute([$dateFrom, $dateTo]);
+if ($canViewAllReports) {
+    $stmt = $pdo->prepare("
+        SELECT s.name, s.designation, s.role,
+               COUNT(t.id) AS assigned_count,
+               SUM(t.status = 'solved') AS solved_count,
+               ROUND(AVG(CASE WHEN t.solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) END),1) AS avg_hours
+        FROM it_staff s
+        LEFT JOIN tickets t ON t.assigned_to = s.id AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
+        WHERE s.is_active = 1 AND s.role != 'admin' GROUP BY s.id ORDER BY solved_count DESC
+    ");
+    $stmt->execute([$dateFrom, $dateTo]);
+} else {
+    $stmt = $pdo->prepare("
+        SELECT s.name, s.designation, s.role,
+               COUNT(t.id) AS assigned_count,
+               SUM(t.status = 'solved') AS solved_count,
+               ROUND(AVG(CASE WHEN t.solved_at IS NOT NULL THEN TIMESTAMPDIFF(HOUR, t.created_at, t.solved_at) END),1) AS avg_hours
+        FROM it_staff s
+        LEFT JOIN tickets t ON t.assigned_to = s.id AND t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
+        WHERE s.id = ? GROUP BY s.id
+    ");
+    $stmt->execute([$dateFrom, $dateTo, $staffId]);
+}
 $staffPerf = $stmt->fetchAll();
 
 // Category breakdown
-$stmt = $pdo->prepare("
+$categorySql = "
     SELECT COALESCE(pc.name,'Other') AS category, COUNT(*) AS cnt
     FROM tickets t LEFT JOIN problem_categories pc ON t.problem_category_id = pc.id
     WHERE t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    GROUP BY pc.id ORDER BY cnt DESC
-");
-$stmt->execute([$dateFrom, $dateTo]);
+";
+$categoryParams = [$dateFrom, $dateTo];
+if (!$canViewAllReports) {
+    $categorySql .= " AND t.assigned_to = ?";
+    $categoryParams[] = $staffId;
+}
+$categorySql .= " GROUP BY pc.id ORDER BY cnt DESC";
+$stmt = $pdo->prepare($categorySql);
+$stmt->execute($categoryParams);
 $catBreakdown = $stmt->fetchAll();
 
 // Tickets
-$stmt = $pdo->prepare("
+$ticketSql = "
     SELECT t.ticket_number, u.name AS user_name, u.department,
            COALESCE(pc.name,'Custom') AS category, t.priority, t.status,
            s.name AS assigned_to, t.created_at, t.solved_at,
@@ -65,12 +99,19 @@ $stmt = $pdo->prepare("
     LEFT JOIN it_staff s ON t.assigned_to = s.id
     LEFT JOIN feedback f ON f.ticket_id = t.id
     WHERE t.created_at BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)
-    ORDER BY t.created_at DESC
-");
-$stmt->execute([$dateFrom, $dateTo]);
+";
+$ticketParams = [$dateFrom, $dateTo];
+if (!$canViewAllReports) {
+    $ticketSql .= " AND t.assigned_to = ?";
+    $ticketParams[] = $staffId;
+}
+$ticketSql .= " ORDER BY t.created_at DESC";
+$stmt = $pdo->prepare($ticketSql);
+$stmt->execute($ticketParams);
 $tickets = $stmt->fetchAll();
 
 $periodLabel = formatDate($dateFrom, 'd M Y') . ' to ' . formatDate($dateTo, 'd M Y');
+$scopeLabel = $canViewAllReports ? 'Organization Scope' : 'My Scope';
 
 // Check if FPDF is available
 $fpdfPath = VENDOR_PATH . '/fpdf/fpdf.php';
@@ -103,7 +144,7 @@ if ($useFPDF) {
 
     // Period
     $pdf->SetFont('Arial','B',11);
-    $pdf->Cell(0, 8, 'Report Period: ' . $periodLabel, 0, 1);
+    $pdf->Cell(0, 8, 'Report Period: ' . $periodLabel . ' | ' . $scopeLabel, 0, 1);
     $pdf->Ln(2);
 
     // Summary
@@ -118,7 +159,7 @@ if ($useFPDF) {
 
     // Staff Performance Table
     $pdf->SetFont('Arial','B',10);
-    $pdf->Cell(0, 7, 'Staff Performance', 0, 1);
+    $pdf->Cell(0, 7, $canViewAllReports ? 'Staff Performance' : 'My Performance', 0, 1);
     $pdf->SetFont('Arial','B',8);
     $pdf->SetFillColor(26, 58, 92);
     $pdf->SetTextColor(255);
@@ -172,7 +213,8 @@ if ($useFPDF) {
         $fill = !$fill;
     }
 
-    $pdf->Output('D', 'SVCET_Complaint_Report_' . date('Ymd') . '.pdf');
+    $pdfFilePrefix = $canViewAllReports ? 'SVCET_Complaint_Report_' : 'SVCET_My_Complaint_Report_';
+    $pdf->Output('D', $pdfFilePrefix . date('Ymd') . '.pdf');
     exit;
 
 } else {
@@ -182,7 +224,7 @@ if ($useFPDF) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SVCET Complaint Report — <?= h($periodLabel) ?></title>
+<title>SVCET Complaint Report — <?= h($periodLabel) ?> (<?= h($scopeLabel) ?>)</title>
 <style>
     @media print { @page { size: landscape; margin: 10mm; } .no-print { display:none !important; } }
     body { font-family: Arial, sans-serif; font-size: 12px; color: #333; margin: 20px; }
@@ -206,7 +248,7 @@ if ($useFPDF) {
 </div>
 
 <h1><?= h(ORG_NAME) ?> — Complaint Management Report</h1>
-<p class="subtitle">Report Period: <strong><?= h($periodLabel) ?></strong> | Generated: <?= date('d M Y, h:i A') ?></p>
+<p class="subtitle">Report Period: <strong><?= h($periodLabel) ?></strong> | Scope: <strong><?= h($scopeLabel) ?></strong> | Generated: <?= date('d M Y, h:i A') ?></p>
 
 <h2>Summary</h2>
 <div>
@@ -216,7 +258,7 @@ if ($useFPDF) {
     <div class="summary-box"><div class="summary-num"><?= $summary['avg_hours'] ?? '—' ?></div><div class="summary-label">Avg Hours</div></div>
 </div>
 
-<h2>Staff Performance</h2>
+<h2><?= $canViewAllReports ? 'Staff Performance' : 'My Performance' ?></h2>
 <table>
     <tr><th>Staff Name</th><th>Designation</th><th>Role</th><th>Assigned</th><th>Solved</th><th>Avg Hours</th></tr>
     <?php foreach ($staffPerf as $sp): ?>

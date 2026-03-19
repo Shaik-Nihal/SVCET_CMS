@@ -32,8 +32,8 @@ function rbacTablesReady(): bool {
 
 function legacyRolePermissionsMap(): array {
     return [
-        'admin' => ['admin.access','roles.manage','staff.manage','users.manage','reports.view','ticket.assign.lead','ticket.assign.exec','ticket.update_status','tickets.view_all','tickets.view_involved','notify.management'],
-        'ict_head' => ['reports.view','ticket.assign.lead','tickets.view_all','tickets.view_involved','notify.management'],
+        'admin' => ['admin.access','roles.manage','staff.manage','users.manage','reports.view_all','reports.view_own','reports.view','ticket.assign.lead','ticket.assign.exec','ticket.update_status','tickets.view_all','tickets.view_involved','notify.management'],
+        'ict_head' => ['reports.view_all','reports.view_own','reports.view','ticket.assign.lead','tickets.view_all','tickets.view_involved','notify.management'],
         'assistant_manager' => ['ticket.assign.lead','tickets.view_all','tickets.view_involved','notify.management'],
         'assistant_ict' => ['ticket.assign.lead','tickets.view_all','tickets.view_involved','notify.management'],
         'sr_it_executive' => ['ticket.assign.exec','ticket.update_status','tickets.view_involved'],
@@ -50,7 +50,9 @@ function rbacPermissionCatalog(): array {
         'roles.manage' => ['name' => 'Manage Roles & Permissions', 'description' => 'Create roles and assign permissions', 'group' => 'admin'],
         'staff.manage' => ['name' => 'Manage Staff', 'description' => 'Create, edit, activate/deactivate staff accounts', 'group' => 'admin'],
         'users.manage' => ['name' => 'Manage Users', 'description' => 'View and manage user accounts', 'group' => 'admin'],
-        'reports.view' => ['name' => 'View Reports', 'description' => 'View report screens and export CSV/PDF', 'group' => 'reports'],
+        'reports.view_all' => ['name' => 'Organization Reports', 'description' => 'View and export all staff reports (organization scope)', 'group' => 'reports'],
+        'reports.view_own' => ['name' => 'My Reports', 'description' => 'View and export only the logged-in staff member report scope', 'group' => 'reports'],
+        'reports.view' => ['name' => 'View Reports (Legacy)', 'description' => 'Legacy permission mapped to organization reports for backward compatibility', 'group' => 'reports'],
         'ticket.assign.lead' => ['name' => 'Assign Tickets (Leadership)', 'description' => 'Assign/reassign tickets as a leadership role', 'group' => 'tickets'],
         'ticket.assign.exec' => ['name' => 'Assign Tickets (Executive)', 'description' => 'Delegate tickets to execution team', 'group' => 'tickets'],
         'ticket.update_status' => ['name' => 'Update Ticket Status', 'description' => 'Move ticket through processing states', 'group' => 'tickets'],
@@ -58,6 +60,29 @@ function rbacPermissionCatalog(): array {
         'tickets.view_involved' => ['name' => 'View Involved Tickets', 'description' => 'See tickets assigned to/handled by the staff member', 'group' => 'tickets'],
         'notify.management' => ['name' => 'Receive Management Notifications', 'description' => 'Receive leadership notifications for new ticket/status updates', 'group' => 'notifications'],
     ];
+}
+
+/**
+ * Ensure permission catalog rows exist and migrate legacy report grants.
+ */
+function syncPermissionCatalog(): void {
+    static $synced = false;
+    if ($synced || !rbacTablesReady()) {
+        return;
+    }
+    $synced = true;
+
+    $pdo = getDB();
+    $catalog = rbacPermissionCatalog();
+
+    $upsert = $pdo->prepare("\n        INSERT INTO permissions (slug, name, description, group_name)\n        VALUES (?, ?, ?, ?)\n        ON DUPLICATE KEY UPDATE\n            name = VALUES(name),\n            description = VALUES(description),\n            group_name = VALUES(group_name)\n    ");
+
+    foreach ($catalog as $slug => $meta) {
+        $upsert->execute([$slug, $meta['name'], $meta['description'], $meta['group']]);
+    }
+
+    // Upgrade legacy grants: reports.view => reports.view_all
+    $pdo->exec("\n        INSERT IGNORE INTO role_permissions (role_id, permission_id)\n        SELECT rp.role_id, p_new.id\n        FROM role_permissions rp\n        INNER JOIN permissions p_old ON p_old.id = rp.permission_id AND p_old.slug = 'reports.view'\n        INNER JOIN permissions p_new ON p_new.slug = 'reports.view_all'\n    ");
 }
 
 function getAllRoles(bool $includeInactive = true): array {
@@ -162,6 +187,8 @@ function getRolePermissions(string $roleSlug): array {
         return legacyRolePermissionsMap()[$roleSlug] ?? [];
     }
 
+    syncPermissionCatalog();
+
     $pdo = getDB();
     $stmt = $pdo->prepare("\n        SELECT p.slug\n        FROM permissions p\n        INNER JOIN role_permissions rp ON rp.permission_id = p.id\n        INNER JOIN roles r ON r.id = rp.role_id\n        WHERE r.slug = ?\n    ");
     $stmt->execute([$roleSlug]);
@@ -180,6 +207,8 @@ function roleHasPermission(string $roleSlug, string $permissionSlug): bool {
         return in_array($permissionSlug, legacyRolePermissionsMap()[$roleSlug] ?? [], true);
     }
 
+    syncPermissionCatalog();
+
     $pdo = getDB();
     $stmt = $pdo->prepare("\n        SELECT 1\n        FROM role_permissions rp\n        INNER JOIN roles r ON r.id = rp.role_id\n        INNER JOIN permissions p ON p.id = rp.permission_id\n        WHERE r.slug = ? AND p.slug = ?\n        LIMIT 1\n    ");
     $stmt->execute([$roleSlug, $permissionSlug]);
@@ -192,6 +221,17 @@ function currentStaffHasPermission(string $permissionSlug): bool {
     }
     $role = (string)($_SESSION['staff_role'] ?? '');
     return roleHasPermission($role, $permissionSlug);
+}
+
+function currentStaffCanAccessReports(): bool {
+    return currentStaffHasPermission('reports.view_all')
+        || currentStaffHasPermission('reports.view_own')
+        || currentStaffHasPermission('reports.view');
+}
+
+function currentStaffCanViewOrganizationReports(): bool {
+    return currentStaffHasPermission('reports.view_all')
+        || currentStaffHasPermission('reports.view');
 }
 
 function getPermissionsWithSelection(string $roleSlug = ''): array {
@@ -208,6 +248,7 @@ function getPermissionsWithSelection(string $roleSlug = ''): array {
             ];
         }
     } else {
+        syncPermissionCatalog();
         $pdo = getDB();
         $permissions = $pdo->query("SELECT id, slug, name, description, group_name FROM permissions ORDER BY group_name, name")->fetchAll() ?: [];
     }
