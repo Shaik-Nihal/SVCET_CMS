@@ -206,6 +206,32 @@ function isValidPassword(string $password): bool {
 }
 
 /**
+ * Check whether an email belongs to an allowed institutional domain.
+ */
+function isAllowedEmailDomain(string $email): bool {
+    $email = strtolower(trim($email));
+    if ($email === '' || strpos($email, '@') === false) {
+        return false;
+    }
+
+    foreach (EMAIL_DOMAINS as $domain) {
+        $domain = strtolower(trim((string)$domain));
+        if ($domain !== '' && str_ends_with($email, '@' . $domain)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Human-readable allowed email domains list for UI/messages.
+ */
+function allowedEmailDomainsLabel(): string {
+    return implode(' or ', EMAIL_DOMAINS);
+}
+
+/**
  * Generate a cryptographically secure 6-digit OTP string.
  */
 function generateOTP(): string {

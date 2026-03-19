@@ -28,15 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Validate
         if (strlen($input['name']) < 2)  $errors[] = 'Full name must be at least 2 characters.';
-        $domainValid = false;
-        foreach (EMAIL_DOMAINS as $domain) {
-            if (str_ends_with($input['email'], '@' . $domain)) {
-                $domainValid = true;
-                break;
-            }
-        }
-        if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL) || !$domainValid) {
-            $errors[] = 'Email must be a valid ' . implode(' or ', EMAIL_DOMAINS) . ' address.';
+        if (!filter_var($input['email'], FILTER_VALIDATE_EMAIL) || !isAllowedEmailDomain($input['email'])) {
+            $errors[] = 'Email must be a valid ' . allowedEmailDomainsLabel() . ' address.';
         }
         if ($input['phone'] && !isValidPhone($input['phone'])) {
             $errors[] = 'Phone number must be a 10-digit Indian mobile number.';

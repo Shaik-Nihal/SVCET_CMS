@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = strtolower(trim($_POST['email'] ?? ''));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'Please enter a valid email address.';
+        } elseif (!isAllowedEmailDomain($email)) {
+            $error = 'Only ' . allowedEmailDomainsLabel() . ' email addresses are allowed.';
         } else {
             $pdo = getDB();
             // Check users table
@@ -64,16 +66,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <p style='color:#dc2626;font-size:.85rem;'><strong>Do not share this OTP with anyone.</strong> If you did not request this, please ignore this email.</p>
                 ");
-                sendEmail($email, $user['name'], $subject, $body);
+                $mailSent = sendEmail($email, $user['name'], $subject, $body);
+                if (!$mailSent) {
+                    // Avoid stale OTPs when delivery fails.
+                    $pdo->prepare("DELETE FROM password_reset_tokens WHERE user_id = ? AND user_type = ?")
+                        ->execute([$user['id'], $userType]);
+                    $error = 'Unable to send OTP right now. Please try again in a moment.';
+                } else {
+                    // Store in session for next step (don't expose user_id in URL)
+                    $_SESSION['pwd_reset_user_id']   = $user['id'];
+                    $_SESSION['pwd_reset_user_type'] = $userType;
+                    $_SESSION['pwd_reset_email']     = $email;
+                    $_SESSION['otp_attempts']        = 0;
 
-                // Store in session for next step (don't expose user_id in URL)
-                $_SESSION['pwd_reset_user_id']   = $user['id'];
-                $_SESSION['pwd_reset_user_type'] = $userType;
-                $_SESSION['pwd_reset_email']     = $email;
-                $_SESSION['otp_attempts']        = 0;
-
-                $success = "An OTP has been sent to <strong>" . h($email) . "</strong>. Please check your inbox.";
-                header('Refresh: 2; url=' . APP_URL . '/auth/verify_otp');
+                    $success = "An OTP has been sent to <strong>" . h($email) . "</strong>. Please check your inbox.";
+                    header('Refresh: 2; url=' . APP_URL . '/auth/verify_otp');
+                }
             } else {
                 // Don't reveal if email exists — generic message
                 $success = "If this email is registered, an OTP has been sent.";

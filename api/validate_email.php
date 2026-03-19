@@ -2,6 +2,7 @@
 // AJAX: Validate email domain during registration
 require_once __DIR__ . '/../config/constants.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 header('Content-Type: application/json');
 
@@ -17,16 +18,8 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-$domainValid = false;
-foreach (EMAIL_DOMAINS as $domain) {
-    if (str_ends_with($email, '@' . $domain)) {
-        $domainValid = true;
-        break;
-    }
-}
-
-if (!$domainValid) {
-    echo json_encode(['valid' => false, 'message' => 'Must be a valid ' . implode(' or ', EMAIL_DOMAINS) . ' email.']);
+if (!isAllowedEmailDomain($email)) {
+    echo json_encode(['valid' => false, 'message' => 'Must be a valid ' . allowedEmailDomainsLabel() . ' email.']);
     exit;
 }
 
