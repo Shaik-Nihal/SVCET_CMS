@@ -175,10 +175,10 @@ function notifyAllLeadership(int $ticketId, string $ticketNumber, string $userNa
             <p>Dear {$leader['name']},</p>
             <p>A new complaint has been raised by <strong>{$raisedByDisplay}</strong>.</p>
             <table style='width:100%;border-collapse:collapse;'>
-              <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
-              <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
+                            <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+                            <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
             </table>
-            <p style='margin-top:20px;'><a href='" . APP_URL . "/staff/ticket_detail?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>View Ticket</a></p>
+                        <p style='margin-top:20px;'><a href='" . APP_URL . "/staff/ticket_detail?id={$ticketId}' style='background:#1f7a4d;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>View Ticket</a></p>
         ");
 
         dispatchNotification([
@@ -216,11 +216,11 @@ function notifyUserTicketCreated(int $userId, int $ticketId, string $ticketNumbe
         <p>Dear {$user['name']},</p>
         <p>Your complaint has been received and assigned to our support team.</p>
         <table style='width:100%;border-collapse:collapse;'>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Assigned To</td><td style='padding:8px;'>{$staffName}</td></tr>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Status</td><td style='padding:8px;'><span style='background:#17a2b8;color:#fff;padding:2px 8px;border-radius:3px;'>Notified</span></td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Assigned To</td><td style='padding:8px;'>{$staffName}</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Status</td><td style='padding:8px;'><span style='background:#2e8b57;color:#fff;padding:2px 8px;border-radius:3px;'>Notified</span></td></tr>
         </table>
-        <p style='margin-top:20px;'><a href='" . APP_URL . "/user/ticket_detail?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Track Ticket</a></p>
+                <p style='margin-top:20px;'><a href='" . APP_URL . "/user/ticket_detail?id={$ticketId}' style='background:#1f7a4d;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Track Ticket</a></p>
     ");
 
     dispatchNotification([
@@ -260,12 +260,12 @@ function notifyStaffAssigned(int $staffId, int $ticketId, string $ticketNumber, 
         <p>Dear {$staff['name']},</p>
         <p>A support ticket has been assigned to you by <strong>{$assignedByName}</strong>.</p>
         <table style='width:100%;border-collapse:collapse;'>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Raised By</td><td style='padding:8px;'>{$raisedByDisplay}</td></tr>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Note</td><td style='padding:8px;'>" . h($notes ?: 'No additional notes') . "</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Raised By</td><td style='padding:8px;'>{$raisedByDisplay}</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Problem</td><td style='padding:8px;'>{$category}</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Note</td><td style='padding:8px;'>" . h($notes ?: 'No additional notes') . "</td></tr>
         </table>
-        <p style='margin-top:20px;'><a href='" . APP_URL . "/staff/ticket_detail?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>View & Update Ticket</a></p>
+                <p style='margin-top:20px;'><a href='" . APP_URL . "/staff/ticket_detail?id={$ticketId}' style='background:#1f7a4d;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>View & Update Ticket</a></p>
     ");
 
     dispatchNotification([
@@ -299,15 +299,15 @@ function notifyUserStatusChange(int $userId, int $ticketId, string $ticketNumber
     }
 
     $feedbackLink = ($newStatus === STATUS_SOLVED)
-        ? "<p style='margin-top:15px;'><a href='" . APP_URL . "/user/feedback?ticket_id={$ticketId}' style='background:#28a745;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Submit Feedback</a></p>"
-        : "<p style='margin-top:15px;'><a href='" . APP_URL . "/user/ticket_detail?id={$ticketId}' style='background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Track Ticket</a></p>";
+        ? "<p style='margin-top:15px;'><a href='" . APP_URL . "/user/feedback?ticket_id={$ticketId}' style='background:#1f7a4d;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Submit Feedback</a></p>"
+        : "<p style='margin-top:15px;'><a href='" . APP_URL . "/user/ticket_detail?id={$ticketId}' style='background:#1f7a4d;color:#fff;padding:10px 20px;border-radius:5px;text-decoration:none;'>Track Ticket</a></p>";
 
     $body = emailTemplate("Ticket {$ticketNumber} — Status Updated", "
         <p>Dear {$user['name']},</p>
         <p>The status of your support ticket has been updated.</p>
         <table style='width:100%;border-collapse:collapse;'>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
-          <tr><td style='padding:8px;background:#f4f6f9;font-weight:bold;'>New Status</td><td style='padding:8px;'>{$statusText}</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>Ticket No</td><td style='padding:8px;'>{$ticketNumber}</td></tr>
+                    <tr><td style='padding:8px;background:#eef6f0;font-weight:bold;'>New Status</td><td style='padding:8px;'>{$statusText}</td></tr>
         </table>
         {$feedbackLink}
     ");

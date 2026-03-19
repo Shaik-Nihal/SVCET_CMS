@@ -216,17 +216,17 @@ function emailTemplate(string $title, string $content): string {
 <!DOCTYPE html>
 <html>
 <head><meta charset="UTF-8"><title>{$title}</title></head>
-<body style="margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f9;padding:30px 0;">
+<body style="margin:0;padding:0;background:#eef6f0;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#eef6f0;padding:30px 0;">
   <tr><td align="center">
     <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);">
-      <tr><td style="background:#1a3a5c;padding:20px 30px;">
+      <tr><td style="background:#1f6f43;padding:20px 30px;">
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             {$logoBlock}
             <td valign="middle">
               <h1 style="margin:0;color:#fff;font-size:20px;">{$appName}</h1>
-              <p style="margin:4px 0 0;color:#adc8e8;font-size:13px;">{$portalName}</p>
+              <p style="margin:4px 0 0;color:#d6ebdd;font-size:13px;">{$portalName}</p>
             </td>
           </tr>
         </table>
@@ -234,8 +234,8 @@ function emailTemplate(string $title, string $content): string {
       <tr><td style="padding:30px;">
         {$content}
       </td></tr>
-      <tr><td style="background:#f4f6f9;padding:15px 30px;text-align:center;">
-        <p style="margin:0;color:#999;font-size:12px;">This is an automated message from {$appName}.<br>Please do not reply to this email.</p>
+      <tr><td style="background:#eef6f0;padding:15px 30px;text-align:center;">
+        <p style="margin:0;color:#678071;font-size:12px;">This is an automated message from {$appName}.<br>Please do not reply to this email.</p>
       </td></tr>
     </table>
   </td></tr>
