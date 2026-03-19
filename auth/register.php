@@ -161,8 +161,7 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
                     <div class="input-group">
                         <input type="password" name="password" id="pwdInput" class="form-control"
                                placeholder="Min 8 chars, uppercase, number, special char" required>
-                        <button type="button" class="btn btn-outline-secondary"
-                                onclick="this.previousElementSibling.type = this.previousElementSibling.type === 'password' ? 'text' : 'password'">
+                        <button type="button" class="btn btn-outline-secondary" data-toggle-password-target="#pwdInput">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
@@ -192,9 +191,9 @@ $departments = ['Computer Science','Information Technology','Electronics','Mecha
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>">
 updateStrengthMeter('pwdInput', 'strengthBar', 'strengthText');
 
 // Confirm password match

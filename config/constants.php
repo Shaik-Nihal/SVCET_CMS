@@ -84,7 +84,6 @@ define('APP_EMAIL_LOGO_CID', 'app_logo');
 // Owner-only admin access (credentials are environment-based, not DB-based)
 define('OWNER_ADMIN_NAME', getenv('OWNER_ADMIN_NAME') ?: 'Portal Owner');
 define('OWNER_ADMIN_EMAIL', strtolower(trim(getenv('OWNER_ADMIN_EMAIL') ?: MAIL_USERNAME)));
-define('OWNER_ADMIN_PASSWORD', getenv('OWNER_ADMIN_PASSWORD') ?: '');
 define('OWNER_ADMIN_PASSWORD_HASH', getenv('OWNER_ADMIN_PASSWORD_HASH') ?: '');
 define('OWNER_ADMIN_ALLOW_DB_ADMIN', false);
 

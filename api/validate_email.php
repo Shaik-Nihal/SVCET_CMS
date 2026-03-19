@@ -1,7 +1,6 @@
 <?php
 // AJAX: Validate email domain during registration
 require_once __DIR__ . '/../config/constants.php';
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 header('Content-Type: application/json');
@@ -23,13 +22,4 @@ if (!isAllowedEmailDomain($email)) {
     exit;
 }
 
-$pdo  = getDB();
-$stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? LIMIT 1");
-$stmt->execute([$email]);
-
-if ($stmt->fetch()) {
-    echo json_encode(['valid' => false, 'message' => 'Email already registered.']);
-    exit;
-}
-
-echo json_encode(['valid' => true, 'message' => 'Email is available.']);
+echo json_encode(['valid' => true, 'message' => 'Email format is valid.']);

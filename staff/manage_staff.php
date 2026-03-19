@@ -136,12 +136,12 @@ $unreadCount = (int)$stmt->fetchColumn();
               <td><?= h($s['designation'] ?? 'N/A') ?></td>
               <td><?= $s['is_active'] ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>' ?></td>
               <td class="text-end">
-                <form method="post" class="d-inline" onsubmit="return confirm('Toggle active status?');">
+                <form method="post" class="d-inline" data-confirm="Are you sure?">
                   <?= csrfField() ?>
                   <input type="hidden" name="toggle_staff_id" value="<?= (int)$s['id'] ?>">
                   <button type="submit" class="btn btn-sm btn-outline-warning"><i class="bi bi-power"></i></button>
                 </form>
-                <form method="post" class="d-inline" onsubmit="return confirm('Delete this staff member?');">
+                <form method="post" class="d-inline" data-confirm="Are you sure?">
                   <?= csrfField() ?>
                   <input type="hidden" name="delete_staff_id" value="<?= (int)$s['id'] ?>">
                   <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
@@ -157,7 +157,7 @@ $unreadCount = (int)$stmt->fetchColumn();
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
 </body>
 </html>

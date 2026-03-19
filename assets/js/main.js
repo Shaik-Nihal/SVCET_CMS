@@ -65,6 +65,66 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.innerWidth >= 992) closeSidebar();
         });
     }
+
+    // Generic confirm prompts for forms/buttons via data-confirm.
+    document.querySelectorAll('form[data-confirm]').forEach(form => {
+        form.addEventListener('submit', e => {
+            const message = form.getAttribute('data-confirm') || 'Are you sure?';
+            if (!window.confirm(message)) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-confirm-click]').forEach(el => {
+        el.addEventListener('click', e => {
+            const message = el.getAttribute('data-confirm-click') || 'Are you sure?';
+            if (!window.confirm(message)) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    // Auto-submit parent form when control changes.
+    document.querySelectorAll('[data-submit-on-change]').forEach(el => {
+        el.addEventListener('change', () => {
+            const form = el.form || el.closest('form');
+            if (form) {
+                form.submit();
+            }
+        });
+    });
+
+    // Toggle password visibility with data-toggle-password-target="#inputId".
+    document.querySelectorAll('[data-toggle-password-target]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const selector = btn.getAttribute('data-toggle-password-target') || '';
+            const input = selector ? document.querySelector(selector) : null;
+            if (!input) return;
+            input.type = input.type === 'password' ? 'text' : 'password';
+        });
+    });
+
+    // Toggle arbitrary target class with data-toggle-target="#id".
+    document.querySelectorAll('[data-toggle-target]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const selector = btn.getAttribute('data-toggle-target') || '';
+            const target = selector ? document.querySelector(selector) : null;
+            if (target) {
+                target.classList.toggle('show');
+            }
+        });
+    });
+
+    // Tab switch hooks for auth page.
+    document.querySelectorAll('[data-switch-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.getAttribute('data-switch-tab') || '';
+            if (tab && typeof window.switchTab === 'function') {
+                window.switchTab(tab);
+            }
+        });
+    });
 });
 
 // Password strength meter

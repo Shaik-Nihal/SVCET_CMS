@@ -175,7 +175,7 @@ $unreadCount = (int)$stmt->fetchColumn();
         <div class="row g-2">
           <div class="col-lg-8">
             <label for="category_id" class="form-label fw-semibold">Problem Category <span class="text-danger">*</span></label>
-            <select class="form-select" id="category_id" name="category_id" onchange="handleCategoryChange()" required>
+            <select class="form-select" id="category_id" name="category_id" required>
               <option value="">-- Select a category --</option>
               <?php foreach ($categories as $cat): ?>
               <option value="<?= (int)$cat['id'] ?>"
@@ -209,9 +209,9 @@ $unreadCount = (int)$stmt->fetchColumn();
             $initials = substr($initials, 0, 2);
           ?>
           <div class="col-12 col-sm-6 col-lg-4">
-            <div class="staff-card d-flex align-items-center gap-3
+              <div class="staff-card d-flex align-items-center gap-3
                         <?= ((int)($_POST['assigned_to'] ?? 0) === (int)$staff['id']) ? 'selected' : '' ?>"
-                 data-id="<?= $staff['id'] ?>" onclick="selectStaff(this)">
+                data-id="<?= $staff['id'] ?>">
               <div class="staff-avatar"><?= h($initials) ?></div>
               <div>
                 <div class="fw-semibold" style="font-size:.9rem;"><?= h($staff['name']) ?></div>
@@ -238,8 +238,8 @@ $unreadCount = (int)$stmt->fetchColumn();
       <div class="card-body">
         <div class="d-flex gap-2">
           <?php foreach (['low' => ['bg-success','Low'], 'medium' => ['bg-warning text-dark','Medium'], 'high' => ['bg-danger','High']] as $val => [$cls, $label]): ?>
-          <button type="button" class="btn btn-outline-secondary priority-btn <?= (($_POST['priority'] ?? 'medium') === $val) ? 'active btn-selected' : '' ?>"
-                  onclick="selectPriority('<?= $val ?>', this)">
+            <button type="button" class="btn btn-outline-secondary priority-btn <?= (($_POST['priority'] ?? 'medium') === $val) ? 'active btn-selected' : '' ?>"
+              data-priority-value="<?= $val ?>">
             <span class="badge <?= $cls ?> me-1">&nbsp;</span><?= $label ?>
           </button>
           <?php endforeach; ?>
@@ -260,10 +260,10 @@ $unreadCount = (int)$stmt->fetchColumn();
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script src="<?= APP_URL ?>/assets/js/notifications.js"></script>
-<script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/notifications.js"></script>
+<script nonce="<?= cspNonce() ?>">
 function handleCategoryChange() {
   const categorySelect = document.getElementById('category_id');
   const selectedOption = categorySelect.options[categorySelect.selectedIndex];
@@ -292,6 +292,15 @@ function handleCategoryChange() {
 }
 
 document.addEventListener('DOMContentLoaded', handleCategoryChange);
+document.getElementById('category_id').addEventListener('change', handleCategoryChange);
+
+document.querySelectorAll('.staff-card').forEach(card => {
+  card.addEventListener('click', () => selectStaff(card));
+});
+
+document.querySelectorAll('.priority-btn[data-priority-value]').forEach(btn => {
+  btn.addEventListener('click', () => selectPriority(btn.dataset.priorityValue, btn));
+});
 
 function selectStaff(el) {
     document.querySelectorAll('.staff-card').forEach(c => c.classList.remove('selected'));

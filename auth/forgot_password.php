@@ -14,6 +14,9 @@ redirectIfLoggedIn();
 $error   = '';
 $success = '';
 
+$resetMaxRequests = 5;
+$resetWindowSecs = 900; // 15 minutes
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
         $error = 'Invalid request. Please refresh and try again.';
@@ -25,6 +28,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Only ' . allowedEmailDomainsLabel() . ' email addresses are allowed.';
         } else {
             $pdo = getDB();
+            $ip = getClientIP();
+            $throttleKey = 'pwd_reset|' . $email;
+
+            $stmt = $pdo->prepare("\n                SELECT COUNT(*)\n                FROM login_attempts\n                WHERE ip_address = ?\n                  AND email = ?\n                  AND attempted_at > DATE_SUB(NOW(), INTERVAL ? SECOND)\n            ");
+            $stmt->execute([$ip, $throttleKey, $resetWindowSecs]);
+            $requestCount = (int)$stmt->fetchColumn();
+
+            if ($requestCount >= $resetMaxRequests) {
+                // Keep response generic to avoid user enumeration.
+                $success = 'If this email is registered, an OTP has been sent.';
+                usleep(250000);
+                goto forgot_password_done;
+            }
+
             // Check users table
             $stmt = $pdo->prepare("SELECT id, name FROM users WHERE email = ? LIMIT 1");
             $stmt->execute([$email]);
@@ -71,21 +88,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Avoid stale OTPs when delivery fails.
                     $pdo->prepare("DELETE FROM password_reset_tokens WHERE user_id = ? AND user_type = ?")
                         ->execute([$user['id'], $userType]);
-                    $error = 'Unable to send OTP right now. Please try again in a moment.';
                 } else {
                     // Store in session for next step (don't expose user_id in URL)
                     $_SESSION['pwd_reset_user_id']   = $user['id'];
                     $_SESSION['pwd_reset_user_type'] = $userType;
                     $_SESSION['pwd_reset_email']     = $email;
                     $_SESSION['otp_attempts']        = 0;
-
-                    $success = "An OTP has been sent to <strong>" . h($email) . "</strong>. Please check your inbox.";
-                    header('Refresh: 2; url=' . APP_URL . '/auth/verify_otp');
                 }
-            } else {
-                // Don't reveal if email exists — generic message
-                $success = "If this email is registered, an OTP has been sent.";
             }
+
+            // Track every reset request attempt for throttling.
+            $pdo->prepare("INSERT INTO login_attempts (ip_address, email) VALUES (?, ?)")
+                ->execute([$ip, $throttleKey]);
+
+            // Generic message for both existing and non-existing accounts.
+            $success = 'If this email is registered, an OTP has been sent.';
+            if ($user) {
+                header('Refresh: 2; url=' . APP_URL . '/auth/verify_otp');
+            }
+
+            forgot_password_done:
+            // Keep timing close between paths to reduce side-channel leakage.
+            usleep(250000);
         }
     }
 }
@@ -136,6 +160,6 @@ $csrf = generateCSRFToken();
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

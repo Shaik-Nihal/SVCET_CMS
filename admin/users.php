@@ -54,7 +54,7 @@ $users = $pdo->query("SELECT id, name, email, phone, designation, email_verified
 <!-- Navbar -->
 <nav class="navbar navbar-dark admin-navbar fixed-top">
   <div class="container-fluid">
-    <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
+    <button class="btn btn-sm text-white me-2 d-lg-none" data-toggle-target="#adminSidebar">
       <i class="bi bi-list fs-4"></i>
     </button>
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
@@ -127,7 +127,7 @@ $users = $pdo->query("SELECT id, name, email, phone, designation, email_verified
               <a href="<?= APP_URL ?>/admin/reset_password?user_id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-primary" title="Force Password Reset">
                 <i class="bi bi-key"></i> Reset Password
               </a>
-              <form method="post" class="d-inline" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete this user AND ALL THEIR TICKETS?');">
+              <form method="post" class="d-inline" data-confirm="Are you sure?">
                 <input type="hidden" name="csrf_token" value="<?= h(generateCSRFToken()) ?>">
                 <input type="hidden" name="delete_user_id" value="<?= $u['id'] ?>">
                 <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete User and Tickets"><i class="bi bi-trash"></i></button>
@@ -145,6 +145,7 @@ $users = $pdo->query("SELECT id, name, email, phone, designation, email_verified
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
 </body>
 </html>

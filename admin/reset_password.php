@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!-- Navbar -->
 <nav class="navbar navbar-dark admin-navbar fixed-top">
   <div class="container-fluid">
-    <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
+    <button class="btn btn-sm text-white me-2 d-lg-none" data-toggle-target="#adminSidebar">
       <i class="bi bi-list fs-4"></i>
     </button>
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="pt-3 border-top text-end">
-          <button type="submit" class="btn btn-danger px-4" onclick="return confirm('Are you sure you want to enforce this password change?');">
+          <button type="submit" class="btn btn-danger px-4" data-confirm-click="Are you sure you want to enforce this password change?">
             <i class="bi bi-key-fill me-1"></i> Force Password Reset
           </button>
         </div>
@@ -150,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
 </body>
 </html>

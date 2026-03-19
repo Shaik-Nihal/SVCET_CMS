@@ -109,7 +109,7 @@ $periodLabel = ($reportType === 'monthly')
 <!-- Navbar -->
 <nav class="navbar navbar-dark admin-navbar fixed-top">
   <div class="container-fluid">
-    <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
+    <button class="btn btn-sm text-white me-2 d-lg-none" data-toggle-target="#adminSidebar">
       <i class="bi bi-list fs-4"></i>
     </button>
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
@@ -157,7 +157,7 @@ $periodLabel = ($reportType === 'monthly')
       <form method="GET" class="row g-2 align-items-end">
         <div class="col-auto">
           <label class="form-label small fw-semibold mb-0">Report Type</label>
-          <select name="type" class="form-select form-select-sm" onchange="toggleDateFields(this.value)">
+          <select name="type" id="adminReportType" class="form-select form-select-sm">
             <option value="weekly" <?= $reportType === 'weekly' ? 'selected' : '' ?>>Weekly / Custom Range</option>
             <option value="monthly" <?= $reportType === 'monthly' ? 'selected' : '' ?>>Monthly</option>
           </select>
@@ -322,13 +322,18 @@ $periodLabel = ($reportType === 'monthly')
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script src="<?= APP_URL ?>/assets/js/notifications.js"></script>
-<script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/notifications.js"></script>
+<script nonce="<?= cspNonce() ?>">
 function toggleDateFields(type) {
     document.querySelectorAll('.date-range').forEach(el => el.style.display = type === 'monthly' ? 'none' : '');
     document.querySelectorAll('.month-select').forEach(el => el.style.display = type === 'monthly' ? '' : 'none');
+}
+
+const adminReportType = document.getElementById('adminReportType');
+if (adminReportType) {
+  adminReportType.addEventListener('change', () => toggleDateFields(adminReportType.value));
 }
 </script>
 </body>

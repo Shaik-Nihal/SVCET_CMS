@@ -74,7 +74,7 @@ $tickets = $ticketsStmt->fetchAll();
 <!-- Navbar -->
 <nav class="navbar navbar-dark admin-navbar fixed-top">
   <div class="container-fluid">
-    <button class="btn btn-sm text-white me-2 d-lg-none" onclick="document.getElementById('adminSidebar').classList.toggle('show')">
+    <button class="btn btn-sm text-white me-2 d-lg-none" data-toggle-target="#adminSidebar">
       <i class="bi bi-list fs-4"></i>
     </button>
     <a class="navbar-brand" href="#"><i class="bi bi-shield-lock me-2"></i>SVCET Maintenance Panel</a>
@@ -258,6 +258,7 @@ $tickets = $ticketsStmt->fetchAll();
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
 </body>
 </html>

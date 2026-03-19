@@ -1,5 +1,16 @@
 <?php
 // ============================================================
+
+if (!function_exists('cspNonce')) {
+    function cspNonce(): string {
+        if (!isset($GLOBALS['__csp_nonce']) || !is_string($GLOBALS['__csp_nonce'])) {
+            $GLOBALS['__csp_nonce'] = base64_encode(random_bytes(16));
+        }
+        return $GLOBALS['__csp_nonce'];
+    }
+}
+
+$cspNonce = cspNonce();
 // Security Headers — included automatically via constants.php
 // Sends HTTP headers to harden the application against common attacks.
 // ============================================================
@@ -28,7 +39,7 @@ header('X-Robots-Tag: noindex, nofollow');
 // Content Security Policy — only allow resources from self + trusted CDNs
 header("Content-Security-Policy: "
     . "default-src 'self'; "
-    . "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+    . "script-src 'self' 'nonce-{$cspNonce}' https://cdn.jsdelivr.net; "
     . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
     . "font-src 'self' https://cdn.jsdelivr.net; "
     . "img-src 'self' data:; "

@@ -10,7 +10,12 @@ require_once __DIR__ . '/rbac.php';
 // ── Session Bootstrap ──────────────────────────────────────
 function startSecureSession(): void {
     if (session_status() === PHP_SESSION_NONE) {
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (($_SERVER['SERVER_PORT'] ?? null) == 443)
+            || str_starts_with(strtolower(APP_URL), 'https://');
+        ini_set('session.use_strict_mode', '1');
         ini_set('session.cookie_httponly', '1');
+        ini_set('session.cookie_secure', $isHttps ? '1' : '0');
         ini_set('session.cookie_samesite', 'Strict');
         ini_set('session.gc_maxlifetime', (string) SESSION_IDLE_TIMEOUT);
         session_start();
@@ -36,9 +41,7 @@ function renderFlash(): void {
     $flash = getFlash();
     if (!$flash) return;
     $type  = htmlspecialchars($flash['type'], ENT_QUOTES, 'UTF-8');
-    
-    // Allow basic formatting tags while stripping potentially harmful ones (like <script>)
-    $msg   = strip_tags($flash['message'], '<strong><b><i><em><u><br><p><span><a>');
+    $msg   = nl2br(htmlspecialchars((string)$flash['message'], ENT_QUOTES, 'UTF-8'));
     
     $map   = ['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'info' => 'info'];
     $cls   = $map[$flash['type']] ?? 'secondary';

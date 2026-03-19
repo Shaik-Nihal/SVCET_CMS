@@ -213,7 +213,7 @@ $scopeLabel = $canViewAllReports ? 'Organization Scope' : 'My Scope';
       <form method="GET" class="row g-2 align-items-end">
         <div class="col-auto">
           <label class="form-label small fw-semibold mb-0">View Mode</label>
-          <select name="type" class="form-select form-select-sm" onchange="toggleDateFields(this.value)">
+          <select name="type" id="staffReportType" class="form-select form-select-sm">
             <option value="weekly" <?= $reportType === 'weekly' ? 'selected' : '' ?>>Rolling Window / Custom</option>
             <option value="monthly" <?= $reportType === 'monthly' ? 'selected' : '' ?>>Calendar Month</option>
           </select>
@@ -378,13 +378,18 @@ $scopeLabel = $canViewAllReports ? 'Organization Scope' : 'My Scope';
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script src="<?= APP_URL ?>/assets/js/notifications.js"></script>
-<script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/notifications.js"></script>
+<script nonce="<?= cspNonce() ?>">
 function toggleDateFields(type) {
     document.querySelectorAll('.date-range').forEach(el => el.style.display = type === 'monthly' ? 'none' : '');
     document.querySelectorAll('.month-select').forEach(el => el.style.display = type === 'monthly' ? '' : 'none');
+}
+
+const staffReportType = document.getElementById('staffReportType');
+if (staffReportType) {
+  staffReportType.addEventListener('change', () => toggleDateFields(staffReportType.value));
 }
 </script>
 </body>

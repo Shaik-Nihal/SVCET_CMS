@@ -216,7 +216,7 @@ foreach ($staffRows as $staffRow) {
                 <i class="bi bi-pencil-square"></i>
               </a>
               <?php if ($role['slug'] !== ROLE_ADMIN): ?>
-              <form method="post" class="d-inline" onsubmit="return confirm('Change active state for this role?')">
+              <form method="post" class="d-inline" data-confirm="Change active state for this role?">
                 <input type="hidden" name="csrf_token" value="<?= h(generateCSRFToken()) ?>">
                 <input type="hidden" name="slug" value="<?= h($role['slug']) ?>">
                 <input type="hidden" name="action" value="toggle_active">
@@ -238,7 +238,7 @@ foreach ($staffRows as $staffRow) {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
 </body>
 </html>

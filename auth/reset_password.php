@@ -122,8 +122,7 @@ $csrf = generateCSRFToken();
                 <div class="input-group">
                     <input type="password" name="password" id="pwdInput" class="form-control"
                            placeholder="Enter new password" required>
-                    <button type="button" class="btn btn-outline-secondary"
-                            onclick="const i=document.getElementById('pwdInput');i.type=i.type==='password'?'text':'password'">
+                    <button type="button" class="btn btn-outline-secondary" data-toggle-password-target="#pwdInput">
                         <i class="bi bi-eye"></i>
                     </button>
                 </div>
@@ -144,9 +143,9 @@ $csrf = generateCSRFToken();
         </form>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>">
 updateStrengthMeter('pwdInput', 'strengthBar', 'strengthText');
 document.getElementById('confirmPwd').addEventListener('input', function() {
     const m = document.getElementById('pwdMatch');

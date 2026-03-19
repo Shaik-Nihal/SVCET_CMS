@@ -7,17 +7,12 @@ function getDB(): PDO
 {
     static $pdo = null;
     if ($pdo === null) {
-        // Prefer TCP to avoid socket path issues on XAMPP/LAMPP
-        $host   = '127.0.0.1';
-        $port   = 3306;
-        $dbName = DB_NAME;
-        $user   = 'root';
-
-        // ── No password (current) ──
-        $pass = '';
-
-        // ── If your DB has a password, comment the line above and uncomment below ──
-        // $pass = 'root';
+        // Prefer environment-driven DB credentials.
+        $host   = getenv('DB_HOST') ?: '127.0.0.1';
+        $port   = (int)(getenv('DB_PORT') ?: 3306);
+        $dbName = getenv('DB_NAME') ?: DB_NAME;
+        $user   = getenv('DB_USER') ?: 'root';
+        $pass   = getenv('DB_PASS') ?: '';
 
         $dsn = "mysql:host={$host};port={$port};dbname={$dbName};charset=utf8mb4";
         $options = [

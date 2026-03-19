@@ -36,10 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Owner admin auth is env-backed and never read from DB.
             if ($isOwnerEmail) {
-                $ownerPassConfigured = OWNER_ADMIN_PASSWORD_HASH !== '' || OWNER_ADMIN_PASSWORD !== '';
+                $ownerPassConfigured = OWNER_ADMIN_PASSWORD_HASH !== '';
                 $ownerPassOk =
-                    (OWNER_ADMIN_PASSWORD_HASH !== '' && password_verify($password, OWNER_ADMIN_PASSWORD_HASH))
-                    || (OWNER_ADMIN_PASSWORD !== '' && hash_equals(OWNER_ADMIN_PASSWORD, $password));
+                    (OWNER_ADMIN_PASSWORD_HASH !== '' && password_verify($password, OWNER_ADMIN_PASSWORD_HASH));
 
                 if ($ownerPassOk) {
                     session_regenerate_id(true);
@@ -61,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 recordLoginFailureDB($email);
                 $error = $ownerPassConfigured
                     ? 'Invalid email or password.'
-                    : 'Owner admin credentials are not configured. Please set OWNER_ADMIN_PASSWORD_HASH or OWNER_ADMIN_PASSWORD in local.env.php.';
+                    : 'Owner admin credentials are not configured. Please set OWNER_ADMIN_PASSWORD_HASH in local.env.php.';
             } else {
                 // Regular staff authenticate from DB; DB-based admin accounts are blocked from login.
                 $stmt = $pdo->prepare("SELECT id, name, email, password_hash, role FROM it_staff WHERE email = ? AND is_active = 1 AND role != 'admin' LIMIT 1");
@@ -151,13 +150,13 @@ $activeTab = $_POST['login_as'] ?? 'user';
         <ul class="nav auth-tabs mb-3" id="loginTabs">
             <li class="nav-item">
                 <button class="nav-link <?= $activeTab !== 'staff' ? 'active' : '' ?>" data-tab="user"
-                        onclick="switchTab('user')">
+                        data-switch-tab="user">
                     <i class="bi bi-person-fill me-1"></i>Student / Faculty
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link <?= $activeTab === 'staff' ? 'active' : '' ?>" data-tab="staff"
-                        onclick="switchTab('staff')">
+                        data-switch-tab="staff">
                     <i class="bi bi-person-gear me-1"></i>IT Staff
                 </button>
             </li>
@@ -184,7 +183,7 @@ $activeTab = $_POST['login_as'] ?? 'user';
                     <span class="input-group-text"><i class="bi bi-lock"></i></span>
                     <input type="password" name="password" id="passwordInput" class="form-control"
                            placeholder="Enter your password" required autocomplete="current-password">
-                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                    <button type="button" id="togglePasswordBtn" class="btn btn-outline-secondary" data-toggle-password-target="#passwordInput">
                         <i class="bi bi-eye" id="eyeIcon"></i>
                     </button>
                 </div>
@@ -211,25 +210,29 @@ $activeTab = $_POST['login_as'] ?? 'user';
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>">
 function switchTab(tab) {
     document.querySelectorAll('#loginTabs .nav-link').forEach(l => l.classList.remove('active'));
     document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
     document.getElementById('login_as_field').value = tab;
     document.getElementById('user-register-link').classList.toggle('d-none', tab === 'staff');
 }
-function togglePassword() {
+
+document.getElementById('passwordInput').addEventListener('input', () => {
     const inp = document.getElementById('passwordInput');
     const ico = document.getElementById('eyeIcon');
-    if (inp.type === 'password') {
-        inp.type = 'text';
-        ico.className = 'bi bi-eye-slash';
-    } else {
-        inp.type = 'password';
-        ico.className = 'bi bi-eye';
-    }
-}
+    ico.className = inp.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+});
+
+document.getElementById('togglePasswordBtn').addEventListener('click', () => {
+    const inp = document.getElementById('passwordInput');
+    const ico = document.getElementById('eyeIcon');
+    setTimeout(() => {
+        ico.className = inp.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    }, 0);
+});
 </script>
 </body>
 </html>

@@ -191,7 +191,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
     <div class="card-body py-2">
       <form method="GET" action="tickets" class="row g-2 align-items-center">
         <div class="col-auto">
-          <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="status" class="form-select form-select-sm" data-submit-on-change="1">
             <option value="">Any Status</option>
             <?php foreach ($validStatuses as $s): ?>
             <option value="<?= $s ?>" <?= $filterStatus === $s ? 'selected' : '' ?>><?= statusLabel($s) ?></option>
@@ -199,7 +199,7 @@ if (currentStaffHasPermission('tickets.view_all')) {
           </select>
         </div>
         <div class="col-auto">
-          <select name="priority" class="form-select form-select-sm" onchange="this.form.submit()">
+          <select name="priority" class="form-select form-select-sm" data-submit-on-change="1">
             <option value="">Any Priority</option>
             <?php foreach ($validPriorities as $p): ?>
             <option value="<?= $p ?>" <?= $filterPriority === $p ? 'selected' : '' ?>><?= ucfirst($p) ?></option>
@@ -262,8 +262,8 @@ if (currentStaffHasPermission('tickets.view_all')) {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script src="<?= APP_URL ?>/assets/js/notifications.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/notifications.js"></script>
 </body>
 </html>

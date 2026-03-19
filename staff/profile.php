@@ -198,9 +198,9 @@ $unreadCount = (int)$stmt->fetchColumn();
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>">
 updateStrengthMeter('newPwd','strengthBar','strengthText');
 document.getElementById('cfmPwd').addEventListener('input', function() {
     const m = document.getElementById('pwdMatch');

@@ -271,7 +271,7 @@ if (!empty($ticket['user_email'])) {
               <label class="form-label fw-semibold">Update Notes <span class="text-muted">(optional)</span></label>
               <textarea name="notes" class="form-control" rows="2" placeholder="Any notes about the progress..."></textarea>
             </div>
-            <button type="submit" class="btn btn-primary" onclick="return confirm('Mark ticket as <?= statusLabel($nextStatus) ?>?')">
+            <button type="submit" class="btn btn-primary" data-confirm-click="Mark ticket as <?= statusLabel($nextStatus) ?>?">
               <i class="bi bi-arrow-up-circle me-2"></i>Mark as <?= statusLabel($nextStatus) ?>
             </button>
           </form>
@@ -419,8 +419,8 @@ if (!empty($ticket['user_email'])) {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
-<script src="<?= APP_URL ?>/assets/js/notifications.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/notifications.js"></script>
 </body>
 </html>

@@ -127,7 +127,7 @@ $unreadCount = (int)$stmt->fetchColumn();
               <td><?= h($u['designation'] ?? 'N/A') ?></td>
               <td><?= $u['email_verified'] ? '<span class="badge bg-success">Verified</span>' : '<span class="badge bg-secondary">Unverified</span>' ?></td>
               <td class="text-end">
-                <form method="post" class="d-inline" onsubmit="return confirm('Delete this user and all related tickets?');">
+                <form method="post" class="d-inline" data-confirm="Are you sure?">
                   <?= csrfField() ?>
                   <input type="hidden" name="delete_user_id" value="<?= (int)$u['id'] ?>">
                   <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
@@ -143,7 +143,7 @@ $unreadCount = (int)$stmt->fetchColumn();
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script nonce="<?= cspNonce() ?>" src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script nonce="<?= cspNonce() ?>" src="<?= APP_URL ?>/assets/js/main.js"></script>
 </body>
 </html>
